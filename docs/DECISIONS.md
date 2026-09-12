@@ -243,3 +243,17 @@ the threshold and calling a six-hour-ahead number a day-ahead forecast, the resp
 carries `forecast_horizon_h` alongside a per-point `demand_forecast_horizon_h`, so a
 client can label what it is actually showing and an empty line is visibly empty. `probe`
 will establish the real horizon by time of day.
+
+## 2026-09-12 — The error handler passes client-side statuses through
+
+A custom `setErrorHandler` intercepts everything, so a 429 raised by the rate limiter was
+being turned into a 500 — the limit worked, but the client was told the server had
+broken. The handler now emits the documented error shape for a 429 and passes any other
+4xx through with its own status, so only genuinely unexpected failures become a 500.
+
+## 2026-09-12 — CORS sets a fixed origin and never reflects the request's
+
+`Access-Control-Allow-Origin` is always `PUBLIC_BASE_URL`, whoever asks. That is what
+blocks other sites: the browser compares the header against its own origin and refuses
+when they differ. Echoing the requesting origin back is the mistake that would allow
+everyone, so a test asserts the header never equals an attacker's origin.

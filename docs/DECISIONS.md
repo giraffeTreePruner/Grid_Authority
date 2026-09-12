@@ -456,3 +456,10 @@ does not match. `DOMAIN` is now set at the top of 2.10 and used throughout.
 prints nothing when DNS fails, the connection is refused, or TLS does not match. A check
 that cannot distinguish "the feature is missing" from "I never reached the server" is not
 a check. These now use `-sS`, and the troubleshooting entry says what each outcome means.
+
+## 2026-09-12 — No OCSP stapling
+
+Let's Encrypt no longer includes an OCSP responder URL in its certificates, so
+`ssl_stapling on` can never do anything and nginx warns about it on every reload — a
+permanent piece of noise in front of the one command whose output must be read carefully.
+Revocation is distributed by CRL, which browsers handle without nginx's involvement.

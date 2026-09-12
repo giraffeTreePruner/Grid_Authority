@@ -463,3 +463,21 @@ Let's Encrypt no longer includes an OCSP responder URL in its certificates, so
 `ssl_stapling on` can never do anything and nginx warns about it on every reload — a
 permanent piece of noise in front of the one command whose output must be read carefully.
 Revocation is distributed by CRL, which browsers handle without nginx's involvement.
+
+## 2026-09-12 — Entry points start unconditionally
+
+`packages/api/src/index.ts` and `packages/scheduler/src/index.ts` guarded their `main()`
+on `process.argv[1]` ending in `index.js`, so that importing the module in a test would
+not start a server. Nothing imports either one — the tests build their own instance from
+`app.ts` and exercise `runner.ts` and `schedule.ts` directly — so the guard protected
+against nothing.
+
+It did break production. PM2 loads an app through its own process container, so
+`argv[1]` is PM2's file and the guard never matched. The API came up "online" under PM2
+while listening on nothing, which nginx reported as a 502, and the scheduler exited
+immediately and was restarted in a loop. Both look like infrastructure faults and neither
+is.
+
+Verified by loading each built entry point from a wrapper module, which is the shape PM2
+uses: before, neither started; after, the API serves and the scheduler registers its
+three cron jobs.

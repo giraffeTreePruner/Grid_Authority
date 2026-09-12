@@ -98,4 +98,8 @@ const main = (): void => {
   process.on('SIGINT', () => shutdown('SIGINT'));
 };
 
-if (process.argv[1]?.endsWith('index.js')) main();
+// Starts unconditionally: nothing imports this module, and the tests exercise runner.ts
+// and schedule.ts directly. Guarding on process.argv[1] breaks under PM2, which loads
+// the app through its own process container — the scheduler exited immediately and PM2
+// restarted it in a loop.
+main();

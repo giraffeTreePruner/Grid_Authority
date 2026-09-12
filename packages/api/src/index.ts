@@ -21,10 +21,13 @@ const main = async (): Promise<void> => {
   await app.listen({ port: env.PORT, host: env.HOST });
 };
 
-// Only start a server when run directly, so importing this module in a test does not.
-if (process.argv[1]?.endsWith('index.js') || process.argv[1]?.endsWith('index.ts')) {
-  main().catch((error: unknown) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
+// This module exists only to start the server, and nothing imports it: the tests build
+// their own instance from app.ts. So it starts unconditionally.
+//
+// It previously guarded on process.argv[1] ending in index.js, which looks harmless and
+// is not: PM2 loads the app through its own process container, so argv[1] is PM2's file
+// and main() never ran. The API reported healthy under PM2 while listening on nothing.
+main().catch((error: unknown) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -229,3 +229,17 @@ poll, and reporting it as degraded would make every deploy look broken for up to
 hour. So an empty table returns 200 with `status: "starting"` rather than `"ok"`, and the
 503 conditions are unchanged. A registered source with a null `last_success_at` is
 degraded: one that has never succeeded is worse than one that is merely stale.
+
+## 2026-09-12 — The forecast series keeps a 24-hour horizon and reports it
+
+§9 selects, for each target hour, the most recent vintage issued at or before
+`target − 24h`, so the chart compares actual demand against a genuine day-ahead
+prediction rather than a revision published once the hour was nearly over. That rule
+stands, with the threshold as a named constant.
+
+The observed publication horizon may be shorter than 24 hours — one capture showed six —
+in which case no vintage qualifies and the series is null. Rather than quietly lowering
+the threshold and calling a six-hour-ahead number a day-ahead forecast, the response
+carries `forecast_horizon_h` alongside a per-point `demand_forecast_horizon_h`, so a
+client can label what it is actually showing and an empty line is visibly empty. `probe`
+will establish the real horizon by time of day.

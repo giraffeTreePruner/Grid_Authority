@@ -13,6 +13,7 @@ import { ApiError, errorBody } from './lib/errors.js';
 import { healthRoutes } from './routes/health.js';
 import { mapRoutes } from './routes/map.js';
 import { sourceRoutes } from './routes/sources.js';
+import { zoneDetailRoutes } from './routes/zone-detail.js';
 import { zoneRoutes } from './routes/zones.js';
 
 export const API_PREFIX = '/api/v1';
@@ -39,7 +40,6 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
       level: env.LOG_LEVEL,
       redact: ['req.headers.authorization', 'req.headers.cookie'],
     },
-    disableRequestLogging: env.NODE_ENV === 'test',
     trustProxy: true,
   });
 
@@ -75,6 +75,7 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
       healthRoutes(instance, sql);
       zoneRoutes(instance, sql);
       mapRoutes(instance, sql);
+      zoneDetailRoutes(instance, sql);
       sourceRoutes(instance, sql);
     },
     { prefix: API_PREFIX },

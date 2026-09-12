@@ -17,7 +17,7 @@ This avoids a system-wide database install and keeps the local version identical
 
 ## 2026-09-11 — Development machine runs Node 26 while the repo pins Node 22
 
-`.nvmrc` pins Node 22 LTS to match the Ubuntu 24.04 deployment target, and CI builds on 22.
+`.nvmrc` pins Node 22 LTS to match the deployment target, and CI builds on 22.
 The current development machine has Node 26; `engines` is `>=22` so local work is not blocked.
 Anything that depends on a version difference must be caught by CI, not by local runs.
 
@@ -368,3 +368,29 @@ becoming ready re-runs the effect. A test covers the realistic order, window fir
 Sources run hours behind, so the last hour of the window is routinely empty and opening
 there shows an entirely grey map for no reason. The cursor starts at the newest hour any
 zone reported, and the legend says plainly when the hour in view has nothing.
+
+## 2026-09-12 — The deployment target is Ubuntu 26.04 on 2 GB
+
+Originally Ubuntu 24.04 on 4 GB. The real host is a 2 vCPU / 2 GB instance, which changes
+three things.
+
+Postgres 16 no longer comes from the default archive: a fresh Ubuntu release carries
+whichever major version was current when that release was cut, not 16 specifically. It is
+installed from the PGDG repository instead, which is versioned independently of Ubuntu.
+The alternative — taking whatever Postgres Ubuntu ships — would mean re-pinning the
+version in `docker-compose.yml`, both CI jobs and the runbook, so that dev, CI and
+production stop agreeing.
+
+A 2 GB swapfile is added with `vm.swappiness=10`. It is a safety net for the overlap
+between a poll cycle, autovacuum and a traffic burst, not a way to carry steady-state
+load. Without it the kernel's OOM killer picks a victim under pressure, and the victim it
+picks is often Postgres.
+
+PM2's memory ceilings drop from 400M and 200M to 300M and 150M. The old figures claimed a
+quarter of a 4 GB host and would claim half of this one. Note these ceilings do not cover
+the Python workers the scheduler spawns, which are separate processes.
+
+CI stays on the `ubuntu-24.04` runner. The runner image does not affect what is tested:
+Postgres comes from a pinned `postgres:16` service container, Node from `.nvmrc` and
+Python from uv. GitHub does not offer a 26.04 runner, and pinning to `ubuntu-latest`
+would let the CI environment move without anyone deciding to move it.

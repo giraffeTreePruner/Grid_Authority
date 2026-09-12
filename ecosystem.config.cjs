@@ -7,6 +7,12 @@
  *
  * Both run with TZ=UTC. The database, the container and these processes must agree, or
  * an interval-start hour stops meaning what it says.
+ *
+ * Memory ceilings are sized for a 2 GB host. Rough budget at rest: Postgres 300-400 MB,
+ * the OS around 250 MB, nginx 30 MB. That leaves about 1.3 GB, and these ceilings claim
+ * 750 MB of it. The Python workers the scheduler spawns are separate processes and are
+ * NOT covered by the scheduler's ceiling; a poll cycle wants another 150-250 MB on top.
+ * The swapfile in the runbook is what absorbs the overlap.
  */
 module.exports = {
   apps: [
@@ -22,7 +28,10 @@ module.exports = {
       // Two workers on 2 vCPU: enough to survive one being busy, few enough to leave
       // room for the scheduler's Python jobs.
       instances: 2,
-      max_memory_restart: '400M',
+      // Serving precomputed JSON does not need much. This is a ceiling that trips a
+      // restart before the kernel's OOM killer starts choosing a victim itself, and
+      // the victim it chooses is often Postgres.
+      max_memory_restart: '300M',
       env: {
         NODE_ENV: 'production',
         TZ: 'UTC',
@@ -47,7 +56,7 @@ module.exports = {
       exec_mode: 'fork',
       // Exactly one. A second would double every request to EIA.
       instances: 1,
-      max_memory_restart: '200M',
+      max_memory_restart: '150M',
       env: {
         NODE_ENV: 'production',
         TZ: 'UTC',

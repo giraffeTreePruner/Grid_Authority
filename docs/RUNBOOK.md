@@ -3,7 +3,7 @@
 Everything needed to build this host from nothing, and to operate it afterwards. If a
 step here is wrong or missing, that is a bug in this file.
 
-Target: Ubuntu 24.04, 2 vCPU, 4 GB, with Cloudflare in front of nginx.
+Target: Ubuntu 26.04, 2 vCPU, 2 GB, with Cloudflare in front of nginx.
 
 ---
 
@@ -80,8 +80,31 @@ node geo/build/validate.js
 
 ```sh
 adduser --system --group --home /srv/grid-authority grid
-apt update && apt install -y curl git nginx postgresql-16 ufw
+apt update && apt install -y curl git nginx ufw ca-certificates
+```
 
+Postgres 16 is pinned across dev, CI and prod (see `docs/DECISIONS.md`), but a fresh
+Ubuntu release's default archive only carries whatever major version was current at its
+own release — not 16 specifically. Install from the PGDG repository instead, which
+carries specific major versions independent of the Ubuntu release:
+
+```sh
+install -d /usr/share/postgresql-common/pgdg
+curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail \
+  https://www.postgresql.org/media/keys/ACCC4CF8.asc
+sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+  https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" \
+  > /etc/apt/sources.list.d/pgdg.list'
+apt update && apt install -y postgresql-16
+```
+
+If that `apt update` fails on the codename, PGDG has not yet added support for this
+Ubuntu release — check https://www.postgresql.org/download/linux/ubuntu/ for the latest
+supported codename before falling back to whatever major version Ubuntu ships by
+default, which would mean re-pinning it everywhere (`docker-compose.yml`, both
+`postgres:16` jobs in `.github/workflows/ci.yml`, and this file).
+
+```sh
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt install -y nodejs
 corepack enable && corepack prepare pnpm@10.4.1 --activate
@@ -115,7 +138,30 @@ timedatectl set-timezone UTC
 Everything in this project stores and reasons in UTC. A host on local time will produce
 hours that are silently offset.
 
-### 2.4 Database
+### 2.4 Swap
+
+A safety net against the OOM killer taking down Postgres during a traffic burst,
+autovacuum, or a backfill landing at the same time. Not meant to carry steady-state load.
+
+```sh
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+```
+
+Low swappiness keeps Postgres's shared_buffers and hot pages in RAM and only swaps under
+real pressure:
+
+```sh
+echo 'vm.swappiness=10' >> /etc/sysctl.conf
+sysctl -p
+```
+
+Confirm: `swapon --show` and `free -h` both show the 2G swapfile.
+
+### 2.5 Database
 
 ```sh
 sudo -u postgres psql <<'SQL'
@@ -151,16 +197,16 @@ sudo -u postgres psql -d grid_authority -c \
   'GRANT SELECT ON ALL TABLES IN SCHEMA public TO grid_api;'
 ```
 
-### 2.5 Checkout
+### 2.6 Checkout
 
 ```sh
 sudo -u grid git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
 cd /srv/grid-authority
 ```
 
-Environment files are written in 2.7, once the database roles exist.
+Environment files are written in 2.8, once the database roles exist.
 
-### 2.6 First build and migration
+### 2.7 First build and migration
 
 ```sh
 cd /srv/grid-authority
@@ -180,7 +226,14 @@ sudo -u grid pnpm --filter @grid-authority/web build
 sudo -u grid node geo/build/validate.js
 ```
 
-### 2.7 Two environment files
+The web build is the largest memory spike this host ever sees — larger than serving
+traffic — because rollup holds the whole module graph and its source maps at once. On
+2 GB it completes, but it leans on the swapfile from 2.4, so do not skip that step and
+then wonder why a deploy was killed. If a build is ever OOM-killed anyway, build
+elsewhere and copy `packages/web/dist`, `packages/api/dist` and
+`packages/scheduler/dist` across; nothing in those directories is host-specific.
+
+### 2.8 Two environment files
 
 The workers write; the API must not. Each process therefore gets its own env file, and
 `ecosystem.config.cjs` points Node at them with `--env-file`. No secret is written into
@@ -207,7 +260,7 @@ sudo -u grid grep -c . .env .env.api        # both non-empty
 git check-ignore -v .env .env.api           # both ignored
 ```
 
-### 2.8 PM2
+### 2.9 PM2
 
 ```sh
 cd /srv/grid-authority
@@ -225,7 +278,7 @@ sudo -u grid pm2 startup systemd -u grid --hp /srv/grid-authority
 
 Confirm both are online: `sudo -u grid pm2 status`.
 
-### 2.9 TLS and nginx
+### 2.10 TLS and nginx
 
 ```sh
 apt install -y certbot python3-certbot-nginx
@@ -249,7 +302,7 @@ usually means a custom build.
 in place. **If it is not**, delete the `set_real_ip_from` and `real_ip_header` lines, or
 every client will be counted as one address and the rate limits will be wrong.
 
-### 2.10 Backfill
+### 2.11 Backfill
 
 ```sh
 cd /srv/grid-authority

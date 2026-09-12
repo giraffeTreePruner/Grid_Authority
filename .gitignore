@@ -19,6 +19,11 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 
+# Geometry: the download and the unsimplified intermediate are reproducible from
+# geo/build/README.md. The simplified GeoJSON and the PMTiles artifact are committed.
+/geo/src/world.geojson
+/geo/src/zones.raw.geojson
+
 # Logs and OS cruft
 *.log
 logs/

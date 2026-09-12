@@ -26,3 +26,19 @@
     emission factors to EIA data. Figures are ours, not theirs, and this project is
     not affiliated with or endorsed by Electricity Maps.
   active: false
+
+# Zone geometry. Registered because §11 requires recording which source the committed
+# zones.pmtiles was built from, and because the AGPL requires attribution.
+- id: emaps_geo
+  label: Electricity Maps zone geometry
+  attribution: Zone boundaries from electricitymaps-contrib (AGPL-3.0)
+  url: https://github.com/electricitymaps/electricitymaps-contrib
+  license: AGPL-3.0
+  independent: false
+  notes: >
+    Balancing authority boundaries used to draw the map, taken from
+    electricitymaps-contrib and reused under the AGPL, which this project also uses.
+    Geometry only: no measurements come from this source. The SPP West boundary is
+    derived here as the union of the two Western Area Power Administration areas it
+    absorbed, and is not present in the original.
+  active: true

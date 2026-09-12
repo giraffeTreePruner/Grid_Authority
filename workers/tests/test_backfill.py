@@ -68,7 +68,7 @@ def test_an_empty_day_is_not_complete(prepared: psycopg.Connection) -> None:
 def test_a_day_needs_every_demand_reporting_zone(prepared: psycopg.Connection) -> None:
     """One zone short is not a complete day."""
     day = datetime(2026, 9, 10, tzinfo=UTC)
-    zones = [z for z in CONFIG.zones.in_map() if z.capabilities.demand]
+    zones = [z for z in CONFIG.zones.zones if z.capabilities.demand]
     with prepared.cursor() as cursor:
         for zone in zones[:-1]:
             for hour in range(23):
@@ -93,13 +93,17 @@ def test_a_day_needs_every_demand_reporting_zone(prepared: psycopg.Connection) -
 def test_zones_that_never_report_demand_are_not_required(
     prepared: psycopg.Connection,
 ) -> None:
-    """Seven balancing authorities publish generation but no demand, ever."""
+    """Several balancing authorities publish generation but no demand, ever.
+
+    They are off the map too, having no territory to draw, but they are still zones
+    and backfill still ingests them.
+    """
     day = datetime(2026, 9, 10, tzinfo=UTC)
-    generation_only = [z for z in CONFIG.zones.in_map() if not z.capabilities.demand]
+    generation_only = [z for z in CONFIG.zones.zones if not z.capabilities.demand]
     assert generation_only, "the registry should contain generation-only zones"
 
     with prepared.cursor() as cursor:
-        for zone in [z for z in CONFIG.zones.in_map() if z.capabilities.demand]:
+        for zone in [z for z in CONFIG.zones.zones if z.capabilities.demand]:
             for hour in range(23):
                 cursor.execute(
                     "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
@@ -116,7 +120,7 @@ def test_a_null_demand_does_not_count_towards_completeness(
     """A row that exists but holds no measurement is not data."""
     day = datetime(2026, 9, 10, tzinfo=UTC)
     with prepared.cursor() as cursor:
-        for zone in [z for z in CONFIG.zones.in_map() if z.capabilities.demand]:
+        for zone in [z for z in CONFIG.zones.zones if z.capabilities.demand]:
             for hour in range(23):
                 cursor.execute(
                     "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "

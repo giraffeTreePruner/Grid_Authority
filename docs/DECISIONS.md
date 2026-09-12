@@ -257,3 +257,38 @@ broken. The handler now emits the documented error shape for a 429 and passes an
 blocks other sites: the browser compares the header against its own origin and refuses
 when they differ. Echoing the requesting origin back is the mistake that would allow
 everyone, so a test asserts the header never equals an attacker's origin.
+
+## 2026-09-12 — Geometry comes from electricitymaps-contrib, not HIFLD
+
+§11 named HIFLD Open "Control Areas" first, which would have been public domain. Its
+ArcGIS feature services now reject anonymous queries and the dataset is absent from the
+public Hub search, so it is not usable without credentials. electricitymaps-contrib is
+the spec's other option, is AGPL like this project, and its zone keys already match the
+convention here, so the join needs no fuzzy matching. Recorded in `config/sources.yaml`
+as `emaps_geo` and on the About page, as the AGPL requires.
+
+## 2026-09-12 — Simplification is light because there is headroom
+
+The spec targets 300–600 KB gzipped, assuming a dense source. This source is already
+generalised: the artifact is 169.5 KB against a 600 KB ceiling. Simplifying to hit the
+target would only degrade coastlines and state borders for a saving nothing needs, so
+simplification is 50% with shapes preserved.
+
+## 2026-09-12 — Nine zones have no geometry and leave the map
+
+Eight are balancing authorities with no service territory at all: individual generating
+stations, wind farms, and a federal power marketer. There is no polygon to find, at any
+source. The ninth, BHBA, is a real territory the source happens to predate. All nine keep
+their data and still appear in `/zones`; they simply are not drawn, with the reason
+recorded inline in `config/zones.yaml`.
+
+That set almost exactly matches the generation-only zones found in task 3, which is not a
+coincidence: a balancing authority with no territory has neither demand to report nor a
+boundary to draw.
+
+## 2026-09-12 — Backfill completeness follows demand capability, not the map
+
+Moving nine zones off the map exposed the completeness check being scoped to `in_map`
+zones. Backfill ingests every zone and the API serves them all, including the regional
+aggregates which are deliberately off the map but very much expected to have data. The
+check now covers every zone whose capabilities say it publishes demand.

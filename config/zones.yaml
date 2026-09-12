@@ -287,7 +287,8 @@
   timezone: America/Los_Angeles
   type: balancing_authority
   parent: US-NW
-  in_map: true
+  # No geometry: No service territory: Avangrid Renewables is a generator-only balancing authority (no demand series).
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -335,7 +336,8 @@
   timezone: America/Denver
   type: balancing_authority
   parent: US-NW
-  in_map: true
+  # No geometry: No polygon in the source dataset; Black Hills became its own balancing authority after the source was last updated.
+  in_map: false
   capabilities:
     demand: true
     demand_forecast: true
@@ -431,7 +433,8 @@
   timezone: America/Phoenix
   type: balancing_authority
   parent: US-SW
-  in_map: true
+  # No geometry: No service territory: Arlington Valley is a single generating station.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -575,7 +578,8 @@
   timezone: America/Los_Angeles
   type: balancing_authority
   parent: US-NW
-  in_map: true
+  # No geometry: No service territory: Gridforce is a generator-only balancing authority (no demand series).
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -607,7 +611,8 @@
   timezone: America/Denver
   type: balancing_authority
   parent: US-NW
-  in_map: true
+  # No geometry: No service territory: NaturEner Power Watch is a wind generation balancing authority.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -975,7 +980,8 @@
   timezone: America/New_York
   type: balancing_authority
   parent: US-SE
-  in_map: true
+  # No geometry: No service territory: SEPA markets federal hydropower rather than serving load.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -991,7 +997,8 @@
   timezone: America/Chicago
   type: balancing_authority
   parent: US-MIDW
-  in_map: true
+  # No geometry: No polygon in the source dataset; Sikeston is a single municipal generating station.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -1199,7 +1206,8 @@
   timezone: America/Denver
   type: balancing_authority
   parent: US-NW
-  in_map: true
+  # No geometry: No service territory: NaturEner Wind Watch is a wind generation balancing authority.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false
@@ -1215,7 +1223,8 @@
   timezone: America/New_York
   type: balancing_authority
   parent: US-CAR
-  in_map: true
+  # No geometry: No service territory: Alcoa Yadkin is a hydro generation balancing authority.
+  in_map: false
   capabilities:
     demand: false
     demand_forecast: false

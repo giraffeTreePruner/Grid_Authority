@@ -14,8 +14,13 @@ export const NO_DATA_COLOUR = '#3f3f46';
 /**
  * A fill-colour expression reading `feature-state.value`.
  *
- * The `case` guard comes first: a zone whose state is missing or null is painted the
- * no-data colour rather than falling through to the bottom of the ramp.
+ * The null guard comes first, so a zone with no measurement is painted the no-data
+ * colour rather than falling through to the bottom of the ramp. An unset feature-state
+ * also reads as null, so that single guard covers both cases.
+ *
+ * Note what is deliberately absent: `['has', 'value']` tests the feature's *properties*,
+ * not its state. The tiles carry only `zone_key`, so such a test is always false and,
+ * negated, would paint every zone as no-data whatever its value.
  */
 export const fillColourExpression = (
   definition: MetricDefinition,
@@ -30,8 +35,6 @@ export const fillColourExpression = (
   return [
     'case',
     ['==', ['feature-state', 'value'], null],
-    NO_DATA_COLOUR,
-    ['!', ['has', 'value']],
     NO_DATA_COLOUR,
     interpolate,
   ] as unknown as ExpressionSpecification;

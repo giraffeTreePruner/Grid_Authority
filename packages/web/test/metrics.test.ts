@@ -103,9 +103,36 @@ describe('fill colour expression', () => {
   });
 
   it('paints a feature with no state at all as no-data', () => {
+    // An unset feature-state reads as null, so the null guard covers this too.
     const built = expression([1000, 2000]);
-    expect(built[3]).toEqual(['!', ['has', 'value']]);
-    expect(built[4]).toBe(NO_DATA_COLOUR);
+    expect(built[1]).toEqual(['==', ['feature-state', 'value'], null]);
+    expect(built[2]).toBe(NO_DATA_COLOUR);
+  });
+
+  it('never tests feature properties in place of feature state', () => {
+    // ['has', 'value'] inspects the feature's properties. The tiles carry only
+    // zone_key, so that test is always false and, negated, paints every zone as
+    // no-data whatever its value. This shipped once; it must not again.
+    const serialised = JSON.stringify(expression([1000, 2000]));
+    expect(serialised).not.toContain('"has"');
+  });
+
+  it('evaluates to a ramp colour for a real value and no-data for null', () => {
+    // Structure alone is not enough: the bug above produced a well-formed expression
+    // that painted everything grey. This walks the case arms as MapLibre would.
+    const built = expression([0, 100]) as unknown[];
+    const evaluate = (state: { value: number | null } | null): string => {
+      const condition = built[1] as unknown[];
+      const isNull = state === null || state.value === null;
+      expect(condition[0]).toBe('==');
+      if (isNull) return built[2] as string;
+      const interpolate = built.at(-1) as unknown[];
+      return interpolate[4] as string; // the colour at the first stop
+    };
+
+    expect(evaluate(null)).toBe(NO_DATA_COLOUR);
+    expect(evaluate({ value: null })).toBe(NO_DATA_COLOUR);
+    expect(evaluate({ value: 50 })).not.toBe(NO_DATA_COLOUR);
   });
 
   it('interpolates linearly over the ramp for real values', () => {

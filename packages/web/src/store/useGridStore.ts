@@ -62,10 +62,29 @@ export const useGridStore = create<GridState>((set) => ({
   togglePlaying: () => set((state) => ({ playing: !state.playing })),
 
   // Landing on the newest hour is the useful default: the map should open on now.
-  setWindow: (payload) => set({ window: payload, cursor: Math.max(payload.periods.length - 1, 0) }),
+  // Open on the newest hour that actually has data, not simply the newest hour.
+  // Sources run hours behind, so the last period in the window is routinely empty
+  // and opening there shows an entirely grey map for no reason.
+  setWindow: (payload) => set({ window: payload, cursor: newestHourWithData(payload) }),
 
   setDetailWindow: (detailWindow) => set({ detailWindow }),
 }));
+
+/**
+ * The index of the newest hour any zone reported anything for.
+ *
+ * Falls back to the last hour when the whole window is empty, so the slider still has a
+ * sensible position and the map says "no data" rather than behaving oddly.
+ */
+export const newestHourWithData = (payload: WindowResponse): number => {
+  const series = Object.values(payload.zones);
+  for (let hour = payload.periods.length - 1; hour >= 0; hour -= 1) {
+    for (const zone of series) {
+      if (zone[hour]?.some((value) => value !== null) === true) return hour;
+    }
+  }
+  return Math.max(payload.periods.length - 1, 0);
+};
 
 /** The values for one metric across every zone at the cursor's hour. */
 export const valuesAtCursor = (

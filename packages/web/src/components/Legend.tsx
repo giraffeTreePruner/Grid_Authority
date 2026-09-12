@@ -17,6 +17,7 @@ export const Legend = (): JSX.Element | null => {
 
   const definition = METRICS[metric];
   const values = [...valuesAtCursor(windowPayload, cursor, metricIndex(metric)).values()];
+  const anyData = values.some((value) => value !== null);
   const domain = computeDomain(definition, values);
   const stops = rampStops(definition, domain);
 
@@ -30,7 +31,13 @@ export const Legend = (): JSX.Element | null => {
         <span className="ml-1 font-normal text-zinc-500">({definition.unit})</span>
       </p>
 
-      <div className="flex items-end gap-0">
+      {!anyData && (
+        <p className="mb-2 text-[11px] text-amber-300/80" data-testid="legend-no-data">
+          No zone published this metric for this hour.
+        </p>
+      )}
+
+      <div className={anyData ? 'flex items-end gap-0' : 'flex items-end gap-0 opacity-40'}>
         {stops.map((stop) => (
           <div key={stop.colour} className="flex w-14 flex-col items-start">
             <span className="h-3 w-full" style={{ backgroundColor: stop.colour }} />

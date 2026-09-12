@@ -343,3 +343,28 @@ reached on every request.
 Using both emits two `Cache-Control` headers; the browser takes the first and drops the
 rest, which silently discarded `immutable` on the hashed assets. One directive only.
 Caught by testing the config rather than reading it.
+
+## 2026-09-12 — `['has', 'value']` inspects properties, not feature state
+
+A guard of `['!', ['has', 'value']]` was meant to catch a feature with no state. It does
+not: `has` tests the feature's *properties*, and the tiles carry only `zone_key`, so the
+test was always false and, negated, painted every zone as no-data whatever its value. An
+unset feature-state already reads as null, so the single null guard covers both cases.
+
+The unit test passed throughout, because it asserted the expression's *structure*. A
+structural assertion cannot catch a well-formed expression that means the wrong thing.
+There is now a test that walks the case arms the way MapLibre would, and one that fails
+if `has` ever reappears in this expression.
+
+## 2026-09-12 — Map readiness must be state, not a ref
+
+The window response usually arrives before the tiles finish loading. With readiness held
+in a ref, the paint effect had already run and returned early, and nothing re-triggered
+it: the map stayed grey with no error anywhere. Readiness is now React state, so
+becoming ready re-runs the effect. A test covers the realistic order, window first.
+
+## 2026-09-12 — The map opens on the newest hour that has data
+
+Sources run hours behind, so the last hour of the window is routinely empty and opening
+there shows an entirely grey map for no reason. The cursor starts at the newest hour any
+zone reported, and the legend says plainly when the hour in view has nothing.

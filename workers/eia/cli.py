@@ -31,6 +31,7 @@ from workers.eia.poll import run_poll
 from workers.eia.probe import run_probe
 from workers.eia.revise import DEFAULT_DAYS as REVISE_DAYS
 from workers.eia.revise import run_revise
+from workers.eia.seed import SeedError, seed_from_fixtures
 
 app = typer.Typer(
     add_completion=False,
@@ -219,6 +220,42 @@ def probe_command() -> None:
             f"{reading.dataset}: {hours:.1f}h behind (newest {reading.latest_period})", err=True
         )
     typer.echo(summary.as_json())
+
+
+@app.command("seed-fixtures")
+def seed_fixtures_command(
+    force: Annotated[
+        bool, typer.Option("--force", help="Seed even if the database already holds data.")
+    ] = False,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Load the recorded fixtures, so the UI can be seen without an API key.
+
+    Development only. The data is real but frozen at the hour it was recorded, so the
+    map will show a stale banner. Use `poll` for current data.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    try:
+        with connect() as connection:
+            summary = seed_from_fixtures(connection, config, force=force)
+    except SeedError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(
+        f"{summary.region} region rows, {summary.mix} mix rows, "
+        f"{summary.interchange} interchange rows, {summary.forecasts} forecast vintages, "
+        f"{summary.snapshots} snapshots across {len(summary.periods)} hours"
+    )
+    typer.echo("This is recorded data, not current. Run `eia poll` for live data.")
 
 
 @app.command("sync-zones")

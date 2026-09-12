@@ -34,7 +34,14 @@ export const MixChart = ({ detail, unit }: MixChartProps): JSX.Element => {
       ],
       axes: [
         { stroke: '#71717a', grid: { stroke: '#27272a' }, ticks: { stroke: '#3f3f46' } },
-        { stroke: '#71717a', grid: { stroke: '#27272a' }, ticks: { stroke: '#3f3f46' } },
+        {
+          stroke: '#71717a',
+          grid: { stroke: '#27272a' },
+          ticks: { stroke: '#3f3f46' },
+          // Power values reach six figures with separators. uPlot's default gutter
+          // clips them, which turns 150,000 into ",0,000".
+          size: 62,
+        },
       ],
       legend: { show: false },
       cursor: { drag: { x: false, y: false } },

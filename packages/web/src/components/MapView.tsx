@@ -8,7 +8,7 @@
  * what lets the slider scrub and the metric switch repaint from memory.
  */
 import maplibregl, { type MapGeoJSONFeature } from 'maplibre-gl';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { METRICS, metricIndex } from '../lib/metrics.ts';
 import { fillColourExpression, fillOpacityExpression, lineWidthExpression } from '../lib/paint.ts';
@@ -31,8 +31,12 @@ export interface MapViewProps {
 export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element => {
   const container = useRef<HTMLDivElement | null>(null);
   const map = useRef<maplibregl.Map | null>(null);
-  const loaded = useRef(false);
   const painted = useRef<Set<string>>(new Set());
+
+  // Readiness is state, not a ref. The window response usually arrives before the
+  // tiles finish loading, and a ref would leave the paint effect having already run
+  // and returned early, with nothing to re-trigger it: the map would stay grey.
+  const [ready, setReady] = useState(false);
 
   const metric = useGridStore((state) => state.metric);
   const cursor = useGridStore((state) => state.cursor);
@@ -135,25 +139,31 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
     });
 
     instance.on('load', () => {
-      loaded.current = true;
+      setReady(true);
       instance.setPaintProperty(FILL_LAYER, 'fill-opacity', fillOpacityExpression());
       instance.setPaintProperty(LINE_LAYER, 'line-width', lineWidthExpression());
       instance.setPaintProperty(LINE_LAYER, 'line-color', '#111827');
       onReady?.();
     });
 
+    // Development only: lets the map be inspected from the console, which is the
+    // only practical way to check what the tiles actually contain.
+    if (import.meta.env.DEV) {
+      (globalThis as unknown as { __gridMap?: maplibregl.Map }).__gridMap = instance;
+    }
+
     map.current = instance;
     return () => {
       instance.remove();
       map.current = null;
-      loaded.current = false;
+      setReady(false);
     };
   }, [geometryVersion, hoverZone, onReady, selectZone]);
 
   // --- painting, on every metric or cursor change -------------------------------------
   useEffect(() => {
     const instance = map.current;
-    if (instance === null || !loaded.current || windowPayload === null) return;
+    if (instance === null || !ready || windowPayload === null) return;
 
     const position = metricIndex(metric);
     const values = valuesAtCursor(windowPayload, cursor, position);
@@ -173,19 +183,19 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
       'fill-color',
       fillColourExpression(METRICS[metric], [...values.values()]),
     );
-  }, [metric, cursor, windowPayload]);
+  }, [metric, cursor, windowPayload, ready]);
 
   // --- selection ---------------------------------------------------------------------
   useEffect(() => {
     const instance = map.current;
-    if (instance === null || !loaded.current) return;
+    if (instance === null || !ready) return;
     for (const key of painted.current) {
       instance.setFeatureState(
         { source: SOURCE_ID, sourceLayer: SOURCE_LAYER, id: key },
         { selected: key === selectedZone },
       );
     }
-  }, [selectedZone]);
+  }, [selectedZone, ready]);
 
   return <div ref={container} className="h-full w-full" data-testid="map" />;
 };

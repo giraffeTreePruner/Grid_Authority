@@ -6,7 +6,7 @@
  * with the PMTiles source, and that window values reach it through setFeatureState
  * rather than by restyling the source.
  */
-import { render, waitFor } from '@testing-library/react';
+import { act, render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeWindow } from './fixtures.ts';
 
@@ -54,6 +54,13 @@ vi.mock('maplibre-gl/dist/maplibre-gl.css', () => ({}));
 const { MapView } = await import('../src/components/MapView.tsx');
 const { useGridStore } = await import('../src/store/useGridStore.ts');
 
+/** Fire the map's load event. It sets React state, so it must run inside act. */
+const fireLoad = (): void => {
+  act(() => {
+    handlers.get('load')?.({});
+  });
+};
+
 describe('MapView', () => {
   beforeEach(() => {
     featureStates.length = 0;
@@ -94,9 +101,30 @@ describe('MapView', () => {
     );
   });
 
+  it('paints when the window arrives before the map finishes loading', async () => {
+    // The realistic order: the API answers in milliseconds, the tiles take longer.
+    // Held by a test because getting this wrong leaves the map permanently grey with
+    // no error anywhere.
+    render(<MapView geometryVersion="1" />);
+
+    const payload = makeWindow();
+    useGridStore.getState().setWindow(payload);
+    expect(featureStates).toHaveLength(0);
+
+    fireLoad();
+
+    await waitFor(() => {
+      const ids = new Set(featureStates.map((entry) => entry.id));
+      expect(ids).toEqual(new Set(Object.keys(payload.zones)));
+    });
+    await waitFor(() =>
+      expect(paintProperties.some((entry) => entry.property === 'fill-color')).toBe(true),
+    );
+  });
+
   it('applies feature state for every zone once a window arrives', async () => {
     render(<MapView geometryVersion="1" />);
-    handlers.get('load')?.({});
+    fireLoad();
 
     const payload = makeWindow();
     useGridStore.getState().setWindow(payload);
@@ -109,7 +137,7 @@ describe('MapView', () => {
 
   it('distinguishes a zone with no data from one reading zero', async () => {
     render(<MapView geometryVersion="1" />);
-    handlers.get('load')?.({});
+    fireLoad();
     useGridStore.getState().setWindow(makeWindow());
 
     await waitFor(() => {
@@ -123,7 +151,7 @@ describe('MapView', () => {
   it('repaints from memory when the metric changes, issuing no request', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     render(<MapView geometryVersion="1" />);
-    handlers.get('load')?.({});
+    fireLoad();
     useGridStore.getState().setWindow(makeWindow());
 
     await waitFor(() => expect(featureStates.length).toBeGreaterThan(0));
@@ -141,7 +169,7 @@ describe('MapView', () => {
   it('repaints when the cursor moves, issuing no request', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     render(<MapView geometryVersion="1" />);
-    handlers.get('load')?.({});
+    fireLoad();
     useGridStore.getState().setWindow(makeWindow());
     await waitFor(() => expect(featureStates.length).toBeGreaterThan(0));
 
@@ -156,7 +184,7 @@ describe('MapView', () => {
 
   it('marks the selected zone through feature state', async () => {
     render(<MapView geometryVersion="1" />);
-    handlers.get('load')?.({});
+    fireLoad();
     useGridStore.getState().setWindow(makeWindow());
     await waitFor(() => expect(featureStates.length).toBeGreaterThan(0));
 

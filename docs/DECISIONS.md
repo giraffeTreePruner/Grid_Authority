@@ -312,3 +312,34 @@ Fake timers deadlock against `waitFor`, which uses real timers internally. Drivi
 `requestAnimationFrame` by hand is deterministic and also tests the pacing itself — that
 a frame arriving sooner than the interval does not advance the cursor — which a
 timer-based test would have hidden.
+
+## 2026-09-12 — The API and the workers use different database roles
+
+The workers write and the API does not, so each process reads its own env file through
+Node's `--env-file`: `.env` carries the owner role for the scheduler and the Python jobs
+it spawns, `.env.api` carries a read-only role for the API. A bug in the API then cannot
+write, whatever it intends. No secret appears in any committed file.
+
+## 2026-09-12 — Workers are spawned by the scheduler, not supervised by PM2
+
+A worker is a short-lived job that exits when it is done. Supervising one as a service
+would make a normal exit look like a crash and restart it forever. PM2 runs two
+long-lived processes only; the scheduler spawns the jobs, logs each outcome with its JSON
+summary, and kills anything still running after ten minutes.
+
+A job still running when its next tick arrives is skipped rather than run twice. The
+upserts are idempotent so a double run would be safe, but it would double the request
+budget for nothing.
+
+## 2026-09-12 — `/health` is excluded from the nginx microcache
+
+Everything under `/api` is microcached for sixty seconds, which would otherwise include
+the health check — and a cached 200 would hide an outage for a minute at a time. It is
+excluded explicitly, and a functional test against a real nginx confirms the upstream is
+reached on every request.
+
+## 2026-09-12 — `expires` and `add_header Cache-Control` must not both be used
+
+Using both emits two `Cache-Control` headers; the browser takes the first and drops the
+rest, which silently discarded `immutable` on the hashed assets. One directive only.
+Caught by testing the config rather than reading it.

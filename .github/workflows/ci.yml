@@ -47,6 +47,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @grid-authority/api build
+      - run: pnpm --filter @grid-authority/scheduler build
       - run: pnpm --filter @grid-authority/web build
 
   python:

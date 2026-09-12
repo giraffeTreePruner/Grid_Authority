@@ -1,0 +1,24 @@
+{
+  "name": "@grid-authority/scheduler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.3",
+    "pino": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^5.7.2",
+    "vitest": "^3.2.7"
+  }
+}

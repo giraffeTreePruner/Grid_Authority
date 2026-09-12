@@ -1,0 +1,16 @@
+# Grid Authority — https://grid.example.org
+#
+# The site is welcome to be indexed. The API is not: it is data, not pages, and every
+# /api response also carries X-Robots-Tag: noindex.
+
+User-agent: *
+Disallow: /api/
+Crawl-delay: 10
+
+# A bulk data download is planned rather than scraped: it will be published as flat
+# files so nobody has to crawl the API for history. Until then, if you need the full
+# series, please get in touch instead of crawling — the underlying data is public
+# domain and we would rather hand it over than rate-limit you.
+#
+# Contact: data@grid.example.org
+# Source:  https://github.com/giraffeTreePruner/Grid_Authority

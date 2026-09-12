@@ -16,6 +16,14 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
+    // PM2 loads this as CommonJS, which is why it is .cjs and uses module.exports.
+    files: ['**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: { module: 'writable', require: 'readonly', __dirname: 'readonly' },
+    },
+  },
+  {
     languageOptions: {
       globals: {
         window: 'readonly',

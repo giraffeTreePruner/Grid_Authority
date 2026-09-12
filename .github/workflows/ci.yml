@@ -12,6 +12,23 @@ jobs:
   js:
     name: JavaScript lint, typecheck and test
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: grid
+          POSTGRES_PASSWORD: grid
+          POSTGRES_DB: grid_authority
+          TZ: UTC
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grid -d grid_authority"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://grid:grid@localhost:5432/grid_authority
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,6 +36,12 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # The API contract tests call `eia sync-zones` so the registry has one definition.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv python install
+      - run: uv sync --all-groups --frozen
       - run: pnpm install --frozen-lockfile
       - run: pnpm format
       - run: pnpm lint

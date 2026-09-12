@@ -1,1 +1,40 @@
-{"ExcelAddInVersion":"2.1.0","apiVersion":"2.1.13","request":{"command":"/v2/electricity/rto/interchange-data/","params":{"api_key":"REDACTED"}},"response":{"data":{"value":{"aggregation-method":"SUM","alias":"Interchange","units":"megawatthours"}},"defaultDateFormat":"YYYY-MM-DD\"T\"HH24","defaultFrequency":"hourly","description":"Daily interchange between neighboring balancing authorities.  \n    Source: Form EIA-930\n    Product: Hourly Electric Grid Monitor","endPeriod":"2026-09-10T07","facets":[{"description":"Balancing Authority / Region","id":"fromba"},{"description":"Neighboring Balancing Authority / Region","id":"toba"}],"frequency":[{"alias":"hourly (UTC)","description":"One data point for each hour in UTC time.","format":"YYYY-MM-DD\"T\"HH24","id":"hourly","query":"H"},{"alias":"hourly (Local Time Zone)","description":"One data point for each hour in local time.","format":"YYYY-MM-DD\"T\"HH24TZH","id":"local-hourly","query":"LH"}],"id":"interchange-data","name":"Hourly Interchange by Neighboring Balancing Authority","startPeriod":"2019-01-01T00"}}
+{
+  "ExcelAddInVersion": "2.1.0",
+  "apiVersion": "2.1.13",
+  "request": {
+    "command": "/v2/electricity/rto/interchange-data/",
+    "params": { "api_key": "REDACTED" }
+  },
+  "response": {
+    "data": {
+      "value": { "aggregation-method": "SUM", "alias": "Interchange", "units": "megawatthours" }
+    },
+    "defaultDateFormat": "YYYY-MM-DD\"T\"HH24",
+    "defaultFrequency": "hourly",
+    "description": "Daily interchange between neighboring balancing authorities.  \n    Source: Form EIA-930\n    Product: Hourly Electric Grid Monitor",
+    "endPeriod": "2026-09-10T07",
+    "facets": [
+      { "description": "Balancing Authority / Region", "id": "fromba" },
+      { "description": "Neighboring Balancing Authority / Region", "id": "toba" }
+    ],
+    "frequency": [
+      {
+        "alias": "hourly (UTC)",
+        "description": "One data point for each hour in UTC time.",
+        "format": "YYYY-MM-DD\"T\"HH24",
+        "id": "hourly",
+        "query": "H"
+      },
+      {
+        "alias": "hourly (Local Time Zone)",
+        "description": "One data point for each hour in local time.",
+        "format": "YYYY-MM-DD\"T\"HH24TZH",
+        "id": "local-hourly",
+        "query": "LH"
+      }
+    ],
+    "id": "interchange-data",
+    "name": "Hourly Interchange by Neighboring Balancing Authority",
+    "startPeriod": "2019-01-01T00"
+  }
+}

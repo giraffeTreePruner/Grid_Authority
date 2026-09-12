@@ -1,1 +1,2816 @@
-{"ExcelAddInVersion":"2.1.0","apiVersion":"2.1.13","request":{"command":"/v2/electricity/rto/region-data/data/","params":{"api_key":"REDACTED","data":["value"],"end":"2026-09-10T02","facets":{"respondent":["GVL","HST","TAL","SIKE","DOPD","GCPD","CHPD","TIDC","SCL","TPWR","GWA","AVRN","YAD","DEAA"],"type":["D"]},"frequency":"hourly","length":"5000","offset":"0","sort":[{"column":"period","direction":"asc"}],"start":"2026-08-27T02"}},"response":{"data":[{"period":"2026-08-27T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"243","value-units":"megawatthours"},{"period":"2026-08-27T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"251","value-units":"megawatthours"},{"period":"2026-08-27T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"258","value-units":"megawatthours"},{"period":"2026-08-27T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"268","value-units":"megawatthours"},{"period":"2026-08-27T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"284","value-units":"megawatthours"},{"period":"2026-08-27T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"316","value-units":"megawatthours"},{"period":"2026-08-28T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"255","value-units":"megawatthours"},{"period":"2026-08-28T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"274","value-units":"megawatthours"},{"period":"2026-08-28T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"292","value-units":"megawatthours"},{"period":"2026-08-28T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"317","value-units":"megawatthours"},{"period":"2026-08-28T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"332","value-units":"megawatthours"},{"period":"2026-08-28T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"341","value-units":"megawatthours"},{"period":"2026-08-28T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-08-28T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"370","value-units":"megawatthours"},{"period":"2026-08-28T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"364","value-units":"megawatthours"},{"period":"2026-08-28T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-08-28T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"337","value-units":"megawatthours"},{"period":"2026-08-29T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"325","value-units":"megawatthours"},{"period":"2026-08-29T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"317","value-units":"megawatthours"},{"period":"2026-08-29T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"303","value-units":"megawatthours"},{"period":"2026-08-29T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"284","value-units":"megawatthours"},{"period":"2026-08-29T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"264","value-units":"megawatthours"},{"period":"2026-08-29T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"244","value-units":"megawatthours"},{"period":"2026-08-29T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"228","value-units":"megawatthours"},{"period":"2026-08-29T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"216","value-units":"megawatthours"},{"period":"2026-08-29T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"207","value-units":"megawatthours"},{"period":"2026-08-29T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"201","value-units":"megawatthours"},{"period":"2026-08-29T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"200","value-units":"megawatthours"},{"period":"2026-08-29T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"203","value-units":"megawatthours"},{"period":"2026-08-29T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"206","value-units":"megawatthours"},{"period":"2026-08-29T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"226","value-units":"megawatthours"},{"period":"2026-08-29T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"253","value-units":"megawatthours"},{"period":"2026-08-29T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"279","value-units":"megawatthours"},{"period":"2026-08-29T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"312","value-units":"megawatthours"},{"period":"2026-08-29T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-08-29T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"375","value-units":"megawatthours"},{"period":"2026-08-29T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"399","value-units":"megawatthours"},{"period":"2026-08-29T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"408","value-units":"megawatthours"},{"period":"2026-08-29T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"414","value-units":"megawatthours"},{"period":"2026-08-29T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"415","value-units":"megawatthours"},{"period":"2026-08-29T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"382","value-units":"megawatthours"},{"period":"2026-08-30T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"347","value-units":"megawatthours"},{"period":"2026-08-30T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"321","value-units":"megawatthours"},{"period":"2026-08-30T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"303","value-units":"megawatthours"},{"period":"2026-08-30T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"286","value-units":"megawatthours"},{"period":"2026-08-30T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"268","value-units":"megawatthours"},{"period":"2026-08-30T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"248","value-units":"megawatthours"},{"period":"2026-08-30T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"232","value-units":"megawatthours"},{"period":"2026-08-30T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"219","value-units":"megawatthours"},{"period":"2026-08-30T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"210","value-units":"megawatthours"},{"period":"2026-08-30T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"204","value-units":"megawatthours"},{"period":"2026-08-30T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"203","value-units":"megawatthours"},{"period":"2026-08-30T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"205","value-units":"megawatthours"},{"period":"2026-08-30T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"209","value-units":"megawatthours"},{"period":"2026-08-30T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"225","value-units":"megawatthours"},{"period":"2026-08-30T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"250","value-units":"megawatthours"},{"period":"2026-08-30T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"277","value-units":"megawatthours"},{"period":"2026-08-30T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"311","value-units":"megawatthours"},{"period":"2026-08-30T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"342","value-units":"megawatthours"},{"period":"2026-08-30T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"367","value-units":"megawatthours"},{"period":"2026-08-30T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"389","value-units":"megawatthours"},{"period":"2026-08-30T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"406","value-units":"megawatthours"},{"period":"2026-08-30T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"409","value-units":"megawatthours"},{"period":"2026-08-30T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"390","value-units":"megawatthours"},{"period":"2026-08-30T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"365","value-units":"megawatthours"},{"period":"2026-08-31T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"347","value-units":"megawatthours"},{"period":"2026-08-31T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"340","value-units":"megawatthours"},{"period":"2026-08-31T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"324","value-units":"megawatthours"},{"period":"2026-08-31T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"301","value-units":"megawatthours"},{"period":"2026-08-31T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"275","value-units":"megawatthours"},{"period":"2026-08-31T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"252","value-units":"megawatthours"},{"period":"2026-08-31T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"234","value-units":"megawatthours"},{"period":"2026-08-31T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"223","value-units":"megawatthours"},{"period":"2026-08-31T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"216","value-units":"megawatthours"},{"period":"2026-08-31T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"215","value-units":"megawatthours"},{"period":"2026-08-31T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"221","value-units":"megawatthours"},{"period":"2026-08-31T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"236","value-units":"megawatthours"},{"period":"2026-08-31T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"243","value-units":"megawatthours"},{"period":"2026-08-31T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"254","value-units":"megawatthours"},{"period":"2026-08-31T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"265","value-units":"megawatthours"},{"period":"2026-08-31T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"284","value-units":"megawatthours"},{"period":"2026-08-31T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"311","value-units":"megawatthours"},{"period":"2026-08-31T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"343","value-units":"megawatthours"},{"period":"2026-08-31T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"369","value-units":"megawatthours"},{"period":"2026-08-31T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"390","value-units":"megawatthours"},{"period":"2026-08-31T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"414","value-units":"megawatthours"},{"period":"2026-08-31T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"424","value-units":"megawatthours"},{"period":"2026-08-31T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"408","value-units":"megawatthours"},{"period":"2026-08-31T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"391","value-units":"megawatthours"},{"period":"2026-09-01T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"377","value-units":"megawatthours"},{"period":"2026-09-01T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"368","value-units":"megawatthours"},{"period":"2026-09-01T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-09-01T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"321","value-units":"megawatthours"},{"period":"2026-09-01T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"293","value-units":"megawatthours"},{"period":"2026-09-01T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"267","value-units":"megawatthours"},{"period":"2026-09-01T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"246","value-units":"megawatthours"},{"period":"2026-09-01T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"231","value-units":"megawatthours"},{"period":"2026-09-01T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"222","value-units":"megawatthours"},{"period":"2026-09-01T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"218","value-units":"megawatthours"},{"period":"2026-09-01T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"224","value-units":"megawatthours"},{"period":"2026-09-01T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"239","value-units":"megawatthours"},{"period":"2026-09-01T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"246","value-units":"megawatthours"},{"period":"2026-09-01T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"257","value-units":"megawatthours"},{"period":"2026-09-01T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"273","value-units":"megawatthours"},{"period":"2026-09-01T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"296","value-units":"megawatthours"},{"period":"2026-09-01T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"323","value-units":"megawatthours"},{"period":"2026-09-01T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-09-01T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"373","value-units":"megawatthours"},{"period":"2026-09-01T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"391","value-units":"megawatthours"},{"period":"2026-09-01T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"374","value-units":"megawatthours"},{"period":"2026-09-01T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"362","value-units":"megawatthours"},{"period":"2026-09-01T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"373","value-units":"megawatthours"},{"period":"2026-09-01T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"376","value-units":"megawatthours"},{"period":"2026-09-02T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"366","value-units":"megawatthours"},{"period":"2026-09-02T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"359","value-units":"megawatthours"},{"period":"2026-09-02T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"341","value-units":"megawatthours"},{"period":"2026-09-02T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"315","value-units":"megawatthours"},{"period":"2026-09-02T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"287","value-units":"megawatthours"},{"period":"2026-09-02T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"262","value-units":"megawatthours"},{"period":"2026-09-02T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"242","value-units":"megawatthours"},{"period":"2026-09-02T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"228","value-units":"megawatthours"},{"period":"2026-09-02T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"219","value-units":"megawatthours"},{"period":"2026-09-02T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"217","value-units":"megawatthours"},{"period":"2026-09-02T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"224","value-units":"megawatthours"},{"period":"2026-09-02T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"242","value-units":"megawatthours"},{"period":"2026-09-02T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"250","value-units":"megawatthours"},{"period":"2026-09-02T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"261","value-units":"megawatthours"},{"period":"2026-09-02T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"279","value-units":"megawatthours"},{"period":"2026-09-02T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"302","value-units":"megawatthours"},{"period":"2026-09-02T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"330","value-units":"megawatthours"},{"period":"2026-09-02T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"353","value-units":"megawatthours"},{"period":"2026-09-02T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"376","value-units":"megawatthours"},{"period":"2026-09-02T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"392","value-units":"megawatthours"},{"period":"2026-09-02T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"389","value-units":"megawatthours"},{"period":"2026-09-02T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"397","value-units":"megawatthours"},{"period":"2026-09-02T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"395","value-units":"megawatthours"},{"period":"2026-09-02T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"383","value-units":"megawatthours"},{"period":"2026-09-03T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"371","value-units":"megawatthours"},{"period":"2026-09-03T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"366","value-units":"megawatthours"},{"period":"2026-09-03T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"347","value-units":"megawatthours"},{"period":"2026-09-03T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"321","value-units":"megawatthours"},{"period":"2026-09-03T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"297","value-units":"megawatthours"},{"period":"2026-09-03T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"274","value-units":"megawatthours"},{"period":"2026-09-03T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"256","value-units":"megawatthours"},{"period":"2026-09-03T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"242","value-units":"megawatthours"},{"period":"2026-09-03T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"232","value-units":"megawatthours"},{"period":"2026-09-03T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"228","value-units":"megawatthours"},{"period":"2026-09-03T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"234","value-units":"megawatthours"},{"period":"2026-09-03T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"249","value-units":"megawatthours"},{"period":"2026-09-03T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"258","value-units":"megawatthours"},{"period":"2026-09-03T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"271","value-units":"megawatthours"},{"period":"2026-09-03T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"289","value-units":"megawatthours"},{"period":"2026-09-03T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"310","value-units":"megawatthours"},{"period":"2026-09-03T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"335","value-units":"megawatthours"},{"period":"2026-09-03T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"354","value-units":"megawatthours"},{"period":"2026-09-03T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"341","value-units":"megawatthours"},{"period":"2026-09-03T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"344","value-units":"megawatthours"},{"period":"2026-09-03T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"366","value-units":"megawatthours"},{"period":"2026-09-03T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"381","value-units":"megawatthours"},{"period":"2026-09-03T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"388","value-units":"megawatthours"},{"period":"2026-09-03T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"385","value-units":"megawatthours"},{"period":"2026-09-04T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"377","value-units":"megawatthours"},{"period":"2026-09-04T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"368","value-units":"megawatthours"},{"period":"2026-09-04T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"351","value-units":"megawatthours"},{"period":"2026-09-04T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"325","value-units":"megawatthours"},{"period":"2026-09-04T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"299","value-units":"megawatthours"},{"period":"2026-09-04T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"276","value-units":"megawatthours"},{"period":"2026-09-04T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"257","value-units":"megawatthours"},{"period":"2026-09-04T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"244","value-units":"megawatthours"},{"period":"2026-09-04T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"236","value-units":"megawatthours"},{"period":"2026-09-04T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"233","value-units":"megawatthours"},{"period":"2026-09-04T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"238","value-units":"megawatthours"},{"period":"2026-09-04T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"252","value-units":"megawatthours"},{"period":"2026-09-04T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"258","value-units":"megawatthours"},{"period":"2026-09-04T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"269","value-units":"megawatthours"},{"period":"2026-09-04T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"281","value-units":"megawatthours"},{"period":"2026-09-04T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"304","value-units":"megawatthours"},{"period":"2026-09-04T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"338","value-units":"megawatthours"},{"period":"2026-09-04T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"368","value-units":"megawatthours"},{"period":"2026-09-04T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"395","value-units":"megawatthours"},{"period":"2026-09-04T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"380","value-units":"megawatthours"},{"period":"2026-09-04T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"379","value-units":"megawatthours"},{"period":"2026-09-04T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"375","value-units":"megawatthours"},{"period":"2026-09-04T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"377","value-units":"megawatthours"},{"period":"2026-09-04T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"357","value-units":"megawatthours"},{"period":"2026-09-05T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"338","value-units":"megawatthours"},{"period":"2026-09-05T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"329","value-units":"megawatthours"},{"period":"2026-09-05T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"317","value-units":"megawatthours"},{"period":"2026-09-05T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"299","value-units":"megawatthours"},{"period":"2026-09-05T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"281","value-units":"megawatthours"},{"period":"2026-09-05T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"263","value-units":"megawatthours"},{"period":"2026-09-05T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"249","value-units":"megawatthours"},{"period":"2026-09-05T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"236","value-units":"megawatthours"},{"period":"2026-09-05T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"226","value-units":"megawatthours"},{"period":"2026-09-05T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"220","value-units":"megawatthours"},{"period":"2026-09-05T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"219","value-units":"megawatthours"},{"period":"2026-09-05T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"223","value-units":"megawatthours"},{"period":"2026-09-05T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"226","value-units":"megawatthours"},{"period":"2026-09-05T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"244","value-units":"megawatthours"},{"period":"2026-09-05T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"275","value-units":"megawatthours"},{"period":"2026-09-05T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"309","value-units":"megawatthours"},{"period":"2026-09-05T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"337","value-units":"megawatthours"},{"period":"2026-09-05T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"367","value-units":"megawatthours"},{"period":"2026-09-05T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"358","value-units":"megawatthours"},{"period":"2026-09-05T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"370","value-units":"megawatthours"},{"period":"2026-09-05T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"372","value-units":"megawatthours"},{"period":"2026-09-05T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"370","value-units":"megawatthours"},{"period":"2026-09-05T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"358","value-units":"megawatthours"},{"period":"2026-09-05T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"349","value-units":"megawatthours"},{"period":"2026-09-06T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"344","value-units":"megawatthours"},{"period":"2026-09-06T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"333","value-units":"megawatthours"},{"period":"2026-09-06T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"317","value-units":"megawatthours"},{"period":"2026-09-06T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"301","value-units":"megawatthours"},{"period":"2026-09-06T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"287","value-units":"megawatthours"},{"period":"2026-09-06T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"272","value-units":"megawatthours"},{"period":"2026-09-06T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"253","value-units":"megawatthours"},{"period":"2026-09-06T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"237","value-units":"megawatthours"},{"period":"2026-09-06T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"226","value-units":"megawatthours"},{"period":"2026-09-06T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"219","value-units":"megawatthours"},{"period":"2026-09-06T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"217","value-units":"megawatthours"},{"period":"2026-09-06T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"221","value-units":"megawatthours"},{"period":"2026-09-06T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"224","value-units":"megawatthours"},{"period":"2026-09-06T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"243","value-units":"megawatthours"},{"period":"2026-09-06T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"270","value-units":"megawatthours"},{"period":"2026-09-06T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"298","value-units":"megawatthours"},{"period":"2026-09-06T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"331","value-units":"megawatthours"},{"period":"2026-09-06T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"360","value-units":"megawatthours"},{"period":"2026-09-06T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"386","value-units":"megawatthours"},{"period":"2026-09-06T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"407","value-units":"megawatthours"},{"period":"2026-09-06T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"418","value-units":"megawatthours"},{"period":"2026-09-06T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"412","value-units":"megawatthours"},{"period":"2026-09-06T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"403","value-units":"megawatthours"},{"period":"2026-09-06T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"387","value-units":"megawatthours"},{"period":"2026-09-07T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"346","value-units":"megawatthours"},{"period":"2026-09-07T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"329","value-units":"megawatthours"},{"period":"2026-09-07T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"311","value-units":"megawatthours"},{"period":"2026-09-07T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"289","value-units":"megawatthours"},{"period":"2026-09-07T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"269","value-units":"megawatthours"},{"period":"2026-09-07T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"251","value-units":"megawatthours"},{"period":"2026-09-07T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"236","value-units":"megawatthours"},{"period":"2026-09-07T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"223","value-units":"megawatthours"},{"period":"2026-09-07T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"213","value-units":"megawatthours"},{"period":"2026-09-07T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"210","value-units":"megawatthours"},{"period":"2026-09-07T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"212","value-units":"megawatthours"},{"period":"2026-09-07T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"215","value-units":"megawatthours"},{"period":"2026-09-07T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"218","value-units":"megawatthours"},{"period":"2026-09-07T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"227","value-units":"megawatthours"},{"period":"2026-09-07T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"247","value-units":"megawatthours"},{"period":"2026-09-07T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"280","value-units":"megawatthours"},{"period":"2026-09-07T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"309","value-units":"megawatthours"},{"period":"2026-09-07T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"336","value-units":"megawatthours"},{"period":"2026-09-07T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"365","value-units":"megawatthours"},{"period":"2026-09-07T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"368","value-units":"megawatthours"},{"period":"2026-09-07T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"371","value-units":"megawatthours"},{"period":"2026-09-07T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"345","value-units":"megawatthours"},{"period":"2026-09-07T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"337","value-units":"megawatthours"},{"period":"2026-09-07T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"337","value-units":"megawatthours"},{"period":"2026-09-08T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"333","value-units":"megawatthours"},{"period":"2026-09-08T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"330","value-units":"megawatthours"},{"period":"2026-09-08T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"316","value-units":"megawatthours"},{"period":"2026-09-08T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"293","value-units":"megawatthours"},{"period":"2026-09-08T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"269","value-units":"megawatthours"},{"period":"2026-09-08T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"247","value-units":"megawatthours"},{"period":"2026-09-08T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"230","value-units":"megawatthours"},{"period":"2026-09-08T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"218","value-units":"megawatthours"},{"period":"2026-09-08T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"211","value-units":"megawatthours"},{"period":"2026-09-08T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"209","value-units":"megawatthours"},{"period":"2026-09-08T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"216","value-units":"megawatthours"},{"period":"2026-09-08T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"232","value-units":"megawatthours"},{"period":"2026-09-08T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"241","value-units":"megawatthours"},{"period":"2026-09-08T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"254","value-units":"megawatthours"},{"period":"2026-09-08T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"274","value-units":"megawatthours"},{"period":"2026-09-08T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"297","value-units":"megawatthours"},{"period":"2026-09-08T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"318","value-units":"megawatthours"},{"period":"2026-09-08T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"343","value-units":"megawatthours"},{"period":"2026-09-08T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"364","value-units":"megawatthours"},{"period":"2026-09-08T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"382","value-units":"megawatthours"},{"period":"2026-09-08T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"390","value-units":"megawatthours"},{"period":"2026-09-08T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"397","value-units":"megawatthours"},{"period":"2026-09-08T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"397","value-units":"megawatthours"},{"period":"2026-09-08T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"390","value-units":"megawatthours"},{"period":"2026-09-09T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"377","value-units":"megawatthours"},{"period":"2026-09-09T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"367","value-units":"megawatthours"},{"period":"2026-09-09T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"348","value-units":"megawatthours"},{"period":"2026-09-09T03","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"321","value-units":"megawatthours"},{"period":"2026-09-09T04","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"292","value-units":"megawatthours"},{"period":"2026-09-09T05","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"267","value-units":"megawatthours"},{"period":"2026-09-09T06","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"247","value-units":"megawatthours"},{"period":"2026-09-09T07","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"232","value-units":"megawatthours"},{"period":"2026-09-09T08","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"223","value-units":"megawatthours"},{"period":"2026-09-09T09","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"221","value-units":"megawatthours"},{"period":"2026-09-09T10","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"227","value-units":"megawatthours"},{"period":"2026-09-09T11","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"242","value-units":"megawatthours"},{"period":"2026-09-09T12","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"248","value-units":"megawatthours"},{"period":"2026-09-09T13","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"257","value-units":"megawatthours"},{"period":"2026-09-09T14","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"273","value-units":"megawatthours"},{"period":"2026-09-09T15","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"298","value-units":"megawatthours"},{"period":"2026-09-09T16","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"328","value-units":"megawatthours"},{"period":"2026-09-09T17","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"356","value-units":"megawatthours"},{"period":"2026-09-09T18","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"381","value-units":"megawatthours"},{"period":"2026-09-09T19","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"398","value-units":"megawatthours"},{"period":"2026-09-09T20","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"409","value-units":"megawatthours"},{"period":"2026-09-09T21","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"417","value-units":"megawatthours"},{"period":"2026-09-09T22","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"417","value-units":"megawatthours"},{"period":"2026-09-09T23","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"408","value-units":"megawatthours"},{"period":"2026-09-10T00","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"386","value-units":"megawatthours"},{"period":"2026-09-10T01","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"372","value-units":"megawatthours"},{"period":"2026-09-10T02","respondent":"GVL","respondent-name":"Gainesville Regional Utilities","type":"D","type-name":"Demand","value":"351","value-units":"megawatthours"}],"dateFormat":"YYYY-MM-DD\"T\"HH24","description":"Hourly demand, day-ahead demand forecast, net generation, and interchange by balancing authority.  \n    Source: Form EIA-930\n    Product: Hourly Electric Grid Monitor","frequency":"hourly","total":308}}
+{
+  "ExcelAddInVersion": "2.1.0",
+  "apiVersion": "2.1.13",
+  "request": {
+    "command": "/v2/electricity/rto/region-data/data/",
+    "params": {
+      "api_key": "REDACTED",
+      "data": ["value"],
+      "end": "2026-09-10T02",
+      "facets": {
+        "respondent": [
+          "GVL",
+          "HST",
+          "TAL",
+          "SIKE",
+          "DOPD",
+          "GCPD",
+          "CHPD",
+          "TIDC",
+          "SCL",
+          "TPWR",
+          "GWA",
+          "AVRN",
+          "YAD",
+          "DEAA"
+        ],
+        "type": ["D"]
+      },
+      "frequency": "hourly",
+      "length": "5000",
+      "offset": "0",
+      "sort": [{ "column": "period", "direction": "asc" }],
+      "start": "2026-08-27T02"
+    }
+  },
+  "response": {
+    "data": [
+      {
+        "period": "2026-08-27T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "243",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-27T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "251",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-27T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "258",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-27T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "268",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-27T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "284",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-27T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "316",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "255",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "274",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "292",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "317",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "332",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "341",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "370",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "364",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-28T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "337",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "325",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "317",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "303",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "284",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "264",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "244",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "228",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "216",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "207",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "201",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "200",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "203",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "206",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "226",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "253",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "279",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "312",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "375",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "399",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "408",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "414",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "415",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-29T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "382",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "347",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "321",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "303",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "286",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "268",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "248",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "232",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "219",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "210",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "204",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "203",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "205",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "209",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "225",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "250",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "277",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "311",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "342",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "367",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "389",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "406",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "409",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "390",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-30T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "365",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "347",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "340",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "324",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "301",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "275",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "252",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "234",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "223",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "216",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "215",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "221",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "236",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "243",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "254",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "265",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "284",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "311",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "343",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "369",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "390",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "414",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "424",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "408",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-08-31T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "391",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "377",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "368",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "321",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "293",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "267",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "246",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "231",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "222",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "218",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "224",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "239",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "246",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "257",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "273",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "296",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "323",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "373",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "391",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "374",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "362",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "373",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-01T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "376",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "366",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "359",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "341",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "315",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "287",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "262",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "242",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "228",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "219",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "217",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "224",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "242",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "250",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "261",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "279",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "302",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "330",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "353",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "376",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "392",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "389",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "397",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "395",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-02T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "383",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "371",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "366",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "347",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "321",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "297",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "274",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "256",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "242",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "232",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "228",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "234",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "249",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "258",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "271",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "289",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "310",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "335",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "354",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "341",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "344",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "366",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "381",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "388",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-03T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "385",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "377",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "368",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "351",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "325",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "299",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "276",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "257",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "244",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "236",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "233",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "238",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "252",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "258",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "269",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "281",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "304",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "338",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "368",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "395",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "380",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "379",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "375",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "377",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-04T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "357",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "338",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "329",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "317",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "299",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "281",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "263",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "249",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "236",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "226",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "220",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "219",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "223",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "226",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "244",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "275",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "309",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "337",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "367",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "358",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "370",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "372",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "370",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "358",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-05T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "349",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "344",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "333",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "317",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "301",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "287",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "272",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "253",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "237",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "226",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "219",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "217",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "221",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "224",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "243",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "270",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "298",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "331",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "360",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "386",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "407",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "418",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "412",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "403",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-06T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "387",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "346",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "329",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "311",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "289",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "269",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "251",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "236",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "223",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "213",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "210",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "212",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "215",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "218",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "227",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "247",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "280",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "309",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "336",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "365",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "368",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "371",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "345",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "337",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-07T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "337",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "333",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "330",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "316",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "293",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "269",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "247",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "230",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "218",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "211",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "209",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "216",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "232",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "241",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "254",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "274",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "297",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "318",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "343",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "364",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "382",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "390",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "397",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "397",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-08T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "390",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "377",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "367",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "348",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T03",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "321",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T04",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "292",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T05",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "267",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T06",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "247",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T07",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "232",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T08",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "223",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T09",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "221",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T10",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "227",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T11",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "242",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T12",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "248",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T13",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "257",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T14",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "273",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T15",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "298",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T16",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "328",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T17",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "356",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T18",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "381",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T19",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "398",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T20",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "409",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T21",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "417",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T22",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "417",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-09T23",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "408",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-10T00",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "386",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-10T01",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "372",
+        "value-units": "megawatthours"
+      },
+      {
+        "period": "2026-09-10T02",
+        "respondent": "GVL",
+        "respondent-name": "Gainesville Regional Utilities",
+        "type": "D",
+        "type-name": "Demand",
+        "value": "351",
+        "value-units": "megawatthours"
+      }
+    ],
+    "dateFormat": "YYYY-MM-DD\"T\"HH24",
+    "description": "Hourly demand, day-ahead demand forecast, net generation, and interchange by balancing authority.  \n    Source: Form EIA-930\n    Product: Hourly Electric Grid Monitor",
+    "frequency": "hourly",
+    "total": 308
+  }
+}

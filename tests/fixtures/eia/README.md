@@ -21,20 +21,20 @@ grep -rnoE '[A-Za-z0-9]{20,}' tests/fixtures/eia | grep -v REDACTED   # must be 
 
 ## Files
 
-| Path | Request | Rows | Filter |
-| --- | --- | --- | --- |
-| `facets/region-respondent.json` | `region-data/facet/respondent` | 83 | none |
-| `facets/region-type.json` | `region-data/facet/type` | 4 | none |
-| `facets/fueltype.json` | `fuel-type-data/facet/fueltype` | 20 | none |
-| `facets/interchange-fromba.json` | `interchange-data/facet/fromba` | 83 | none |
-| `routes/*.json` | route metadata for the three datasets | — | none |
-| `pagination/fuel-type-page-00{0,1}.json` | `fuel-type-data/data`, 2026-09-10T18→2026-09-11T06 | 5000 + 418 | none |
-| `category-change/fuel-type-2024-06-15.json` | `fuel-type-data/data`, 2024-06-15T00→T06 | 389 | period `2024-06-15T00` |
-| `category-change/fuel-type-2024-12-15.json` | `fuel-type-data/data`, 2024-12-15T00→T06 | 407 | period `2024-12-15T00` |
-| `missing-hour/region-gvl-demand.json` | `region-data/data` type D, 2026-08-27T02→2026-09-10T02 | 308 | respondent `GVL` |
-| `poll/region-d-ng-ti.json` | `region-data/data` types D,NG,TI, 12h | 803 | none |
-| `poll/region-df.json` | `region-data/data` type DF, forward 48h | 1158 | none |
-| `poll/interchange.json` | `interchange-data/data`, 12h | 674 | first two periods |
+| Path                                        | Request                                                | Rows       | Filter                 |
+| ------------------------------------------- | ------------------------------------------------------ | ---------- | ---------------------- |
+| `facets/region-respondent.json`             | `region-data/facet/respondent`                         | 83         | none                   |
+| `facets/region-type.json`                   | `region-data/facet/type`                               | 4          | none                   |
+| `facets/fueltype.json`                      | `fuel-type-data/facet/fueltype`                        | 20         | none                   |
+| `facets/interchange-fromba.json`            | `interchange-data/facet/fromba`                        | 83         | none                   |
+| `routes/*.json`                             | route metadata for the three datasets                  | —          | none                   |
+| `pagination/fuel-type-page-00{0,1}.json`    | `fuel-type-data/data`, 2026-09-10T18→2026-09-11T06     | 5000 + 418 | none                   |
+| `category-change/fuel-type-2024-06-15.json` | `fuel-type-data/data`, 2024-06-15T00→T06               | 389        | period `2024-06-15T00` |
+| `category-change/fuel-type-2024-12-15.json` | `fuel-type-data/data`, 2024-12-15T00→T06               | 407        | period `2024-12-15T00` |
+| `missing-hour/region-gvl-demand.json`       | `region-data/data` type D, 2026-08-27T02→2026-09-10T02 | 308        | respondent `GVL`       |
+| `poll/region-d-ng-ti.json`                  | `region-data/data` types D,NG,TI, 12h                  | 803        | none                   |
+| `poll/region-df.json`                       | `region-data/data` type DF, forward 48h                | 1158       | none                   |
+| `poll/interchange.json`                     | `interchange-data/data`, 12h                           | 674        | first two periods      |
 
 ## What each one is for
 

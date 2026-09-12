@@ -217,3 +217,15 @@ number: region-data is always ahead because it contains the forward forecast.
 `WriteResult` carries the set of periods whose values moved, so `revise` rebuilds only
 those snapshots. Rebuilding every hour it re-fetched would redo a week of snapshots
 nightly to no effect.
+
+## 2026-09-12 — `/health` distinguishes starting from degraded
+
+§9 returns 503 when the database is down or any source exceeds six hours stale. With
+`source_status` empty there are no sources, so the literal reading is 200 — which would
+also be a green light on a host whose ingest has never run.
+
+A freshly deployed host sits in exactly that state between `sync-zones` and its first
+poll, and reporting it as degraded would make every deploy look broken for up to half an
+hour. So an empty table returns 200 with `status: "starting"` rather than `"ok"`, and the
+503 conditions are unchanged. A registered source with a null `last_success_at` is
+degraded: one that has never succeeded is worse than one that is merely stale.

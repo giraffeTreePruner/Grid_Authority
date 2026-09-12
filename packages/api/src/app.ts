@@ -4,12 +4,14 @@
  * Assembled here so tests can build an instance against any database without starting
  * a listener.
  */
+import etag from '@fastify/etag';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { loadConfig } from './config/index.js';
 import type { Env } from './env.js';
 import { connect, type Sql } from './lib/db.js';
 import { ApiError, errorBody } from './lib/errors.js';
 import { healthRoutes } from './routes/health.js';
+import { mapRoutes } from './routes/map.js';
 import { sourceRoutes } from './routes/sources.js';
 import { zoneRoutes } from './routes/zones.js';
 
@@ -41,6 +43,9 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
     trustProxy: true,
   });
 
+  // Strong ETags on every response, so a repeat fetch of an unchanged hour is a 304.
+  await app.register(etag, { weak: false });
+
   app.setErrorHandler((error: unknown, request, reply) => {
     if (error instanceof ApiError) {
       return reply.code(error.statusCode).send(errorBody(error.code, error.message));
@@ -69,6 +74,7 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
     async (instance) => {
       healthRoutes(instance, sql);
       zoneRoutes(instance, sql);
+      mapRoutes(instance, sql);
       sourceRoutes(instance, sql);
     },
     { prefix: API_PREFIX },

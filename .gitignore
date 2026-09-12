@@ -1,0 +1,25 @@
+# Planning material: working notes, not part of the public repo
+/Planning
+
+# Secrets
+.env
+.env.local
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Logs and OS cruft
+*.log
+logs/
+.DS_Store

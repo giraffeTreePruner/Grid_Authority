@@ -1,0 +1,25 @@
+# Local development database only. Production uses DATABASE_URL against a
+# separately managed PostgreSQL 16 instance.
+services:
+  db:
+    image: postgres:16
+    container_name: grid_authority_db
+    environment:
+      POSTGRES_USER: grid
+      POSTGRES_PASSWORD: grid
+      POSTGRES_DB: grid_authority
+      TZ: UTC
+      PGTZ: UTC
+    command: ['postgres', '-c', 'timezone=UTC', '-c', 'log_timezone=UTC']
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U grid -d grid_authority']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:

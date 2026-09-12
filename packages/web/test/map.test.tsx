@@ -32,6 +32,7 @@ vi.mock('maplibre-gl', () => {
       paintProperties.push({ layer, property, value });
     });
     getCanvas = vi.fn(() => ({ style: {} }));
+    queryRenderedFeatures = vi.fn(() => []);
     remove = vi.fn();
   }
   return {

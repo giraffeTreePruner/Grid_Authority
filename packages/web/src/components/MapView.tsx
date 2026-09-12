@@ -127,6 +127,13 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
       if (feature !== undefined) selectZone(zoneKeyOf(feature));
     });
 
+    // A click that hits no zone closes the panel, which is what a reader expects from
+    // clicking the background.
+    instance.on('click', (event) => {
+      const hits = instance.queryRenderedFeatures(event.point, { layers: [FILL_LAYER] });
+      if (hits.length === 0) selectZone(null);
+    });
+
     instance.on('load', () => {
       loaded.current = true;
       instance.setPaintProperty(FILL_LAYER, 'fill-opacity', fillOpacityExpression());

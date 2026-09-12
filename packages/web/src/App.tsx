@@ -12,6 +12,7 @@ import { Legend } from './components/Legend.tsx';
 import { MapView } from './components/MapView.tsx';
 import { MetricSwitcher } from './components/MetricSwitcher.tsx';
 import { StatusBar } from './components/StatusBar.tsx';
+import { ZonePanel } from './components/ZonePanel.tsx';
 import { TimeSlider } from './components/TimeSlider.tsx';
 import { useGridStore } from './store/useGridStore.ts';
 
@@ -73,22 +74,26 @@ export const App = (): JSX.Element => {
         onRetry={() => void windowQuery.refetch()}
       />
 
-      <main className="relative flex-1">
-        <MapView geometryVersion={GEOMETRY_VERSION} />
+      <main className="relative flex flex-1 overflow-hidden">
+        <div className="relative flex-1">
+          <MapView geometryVersion={GEOMETRY_VERSION} />
 
-        <div className="pointer-events-none absolute bottom-4 left-4">
-          <div className="pointer-events-auto">
-            <Legend />
+          <div className="pointer-events-none absolute bottom-4 left-4">
+            <div className="pointer-events-auto">
+              <Legend />
+            </div>
           </div>
+
+          {loading && failure === null && (
+            <div className="pointer-events-none absolute inset-0 grid place-items-center">
+              <p className="rounded bg-zinc-900/80 px-3 py-2 text-xs text-zinc-300">
+                Loading a week of grid data…
+              </p>
+            </div>
+          )}
         </div>
 
-        {loading && failure === null && (
-          <div className="pointer-events-none absolute inset-0 grid place-items-center">
-            <p className="rounded bg-zinc-900/80 px-3 py-2 text-xs text-zinc-300">
-              Loading a week of grid data…
-            </p>
-          </div>
-        )}
+        <ZonePanel />
       </main>
 
       <TimeSlider />

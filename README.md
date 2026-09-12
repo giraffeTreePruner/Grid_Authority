@@ -56,4 +56,14 @@ licenses and attribution. EIA Form 930 data is a U.S. Government work in the pub
 
 ## License
 
-AGPL-3.0-only. See [LICENSE](LICENSE).
+Copyright (C) 2026 Drew Meyers
+
+This program is free software: you can redistribute it and/or modify it under the terms
+of the GNU Affero General Public License, version 3, as published by the Free Software
+Foundation. This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the [LICENSE](LICENSE) file for the full text.
+
+Section 13 matters here: if you run a modified version of this on a network server, you
+must offer its source to the users of that server. The deployed site does this through
+the link in its footer and on `/about/data`.

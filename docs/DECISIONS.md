@@ -347,11 +347,11 @@ Caught by testing the config rather than reading it.
 ## 2026-09-12 — `['has', 'value']` inspects properties, not feature state
 
 A guard of `['!', ['has', 'value']]` was meant to catch a feature with no state. It does
-not: `has` tests the feature's *properties*, and the tiles carry only `zone_key`, so the
+not: `has` tests the feature's _properties_, and the tiles carry only `zone_key`, so the
 test was always false and, negated, painted every zone as no-data whatever its value. An
 unset feature-state already reads as null, so the single null guard covers both cases.
 
-The unit test passed throughout, because it asserted the expression's *structure*. A
+The unit test passed throughout, because it asserted the expression's _structure_. A
 structural assertion cannot catch a well-formed expression that means the wrong thing.
 There is now a test that walks the case arms the way MapLibre would, and one that fails
 if `has` ever reappears in this expression.

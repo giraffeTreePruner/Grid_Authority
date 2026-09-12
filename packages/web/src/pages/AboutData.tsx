@@ -141,7 +141,9 @@ export const AboutData = (): JSX.Element => {
 
       <footer className="mt-10 border-t border-zinc-800 pt-4 text-xs text-zinc-500">
         <p>
-          This project is licensed AGPL-3.0. Its source is at{' '}
+          Copyright &copy; 2026 Drew Meyers. Licensed under the GNU Affero General Public License,
+          version 3. Section 13 of that licence entitles you, as a user of this server, to its
+          complete source, which is at{' '}
           <a
             className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
             href="https://github.com/giraffeTreePruner/Grid_Authority"

@@ -156,3 +156,30 @@ removed, because observations reference it by foreign key. The sync writes a row
 a field actually differs, so `updated_at` is untouched on a no-op run and a second sync
 reports no changes at all. Zones are written parent-first, since `zones.parent` is a
 self-referencing foreign key.
+
+## 2026-09-12 — EIA returns `total` as a string
+
+Recorded responses carry `"total": "5418"`, not `5418`. The client coerces it; a fixture
+test pins the behaviour so a future change in the API is noticed rather than silently
+truncating pagination to the first page.
+
+## 2026-09-12 — EIA can echo another caller's api_key
+
+Two route-metadata captures came back carrying a 40-character `api_key` that was not ours,
+almost certainly a cached response still holding the key of whoever warmed the cache. They
+were scrubbed before anything was committed, the capture script now redacts the echoed
+parameter whatever its value, and `test_fixtures_carry_no_secrets.py` fails on any
+key-shaped string in any committed fixture. The repository is public, so this check runs
+over what is actually on disk rather than trusting the capture path.
+
+## 2026-09-12 — Concurrency is one request at a time
+
+§5.1 allows up to three concurrent requests. The workers are synchronous, so the client
+issues one at a time, which satisfies the limit without an async layer that nothing else
+in the ingest path needs. Rate and the hourly ceiling are still enforced.
+
+## 2026-09-12 — The hourly ceiling raises instead of waiting
+
+Reaching 500 requests in an hour means a job is looping or a window is far larger than
+intended. Sleeping it off would hide that until someone noticed missing data, so the
+limiter raises and the job exits non-zero into `source_status`.

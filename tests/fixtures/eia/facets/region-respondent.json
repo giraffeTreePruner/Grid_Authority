@@ -1,0 +1,430 @@
+{
+  "ExcelAddInVersion": "2.1.0",
+  "apiVersion": "2.1.13",
+  "request": {
+    "command": "/v2/electricity/rto/region-data/facet/respondent/",
+    "params": {
+      "api_key": "REDACTED"
+    }
+  },
+  "response": {
+    "facets": [
+      {
+        "alias": "(DEAA) Arlington Valley, LLC",
+        "id": "DEAA",
+        "name": "Arlington Valley, LLC"
+      },
+      {
+        "alias": "(TPWR) City of Tacoma, Department of Public Utilities, Light Division",
+        "id": "TPWR",
+        "name": "City of Tacoma, Department of Public Utilities, Light Division"
+      },
+      {
+        "alias": "(WAUW) Western Area Power Administration - Upper Great Plains West",
+        "id": "WAUW",
+        "name": "Western Area Power Administration - Upper Great Plains West"
+      },
+      {
+        "alias": "(AVRN) Avangrid Renewables, LLC",
+        "id": "AVRN",
+        "name": "Avangrid Renewables, LLC"
+      },
+      {
+        "alias": "(PSCO) Public Service Company of Colorado",
+        "id": "PSCO",
+        "name": "Public Service Company of Colorado"
+      },
+      {
+        "alias": "(NEVP) Nevada Power Company",
+        "id": "NEVP",
+        "name": "Nevada Power Company"
+      },
+      {
+        "alias": "(SEC) Seminole Electric Cooperative",
+        "id": "SEC",
+        "name": "Seminole Electric Cooperative"
+      },
+      {
+        "alias": "(TEPC) Tucson Electric Power",
+        "id": "TEPC",
+        "name": "Tucson Electric Power"
+      },
+      {
+        "alias": "Region: (NW) Northwest",
+        "id": "NW",
+        "name": "Northwest"
+      },
+      {
+        "alias": "Region: (US48) United States Lower 48",
+        "id": "US48",
+        "name": "United States Lower 48"
+      },
+      {
+        "alias": "(GVL) Gainesville Regional Utilities",
+        "id": "GVL",
+        "name": "Gainesville Regional Utilities"
+      },
+      {
+        "alias": "(PACW) PacifiCorp West",
+        "id": "PACW",
+        "name": "PacifiCorp West"
+      },
+      {
+        "alias": "(BANC) Balancing Authority of Northern California",
+        "id": "BANC",
+        "name": "Balancing Authority of Northern California"
+      },
+      {
+        "alias": "(DUK) Duke Energy Carolinas",
+        "id": "DUK",
+        "name": "Duke Energy Carolinas"
+      },
+      {
+        "alias": "(CPLW) Duke Energy Progress West",
+        "id": "CPLW",
+        "name": "Duke Energy Progress West"
+      },
+      {
+        "alias": "(AVA) Avista Corporation",
+        "id": "AVA",
+        "name": "Avista Corporation"
+      },
+      {
+        "alias": "(ISNE) ISO New England",
+        "id": "ISNE",
+        "name": "ISO New England"
+      },
+      {
+        "alias": "(SWPP) Southwest Power Pool",
+        "id": "SWPP",
+        "name": "Southwest Power Pool"
+      },
+      {
+        "alias": "(YAD) Alcoa Power Generating, Inc. - Yadkin Division",
+        "id": "YAD",
+        "name": "Alcoa Power Generating, Inc. - Yadkin Division"
+      },
+      {
+        "alias": "(GLHB) GridLiance",
+        "id": "GLHB",
+        "name": "GridLiance"
+      },
+      {
+        "alias": "(FPC) Duke Energy Florida, Inc.",
+        "id": "FPC",
+        "name": "Duke Energy Florida, Inc."
+      },
+      {
+        "alias": "(CHPD) Public Utility District No. 1 of Chelan County",
+        "id": "CHPD",
+        "name": "Public Utility District No. 1 of Chelan County"
+      },
+      {
+        "alias": "(PNM) Public Service Company of New Mexico",
+        "id": "PNM",
+        "name": "Public Service Company of New Mexico"
+      },
+      {
+        "alias": "Region: (CAL) California",
+        "id": "CAL",
+        "name": "California"
+      },
+      {
+        "alias": "(FMPP) Florida Municipal Power Pool",
+        "id": "FMPP",
+        "name": "Florida Municipal Power Pool"
+      },
+      {
+        "alias": "Region: (TEN) Tennessee",
+        "id": "TEN",
+        "name": "Tennessee"
+      },
+      {
+        "alias": "(NSB) Utilities Commission of New Smyrna Beach",
+        "id": "NSB",
+        "name": "Utilities Commission of New Smyrna Beach"
+      },
+      {
+        "alias": "(TVA) Tennessee Valley Authority",
+        "id": "TVA",
+        "name": "Tennessee Valley Authority"
+      },
+      {
+        "alias": "Region: (MIDA) Mid-Atlantic",
+        "id": "MIDA",
+        "name": "Mid-Atlantic"
+      },
+      {
+        "alias": "(SRP) Salt River Project Agricultural Improvement and Power District",
+        "id": "SRP",
+        "name": "Salt River Project Agricultural Improvement and Power District"
+      },
+      {
+        "alias": "(JEA) JEA",
+        "id": "JEA",
+        "name": "JEA"
+      },
+      {
+        "alias": "(CISO) California Independent System Operator",
+        "id": "CISO",
+        "name": "California Independent System Operator"
+      },
+      {
+        "alias": "(WALC) Western Area Power Administration - Desert Southwest Region",
+        "id": "WALC",
+        "name": "Western Area Power Administration - Desert Southwest Region"
+      },
+      {
+        "alias": "(SCEG) Dominion Energy South Carolina, Inc.",
+        "id": "SCEG",
+        "name": "Dominion Energy South Carolina, Inc."
+      },
+      {
+        "alias": "(EPE) El Paso Electric Company",
+        "id": "EPE",
+        "name": "El Paso Electric Company"
+      },
+      {
+        "alias": "Region: (SE) Southeast",
+        "id": "SE",
+        "name": "Southeast"
+      },
+      {
+        "alias": "(FPL) Florida Power & Light Co.",
+        "id": "FPL",
+        "name": "Florida Power & Light Co."
+      },
+      {
+        "alias": "(SWPW) Southwest Power Pool West Balancing Authority Area",
+        "id": "SWPW",
+        "name": "Southwest Power Pool West Balancing Authority Area"
+      },
+      {
+        "alias": "Region: (NY) New York",
+        "id": "NY",
+        "name": "New York"
+      },
+      {
+        "alias": "(AZPS) Arizona Public Service Company",
+        "id": "AZPS",
+        "name": "Arizona Public Service Company"
+      },
+      {
+        "alias": "(TIDC) Turlock Irrigation District",
+        "id": "TIDC",
+        "name": "Turlock Irrigation District"
+      },
+      {
+        "alias": "(PGE) Portland General Electric Company",
+        "id": "PGE",
+        "name": "Portland General Electric Company"
+      },
+      {
+        "alias": "(LGEE) LG&E and KU Services Company as agent for Louisville Gas and Electric Company and Kentucky Utilities Company",
+        "id": "LGEE",
+        "name": "LG&E and KU Services Company as agent for Louisville Gas and Electric Company and Kentucky Utilities Company"
+      },
+      {
+        "alias": "(NWMT) NorthWestern Corporation",
+        "id": "NWMT",
+        "name": "NorthWestern Corporation"
+      },
+      {
+        "alias": "(BHBA) Black Hills Energy",
+        "id": "BHBA",
+        "name": "Black Hills Energy"
+      },
+      {
+        "alias": "(BPAT) Bonneville Power Administration",
+        "id": "BPAT",
+        "name": "Bonneville Power Administration"
+      },
+      {
+        "alias": "(SOCO) Southern Company Services, Inc. - Trans",
+        "id": "SOCO",
+        "name": "Southern Company Services, Inc. - Trans"
+      },
+      {
+        "alias": "Region: (CAR) Carolinas",
+        "id": "CAR",
+        "name": "Carolinas"
+      },
+      {
+        "alias": "(PJM) PJM Interconnection, LLC",
+        "id": "PJM",
+        "name": "PJM Interconnection, LLC"
+      },
+      {
+        "alias": "(NYIS) New York Independent System Operator",
+        "id": "NYIS",
+        "name": "New York Independent System Operator"
+      },
+      {
+        "alias": "(HST) City of Homestead",
+        "id": "HST",
+        "name": "City of Homestead"
+      },
+      {
+        "alias": "(CPLE) Duke Energy Progress East",
+        "id": "CPLE",
+        "name": "Duke Energy Progress East"
+      },
+      {
+        "alias": "(GCPD) Public Utility District No. 2 of Grant County, Washington",
+        "id": "GCPD",
+        "name": "Public Utility District No. 2 of Grant County, Washington"
+      },
+      {
+        "alias": "(GRIF) Griffith Energy, LLC",
+        "id": "GRIF",
+        "name": "Griffith Energy, LLC"
+      },
+      {
+        "alias": "(EEI) Electric Energy, Inc.",
+        "id": "EEI",
+        "name": "Electric Energy, Inc."
+      },
+      {
+        "alias": "(WWA) NaturEner Wind Watch, LLC",
+        "id": "WWA",
+        "name": "NaturEner Wind Watch, LLC"
+      },
+      {
+        "alias": "Region: (MIDW) Midwest",
+        "id": "MIDW",
+        "name": "Midwest"
+      },
+      {
+        "alias": "(TEC) Tampa Electric Company",
+        "id": "TEC",
+        "name": "Tampa Electric Company"
+      },
+      {
+        "alias": "(MISO) Midcontinent Independent System Operator, Inc.",
+        "id": "MISO",
+        "name": "Midcontinent Independent System Operator, Inc."
+      },
+      {
+        "alias": "(WACM) Western Area Power Administration - Rocky Mountain Region",
+        "id": "WACM",
+        "name": "Western Area Power Administration - Rocky Mountain Region"
+      },
+      {
+        "alias": "Region: (SW) Southwest",
+        "id": "SW",
+        "name": "Southwest"
+      },
+      {
+        "alias": "(PACE) PacifiCorp East",
+        "id": "PACE",
+        "name": "PacifiCorp East"
+      },
+      {
+        "alias": "(IPCO) Idaho Power Company",
+        "id": "IPCO",
+        "name": "Idaho Power Company"
+      },
+      {
+        "alias": "(GWA) NaturEner Power Watch, LLC",
+        "id": "GWA",
+        "name": "NaturEner Power Watch, LLC"
+      },
+      {
+        "alias": "(LDWP) Los Angeles Department of Water and Power",
+        "id": "LDWP",
+        "name": "Los Angeles Department of Water and Power"
+      },
+      {
+        "alias": "(IID) Imperial Irrigation District",
+        "id": "IID",
+        "name": "Imperial Irrigation District"
+      },
+      {
+        "alias": "(GRID) Gridforce Energy Management, LLC",
+        "id": "GRID",
+        "name": "Gridforce Energy Management, LLC"
+      },
+      {
+        "alias": "(AEC) PowerSouth Energy Cooperative",
+        "id": "AEC",
+        "name": "PowerSouth Energy Cooperative"
+      },
+      {
+        "alias": "(SIKE) Sikeston Board of Municipal Utilities",
+        "id": "SIKE",
+        "name": "Sikeston Board of Municipal Utilities"
+      },
+      {
+        "alias": "(SEPA) Southeastern Power Administration",
+        "id": "SEPA",
+        "name": "Southeastern Power Administration"
+      },
+      {
+        "alias": "(DOPD) PUD No. 1 of Douglas County",
+        "id": "DOPD",
+        "name": "PUD No. 1 of Douglas County"
+      },
+      {
+        "alias": "(PSEI) Puget Sound Energy, Inc.",
+        "id": "PSEI",
+        "name": "Puget Sound Energy, Inc."
+      },
+      {
+        "alias": "(ERCO) Electric Reliability Council of Texas, Inc.",
+        "id": "ERCO",
+        "name": "Electric Reliability Council of Texas, Inc."
+      },
+      {
+        "alias": "(SCL) Seattle City Light",
+        "id": "SCL",
+        "name": "Seattle City Light"
+      },
+      {
+        "alias": "(SC) South Carolina Public Service Authority",
+        "id": "SC",
+        "name": "South Carolina Public Service Authority"
+      },
+      {
+        "alias": "(SPA) Southwestern Power Administration",
+        "id": "SPA",
+        "name": "Southwestern Power Administration"
+      },
+      {
+        "alias": "Region: (TEX) Texas",
+        "id": "TEX",
+        "name": "Texas"
+      },
+      {
+        "alias": "Region: (FLA) Florida",
+        "id": "FLA",
+        "name": "Florida"
+      },
+      {
+        "alias": "(HGMA) New Harquahala Generating Company, LLC",
+        "id": "HGMA",
+        "name": "New Harquahala Generating Company, LLC"
+      },
+      {
+        "alias": "Region: (NE) New England",
+        "id": "NE",
+        "name": "New England"
+      },
+      {
+        "alias": "(TAL) City of Tallahassee",
+        "id": "TAL",
+        "name": "City of Tallahassee"
+      },
+      {
+        "alias": "(AECI) Associated Electric Cooperative, Inc.",
+        "id": "AECI",
+        "name": "Associated Electric Cooperative, Inc."
+      },
+      {
+        "alias": "Region: (CENT) Central",
+        "id": "CENT",
+        "name": "Central"
+      }
+    ],
+    "totalFacets": 83
+  }
+}

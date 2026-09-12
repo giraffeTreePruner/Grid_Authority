@@ -90,3 +90,42 @@ Guardrail 4 requires every period to be an interval-start UTC hour. Each observa
 carries a check constraint to that effect, written with `AT TIME ZONE 'UTC'` so the expression
 is immutable and therefore usable in a constraint. A parser bug cannot quietly write a
 half-hour offset.
+
+## 2026-09-11 — Region membership was solved by reconciliation, not assumed
+
+Each zone's regional parent was derived by checking that every regional aggregate's
+demand, net generation and total interchange equals the sum of its member balancing
+authorities. The first hypothesis left three regions out by exactly the value of a
+misplaced member: AECI (2,454) belonged to MIDW rather than CENT, and SWPW (2,820) plus
+PSCO (4,338) belonged to NW. SIKE, which reports generation but no demand, was found the
+same way against net generation. The corrected assignment reconciles across 1,050
+region-hours with no mismatch, and every respondent that reports data is accounted for.
+
+## 2026-09-11 — Capabilities record observed behaviour
+
+Seven balancing authorities (AVRN, DEAA, GRID, GWA, SEPA, SIKE, YAD) report generation
+and interchange but never demand, and SPA reports demand but no directed interchange. No
+facet endpoint says so; it is only visible in the data. Marking those `demand: true` would
+leave the map showing "no data" forever for a series that is never coming. A capability is
+true when the respondent was observed publishing that series either recently or in the 2024
+samples, so a quiet window does not permanently mark a capability false.
+
+## 2026-09-11 — WWA is a zone; eight other respondents are excluded
+
+Of the nine respondents absent from recent data, WWA last published on 2026-08-26, sixteen
+days ago and inside the 90-day backfill window, so it is a zone. WACM and WAUW last
+published 2026-04-02 and were absorbed into the SPP West balancing authority area, which is
+also why SWPW appears. AEC, EEI, GLHB, GRIF, HGMA and NSB have published nothing since
+before 2025-07. All eight are excluded with a dated reason; none strands data the backfill
+would want.
+
+## 2026-09-11 — Several EIA fuel codes share one canonical mode
+
+OTH and UNK both map to `unknown`, UES and OES to `other_storage`, WND and WNB to `wind`,
+SUN and SNB to `solar`. Row mappers must sum values landing on the same mode rather than
+overwrite, or roughly half of some zones' wind and solar would silently vanish.
+
+## 2026-09-11 — SWPW is in the Western Interconnection
+
+Despite the Southwest Power Pool being an Eastern Interconnection RTO, its West balancing
+authority area covers the former WACM and WAUW footprint and is Western. SWPP stays eastern.

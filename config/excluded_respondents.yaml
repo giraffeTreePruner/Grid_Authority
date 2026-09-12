@@ -1,8 +1,32 @@
 # EIA-930 respondent codes that are deliberately not zones in config/zones.yaml.
 #
-# Every respondent returned by the EIA respondent facet endpoint must appear either
-# here or in zones.yaml. sync-zones fails if one appears in neither, so a new
-# respondent cannot be silently ignored.
+# Every respondent returned by the EIA respondent facet endpoint appears either here
+# or in zones.yaml. sync-zones fails if one appears in neither, so a new respondent
+# cannot be silently ignored.
+#
+# Each of these was checked against the region-data endpoint back to 2019. None has
+# published a row inside the 90-day backfill window, so excluding them strands no data.
 
-- code: PLACEHOLDER
-  reason: Populated in task 3 from the live EIA respondent facet endpoint.
+- code: AEC
+  reason: No data in any dataset since before 2025-07; balancing authority retired.
+
+- code: EEI
+  reason: No data in any dataset since before 2025-07; balancing authority retired.
+
+- code: GLHB
+  reason: No data in any dataset and no region reconciles against it; never reported.
+
+- code: GRIF
+  reason: No data in any dataset since before 2025-07; balancing authority retired.
+
+- code: HGMA
+  reason: No data in any dataset since before 2025-07; balancing authority retired.
+
+- code: NSB
+  reason: No data in any dataset since before 2025-07; balancing authority retired.
+
+- code: WACM
+  reason: Last reported 2026-04-02; absorbed into the SPP West balancing authority area.
+
+- code: WAUW
+  reason: Last reported 2026-04-02; absorbed into the SPP West balancing authority area.

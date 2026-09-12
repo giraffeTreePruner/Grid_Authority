@@ -1,0 +1,95 @@
+{
+  "ExcelAddInVersion": "2.1.0",
+  "apiVersion": "2.1.13",
+  "request": {
+    "command": "/v2/electricity/rto/fuel-type-data/facet/fueltype/",
+    "params": {
+      "api_key": "REDACTED"
+    }
+  },
+  "response": {
+    "facets": [
+      {
+        "id": "GEO",
+        "name": "Geothermal"
+      },
+      {
+        "id": "SUN",
+        "name": "Solar"
+      },
+      {
+        "id": "NUC",
+        "name": "Nuclear"
+      },
+      {
+        "id": "BAT",
+        "name": "Battery"
+      },
+      {
+        "id": "WNB",
+        "name": "Wind with integrated battery storage"
+      },
+      {
+        "id": "UES",
+        "name": "Unknown Energy"
+      },
+      {
+        "id": "NG",
+        "name": "Natural Gas"
+      },
+      {
+        "id": "UES",
+        "name": "Unknown energy storage"
+      },
+      {
+        "id": "PS",
+        "name": "Pumped Storage"
+      },
+      {
+        "id": "WAT",
+        "name": "Hydro"
+      },
+      {
+        "id": "WND",
+        "name": "Wind"
+      },
+      {
+        "id": "UNK",
+        "name": "Unknown"
+      },
+      {
+        "id": "SNB",
+        "name": "Solar with integrated battery storage"
+      },
+      {
+        "id": "SNB",
+        "name": "Solar Battery"
+      },
+      {
+        "id": "OIL",
+        "name": "Petroleum"
+      },
+      {
+        "id": "PS",
+        "name": "Pumped storage"
+      },
+      {
+        "id": "OTH",
+        "name": "Other"
+      },
+      {
+        "id": "COL",
+        "name": "Coal"
+      },
+      {
+        "id": "BAT",
+        "name": "Battery storage"
+      },
+      {
+        "id": "OES",
+        "name": "Other energy storage"
+      }
+    ],
+    "totalFacets": 20
+  }
+}

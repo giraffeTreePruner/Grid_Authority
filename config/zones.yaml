@@ -1,19 +1,260 @@
 # Zone registry: the single source of truth for what exists.
 #
-# Every EIA-930 respondent must appear here or in excluded_respondents.yaml.
-# Regional aggregates and the national total are included with in_map: false so
-# they are available for national charts without being double-counted on the map.
+# Every EIA-930 respondent appears here or in excluded_respondents.yaml.
 #
-# Populated in full in task 3 from the live EIA respondent facet endpoint.
+# Derived from the EIA facet and data endpoints, not from assumption:
+#   - Region membership was solved by reconciliation. Each regional aggregate's
+#     demand, net generation and total interchange equals the sum of its member
+#     balancing authorities across 1,050 region-hours with no mismatch.
+#   - Every capability flag records what the respondent was actually observed to
+#     publish. Several balancing authorities report generation but no demand, and
+#     marking those demand: true would leave the map permanently showing "no data"
+#     for a series that is never coming.
+#
+# interconnection, timezone and short_name are the fields the API does not expose
+# and are maintained by hand. timezone is display only; all storage is UTC.
+#
+# Aggregates carry in_map: false. They exist for national charts and must never be
+# drawn on the map, where they would double-count the zones they contain.
 
-- key: US-TEX-ERCO
-  eia_respondent: ERCO
-  name: Electric Reliability Council of Texas, Inc.
-  short_name: ERCOT
-  interconnection: texas
+# --- National total ---------------------------------------------------------
+
+- key: US-US48
+  eia_respondent: US48
+  name: United States Lower 48
+  short_name: US Lower 48
+  interconnection: null
+  timezone: UTC
+  type: country_total
+  parent: null
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+# --- Regional aggregates ----------------------------------------------------
+
+- key: US-CAL
+  eia_respondent: CAL
+  name: California
+  short_name: California
+  interconnection: null
+  timezone: America/Los_Angeles
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR
+  eia_respondent: CAR
+  name: Carolinas
+  short_name: Carolinas
+  interconnection: null
+  timezone: America/New_York
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CENT
+  eia_respondent: CENT
+  name: Central
+  short_name: Central
+  interconnection: null
+  timezone: America/Chicago
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA
+  eia_respondent: FLA
+  name: Florida
+  short_name: Florida
+  interconnection: null
+  timezone: America/New_York
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDA
+  eia_respondent: MIDA
+  name: Mid-Atlantic
+  short_name: Mid-Atlantic
+  interconnection: null
+  timezone: America/New_York
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDW
+  eia_respondent: MIDW
+  name: Midwest
+  short_name: Midwest
+  interconnection: null
+  timezone: America/Chicago
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NE
+  eia_respondent: NE
+  name: New England
+  short_name: New England
+  interconnection: null
+  timezone: America/New_York
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW
+  eia_respondent: NW
+  name: Northwest
+  short_name: Northwest
+  interconnection: null
+  timezone: America/Los_Angeles
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NY
+  eia_respondent: NY
+  name: New York
+  short_name: New York
+  interconnection: null
+  timezone: America/New_York
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SE
+  eia_respondent: SE
+  name: Southeast
+  short_name: Southeast
+  interconnection: null
+  timezone: America/Chicago
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW
+  eia_respondent: SW
+  name: Southwest
+  short_name: Southwest
+  interconnection: null
+  timezone: America/Phoenix
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-TEN
+  eia_respondent: TEN
+  name: Tennessee
+  short_name: Tennessee
+  interconnection: null
+  timezone: America/Chicago
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-TEX
+  eia_respondent: TEX
+  name: Texas
+  short_name: Texas
+  interconnection: null
+  timezone: America/Chicago
+  type: region
+  parent: US-US48
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+# --- Balancing authorities --------------------------------------------------
+
+- key: US-MIDW-AECI
+  eia_respondent: AECI
+  name: Associated Electric Cooperative, Inc.
+  short_name: AECI
+  interconnection: eastern
   timezone: America/Chicago
   type: balancing_authority
-  parent: null
+  parent: US-MIDW
   in_map: true
   capabilities:
     demand: true
@@ -22,14 +263,78 @@
     fuel_mix: true
     interchange: true
 
-- key: US-CAL-CISO
-  eia_respondent: CISO
-  name: California Independent System Operator
-  short_name: CAISO
+- key: US-NW-AVA
+  eia_respondent: AVA
+  name: Avista Corporation
+  short_name: Avista
   interconnection: western
   timezone: America/Los_Angeles
   type: balancing_authority
-  parent: null
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-AVRN
+  eia_respondent: AVRN
+  name: Avangrid Renewables, LLC
+  short_name: Avangrid
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-AZPS
+  eia_respondent: AZPS
+  name: Arizona Public Service Company
+  short_name: APS
+  interconnection: western
+  timezone: America/Phoenix
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-BANC
+  eia_respondent: BANC
+  name: Balancing Authority of Northern California
+  short_name: BANC
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-CAL
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-BHBA
+  eia_respondent: BHBA
+  name: Black Hills Energy
+  short_name: Black Hills
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
   in_map: true
   capabilities:
     demand: true
@@ -45,7 +350,7 @@
   interconnection: western
   timezone: America/Los_Angeles
   type: balancing_authority
-  parent: null
+  parent: US-NW
   in_map: true
   capabilities:
     demand: true
@@ -54,18 +359,867 @@
     fuel_mix: true
     interchange: true
 
-- key: US-US48
-  eia_respondent: US48
-  name: United States Lower 48
-  short_name: US48
-  interconnection: null
-  timezone: UTC
-  type: country_total
-  parent: null
-  in_map: false
+- key: US-NW-CHPD
+  eia_respondent: CHPD
+  name: Public Utility District No. 1 of Chelan County
+  short_name: Chelan PUD
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-CISO
+  eia_respondent: CISO
+  name: California Independent System Operator
+  short_name: CAISO
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-CAL
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-CPLE
+  eia_respondent: CPLE
+  name: Duke Energy Progress East
+  short_name: Duke Progress East
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-CPLW
+  eia_respondent: CPLW
+  name: Duke Energy Progress West
+  short_name: Duke Progress West
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-DEAA
+  eia_respondent: DEAA
+  name: Arlington Valley, LLC
+  short_name: Arlington Valley
+  interconnection: western
+  timezone: America/Phoenix
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-DOPD
+  eia_respondent: DOPD
+  name: PUD No. 1 of Douglas County
+  short_name: Douglas PUD
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-DUK
+  eia_respondent: DUK
+  name: Duke Energy Carolinas
+  short_name: Duke Carolinas
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-EPE
+  eia_respondent: EPE
+  name: El Paso Electric Company
+  short_name: El Paso Electric
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-TEX-ERCO
+  eia_respondent: ERCO
+  name: Electric Reliability Council of Texas, Inc.
+  short_name: ERCOT
+  interconnection: texas
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-TEX
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-FMPP
+  eia_respondent: FMPP
+  name: Florida Municipal Power Pool
+  short_name: FMPP
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-FPC
+  eia_respondent: FPC
+  name: Duke Energy Florida, Inc.
+  short_name: Duke Florida
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-FPL
+  eia_respondent: FPL
+  name: Florida Power & Light Co.
+  short_name: FPL
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-GCPD
+  eia_respondent: GCPD
+  name: Public Utility District No. 2 of Grant County, Washington
+  short_name: Grant PUD
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-GRID
+  eia_respondent: GRID
+  name: Gridforce Energy Management, LLC
+  short_name: Gridforce
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-GVL
+  eia_respondent: GVL
+  name: Gainesville Regional Utilities
+  short_name: Gainesville
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-GWA
+  eia_respondent: GWA
+  name: NaturEner Power Watch, LLC
+  short_name: Power Watch
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-HST
+  eia_respondent: HST
+  name: City of Homestead
+  short_name: Homestead
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-IID
+  eia_respondent: IID
+  name: Imperial Irrigation District
+  short_name: IID
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-CAL
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-IPCO
+  eia_respondent: IPCO
+  name: Idaho Power Company
+  short_name: Idaho Power
+  interconnection: western
+  timezone: America/Boise
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NE-ISNE
+  eia_respondent: ISNE
+  name: ISO New England
+  short_name: ISO-NE
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-NE
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-JEA
+  eia_respondent: JEA
+  name: JEA
+  short_name: JEA
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-LDWP
+  eia_respondent: LDWP
+  name: Los Angeles Department of Water and Power
+  short_name: LADWP
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-CAL
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDW-LGEE
+  eia_respondent: LGEE
+  name: LG&E and KU Services Company as agent for Louisville Gas and Electric Company and Kentucky Utilities Company
+  short_name: LG&E and KU
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-MIDW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDW-MISO
+  eia_respondent: MISO
+  name: Midcontinent Independent System Operator, Inc.
+  short_name: MISO
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-MIDW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-NEVP
+  eia_respondent: NEVP
+  name: Nevada Power Company
+  short_name: NV Energy
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-NWMT
+  eia_respondent: NWMT
+  name: NorthWestern Corporation
+  short_name: NorthWestern
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NY-NYIS
+  eia_respondent: NYIS
+  name: New York Independent System Operator
+  short_name: NYISO
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-NY
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-PACE
+  eia_respondent: PACE
+  name: PacifiCorp East
+  short_name: PacifiCorp East
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-PACW
+  eia_respondent: PACW
+  name: PacifiCorp West
+  short_name: PacifiCorp West
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-PGE
+  eia_respondent: PGE
+  name: Portland General Electric Company
+  short_name: Portland General
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDA-PJM
+  eia_respondent: PJM
+  name: PJM Interconnection, LLC
+  short_name: PJM
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-MIDA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-PNM
+  eia_respondent: PNM
+  name: Public Service Company of New Mexico
+  short_name: PNM
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-PSCO
+  eia_respondent: PSCO
+  name: Public Service Company of Colorado
+  short_name: Xcel Colorado
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-PSEI
+  eia_respondent: PSEI
+  name: Puget Sound Energy, Inc.
+  short_name: Puget Sound Energy
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-SC
+  eia_respondent: SC
+  name: South Carolina Public Service Authority
+  short_name: Santee Cooper
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-SCEG
+  eia_respondent: SCEG
+  name: Dominion Energy South Carolina, Inc.
+  short_name: Dominion South Carolina
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-SCL
+  eia_respondent: SCL
+  name: Seattle City Light
+  short_name: Seattle City Light
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-SEC
+  eia_respondent: SEC
+  name: Seminole Electric Cooperative
+  short_name: Seminole
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SE-SEPA
+  eia_respondent: SEPA
+  name: Southeastern Power Administration
+  short_name: SEPA
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-SE
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-MIDW-SIKE
+  eia_respondent: SIKE
+  name: Sikeston Board of Municipal Utilities
+  short_name: Sikeston
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-MIDW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SE-SOCO
+  eia_respondent: SOCO
+  name: Southern Company Services, Inc. - Trans
+  short_name: Southern Company
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-SE
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CENT-SPA
+  eia_respondent: SPA
+  name: Southwestern Power Administration
+  short_name: SWPA
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-CENT
+  in_map: true
   capabilities:
     demand: true
     demand_forecast: true
     net_generation: true
     fuel_mix: true
     interchange: false
+
+- key: US-SW-SRP
+  eia_respondent: SRP
+  name: Salt River Project Agricultural Improvement and Power District
+  short_name: SRP
+  interconnection: western
+  timezone: America/Phoenix
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CENT-SWPP
+  eia_respondent: SWPP
+  name: Southwest Power Pool
+  short_name: SPP
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-CENT
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-SWPW
+  eia_respondent: SWPW
+  name: Southwest Power Pool West Balancing Authority Area
+  short_name: SPP West
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-TAL
+  eia_respondent: TAL
+  name: City of Tallahassee
+  short_name: Tallahassee
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-FLA-TEC
+  eia_respondent: TEC
+  name: Tampa Electric Company
+  short_name: Tampa Electric
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-FLA
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-TEPC
+  eia_respondent: TEPC
+  name: Tucson Electric Power
+  short_name: TEP
+  interconnection: western
+  timezone: America/Phoenix
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-TIDC
+  eia_respondent: TIDC
+  name: Turlock Irrigation District
+  short_name: Turlock
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-CAL
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-TPWR
+  eia_respondent: TPWR
+  name: City of Tacoma, Department of Public Utilities, Light Division
+  short_name: Tacoma Power
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-TEN-TVA
+  eia_respondent: TVA
+  name: Tennessee Valley Authority
+  short_name: TVA
+  interconnection: eastern
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: US-TEN
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-SW-WALC
+  eia_respondent: WALC
+  name: Western Area Power Administration - Desert Southwest Region
+  short_name: WAPA Desert Southwest
+  interconnection: western
+  timezone: America/Phoenix
+  type: balancing_authority
+  parent: US-SW
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-WWA
+  eia_respondent: WWA
+  name: NaturEner Wind Watch, LLC
+  short_name: Wind Watch
+  interconnection: western
+  timezone: America/Denver
+  type: balancing_authority
+  parent: US-NW
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAR-YAD
+  eia_respondent: YAD
+  name: Alcoa Power Generating, Inc. - Yadkin Division
+  short_name: Yadkin
+  interconnection: eastern
+  timezone: America/New_York
+  type: balancing_authority
+  parent: US-CAR
+  in_map: true
+  capabilities:
+    demand: false
+    demand_forecast: false
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+

@@ -31,6 +31,15 @@ excluded_from_mix_percent: [imports, battery_storage, other_storage, pumped_stor
 sources:
   eia:
     # EIA-930 fueltype facet code -> canonical mode.
+    #
+    # All sixteen codes the fueltype facet endpoint returns are mapped. Any code not
+    # listed here is a fatal startup error rather than an "unknown" bucket: that is
+    # how the next category expansion gets noticed instead of silently absorbed.
+    #
+    # Note that several codes share a canonical mode. A mapper must SUM the values
+    # that land on the same mode, never overwrite: OTH and UNK both reach `unknown`,
+    # UES and OES both reach `other_storage`, WND and WNB both reach `wind`, and SUN
+    # and SNB both reach `solar`.
     COL: coal
     NG: gas
     OIL: oil
@@ -39,3 +48,22 @@ sources:
     SUN: solar
     WND: wind
     OTH: unknown
+
+    # Added by the 2024 H2 category expansion. Confirmed absent from a 2024-06-15
+    # window and present from 2024-12-15 onward; all sixteen are in current use.
+    GEO: geothermal
+    PS: pumped_storage
+    BAT: battery_storage
+    UNK: unknown
+
+    # Hybrid plants. Counted as the renewable they mostly are: EIA categorises each
+    # plant once, so nothing is double-counted against SUN or WND, and treating them
+    # as storage would push real renewable generation out of the share denominator.
+    WNB: wind
+    SNB: solar
+
+    # Storage. The fueltype facet returns UES twice, labelled both "Unknown Energy"
+    # and "Unknown energy storage". It is storage: every one of its 21 rows in the
+    # 2024-12-15 window is negative, between -609 and -113, which is charging.
+    OES: other_storage
+    UES: other_storage

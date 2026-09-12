@@ -79,8 +79,8 @@ node geo/build/validate.js
 ### 2.1 Users and packages
 
 ```sh
-adduser --system --group --home /srv/grid-authority grid
-apt update && apt install -y curl git nginx ufw ca-certificates
+sudo adduser --system --group --home /srv/grid-authority grid
+sudo sudo apt update && sudo apt install -y curl git nginx ufw ca-certificates
 ```
 
 Postgres 16 is pinned across dev, CI and prod (see `docs/DECISIONS.md`), but a fresh
@@ -89,13 +89,13 @@ own release — not 16 specifically. Install from the PGDG repository instead, w
 carries specific major versions independent of the Ubuntu release:
 
 ```sh
-install -d /usr/share/postgresql-common/pgdg
-curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail \
+sudo install -d /usr/share/postgresql-common/pgdg
+sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc --fail \
   https://www.postgresql.org/media/keys/ACCC4CF8.asc
-sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
+sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] \
   https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" \
   > /etc/apt/sources.list.d/pgdg.list'
-apt update && apt install -y postgresql-16
+sudo apt update && sudo apt install -y postgresql-16
 ```
 
 If that `apt update` fails on the codename, PGDG has not yet added support for this
@@ -105,14 +105,14 @@ default, which would mean re-pinning it everywhere (`docker-compose.yml`, both
 `postgres:16` jobs in `.github/workflows/ci.yml`, and this file).
 
 ```sh
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
-apt install -y nodejs
-corepack enable && corepack prepare pnpm@10.4.1 --activate
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash -
+sudo apt install -y nodejs
+sudo corepack enable && sudo corepack prepare pnpm@10.4.1 --activate
 
 curl -LsSf https://astral.sh/uv/install.sh | sh
-install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
+sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
 
-npm install -g pm2
+sudo npm install -g pm2
 ```
 
 Confirm: `node -v` is 22.x, `uv --version` works, `psql --version` is 16.x.
@@ -120,11 +120,11 @@ Confirm: `node -v` is 22.x, `uv --version` works, `psql --version` is 16.x.
 ### 2.2 Firewall
 
 ```sh
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow OpenSSH
-ufw allow 'Nginx Full'
-ufw enable
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
 ```
 
 Postgres is not exposed: it listens on localhost only, which is the default.
@@ -132,7 +132,7 @@ Postgres is not exposed: it listens on localhost only, which is the default.
 ### 2.3 Timezone
 
 ```sh
-timedatectl set-timezone UTC
+sudo timedatectl set-timezone UTC
 ```
 
 Everything in this project stores and reasons in UTC. A host on local time will produce
@@ -148,19 +148,21 @@ is a far larger and far spikier allocation than anything serving traffic does, a
 is cheap next to a deploy that gets OOM-killed halfway through.
 
 ```sh
-fallocate -l 4G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
-echo '/swapfile none swap sw 0 0' >> /etc/fstab
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+# tee, not >>: a redirect runs in your unprivileged shell and is refused
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
 
 Low swappiness keeps Postgres's shared_buffers and hot pages in RAM and only swaps under
 real pressure:
 
 ```sh
-echo 'vm.swappiness=10' >> /etc/sysctl.conf
-sysctl -p
+echo 'vm.swappiness=10' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
 ```
 
 Confirm: `swapon --show` and `free -h` both show the 4G swapfile.
@@ -351,27 +353,73 @@ Confirm both are online: `sudo -u grid -H pm2 status`.
 
 ### 2.10 TLS and nginx
 
+Two passes, because the real config cannot be enabled yet: its TLS block points at
+certificate files certbot has not created, so `nginx -t` would fail. The bootstrap
+config serves the ACME challenge over plain HTTP and nothing else.
+
+Every command here needs root. Run them from `/srv/grid-authority`.
+
 ```sh
-apt install -y certbot python3-certbot-nginx
-mkdir -p /var/www/certbot /var/cache/nginx/grid
-chown -R www-data:www-data /var/cache/nginx/grid
-
-cp deploy/nginx.conf /etc/nginx/sites-available/grid-authority
-sed -i 's/grid\.example\.org/YOUR.DOMAIN/g' /etc/nginx/sites-available/grid-authority
-ln -sf /etc/nginx/sites-available/grid-authority /etc/nginx/sites-enabled/
-rm -f /etc/nginx/sites-enabled/default
-
-certbot certonly --webroot -w /var/www/certbot -d YOUR.DOMAIN
-nginx -t && systemctl reload nginx
+sudo apt install -y certbot
+sudo install -d -o www-data -g www-data /var/www/certbot
+sudo install -d -o www-data -g www-data /var/cache/nginx/grid
 ```
 
-`nginx -t` must pass before reloading. If it fails on `set_real_ip_from`, the
-`ngx_http_realip_module` is missing — it is built into stock Ubuntu nginx, so that
-usually means a custom build.
+**Pass one — bootstrap, then get the certificate.**
 
-**If Cloudflare is in front**, set SSL mode to Full (strict) and leave the real-IP block
-in place. **If it is not**, delete the `set_real_ip_from` and `real_ip_header` lines, or
-every client will be counted as one address and the rate limits will be wrong.
+```sh
+sudo cp deploy/nginx-bootstrap.conf /etc/nginx/sites-available/grid-authority
+sudo sed -i 's/grid\.example\.org/YOUR.DOMAIN/g' \
+  /etc/nginx/sites-available/grid-authority
+sudo ln -sf /etc/nginx/sites-available/grid-authority /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+
+sudo nginx -t && sudo systemctl reload nginx
+
+# confirm the challenge path is reachable before asking Let's Encrypt to use it
+echo ok | sudo tee /var/www/certbot/probe >/dev/null
+curl -s http://YOUR.DOMAIN/.well-known/acme-challenge/probe    # must print: ok
+sudo rm /var/www/certbot/probe
+
+sudo certbot certonly --webroot -w /var/www/certbot -d YOUR.DOMAIN
+```
+
+If that `curl` does not print `ok`, stop: certbot will fail the same way, and failed
+attempts count against Let's Encrypt's rate limit. Check DNS resolves to this host and
+that port 80 is open.
+
+**Pass two — swap in the real config.**
+
+```sh
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/grid-authority
+sudo sed -i 's/grid\.example\.org/YOUR.DOMAIN/g' \
+  /etc/nginx/sites-available/grid-authority
+
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+`nginx -t` must pass before the reload. Note that `sudo nginx -t && systemctl reload
+nginx` does **not** work: the `sudo` applies only to the first command and the reload is
+refused. Both need it.
+
+Renewal keeps working after the swap — `nginx.conf` serves the same challenge location,
+so certbot's timer renews with nginx running and nothing to stop.
+
+**Client addresses, and Cloudflare later.** With nothing in front, nginx sees the real
+client address on the socket and the rate limits key on it correctly. When you put
+Cloudflare there, that address becomes Cloudflare's and every visitor collapses into one
+rate-limit bucket, so install the snippet and uncomment the include at that point:
+
+```sh
+sudo cp deploy/cloudflare-realip.conf /etc/nginx/snippets/
+sudo sed -i 's|# include /etc/nginx/snippets/cloudflare-realip.conf;|include /etc/nginx/snippets/cloudflare-realip.conf;|' \
+  /etc/nginx/sites-available/grid-authority
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Not before. Those directives tell nginx to believe a forwarded header from those ranges;
+enabling them without the proxy actually in front is the mistake that lets a client claim
+any address it likes. Also set Cloudflare's SSL mode to Full (strict).
 
 ### 2.11 Backfill
 

@@ -415,3 +415,29 @@ write to. PM2 is the worst of the three: it would keep its process list in the o
 home while `pm2 startup --hp /srv/grid-authority` points systemd at grid's, so the
 processes would simply not come back after a reboot — and nothing would say so until one
 happened.
+
+## 2026-09-12 — TLS is a two-pass setup, and Cloudflare is opt-in
+
+The site config could never have been enabled in one pass: its TLS block names certificate
+files certbot has not created yet, so `nginx -t` fails before certbot ever runs. The first
+deploy did not notice because the symlink creation had already failed for a different
+reason, leaving nginx testing only its default config.
+
+`deploy/nginx-bootstrap.conf` now serves the ACME challenge over plain HTTP and nothing
+else. Obtain the certificate with it, then swap in the real config. `--webroot` rather
+than `--standalone` so renewals run with nginx up: the real config keeps the same
+challenge location, so nothing has to stop.
+
+The Cloudflare real-IP directives moved to `deploy/cloudflare-realip.conf`, included only
+when Cloudflare is actually in front. They tell nginx to believe `CF-Connecting-IP` from
+those ranges; shipping them enabled by default invites someone to enable them without the
+proxy, which is how a client gets to claim any address it likes.
+
+## 2026-09-12 — Every root command in the runbook carries its own sudo
+
+The host sections were written as though the reader were root. A reader with sudo rights
+instead — which is the normal shape of a cloud VM — got a cascade of permission errors,
+and in one case a half-applied command: `sudo nginx -t && systemctl reload nginx` gives
+sudo to the test and not to the reload. Each command now carries its own `sudo`, and the
+two places that redirect into a root-owned file use `tee`, since a redirect runs in the
+caller's shell and is refused.

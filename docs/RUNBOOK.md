@@ -384,8 +384,12 @@ sudo install -d -o www-data -g www-data /var/cache/nginx/grid
 **Pass one — bootstrap, then get the certificate.**
 
 ```sh
-sudo cp deploy/nginx-bootstrap.conf /etc/nginx/sites-available/grid-authority
-sudo sed -i "s/grid\.example\.org/$DOMAIN/g" /etc/nginx/sites-available/grid-authority
+# One command, so the substitution cannot be skipped. The :? fails loudly if DOMAIN is
+# unset, which happens the moment you open a new shell — without it, sed would quietly
+# substitute an empty name and nginx would serve nothing.
+: "${DOMAIN:?set DOMAIN first: DOMAIN=your.domain}"
+sudo sh -c "sed 's/grid\.example\.org/$DOMAIN/g' deploy/nginx-bootstrap.conf \
+  > /etc/nginx/sites-available/grid-authority"
 sudo ln -sf /etc/nginx/sites-available/grid-authority /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
@@ -414,8 +418,12 @@ never arrived, so check DNS and the firewall first. This host has no `dig`; use
 **Pass two — swap in the real config.**
 
 ```sh
-sudo cp deploy/nginx.conf /etc/nginx/sites-available/grid-authority
-sudo sed -i "s/grid\.example\.org/$DOMAIN/g" /etc/nginx/sites-available/grid-authority
+: "${DOMAIN:?set DOMAIN first: DOMAIN=your.domain}"
+sudo sh -c "sed 's/grid\.example\.org/$DOMAIN/g' deploy/nginx.conf \
+  > /etc/nginx/sites-available/grid-authority"
+
+# prove the substitution landed before testing the config
+sudo grep -c "$DOMAIN" /etc/nginx/sites-available/grid-authority   # expect 3
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
@@ -575,6 +583,23 @@ If a command then fails with `EACCES` on a path under _your_ home — pnpm looki
 `package.json`, uv looking for `uv.toml`, PM2 writing its process list — one of two
 things happened: the command ran from the wrong directory, or it ran without `-H` and
 inherited your `HOME`. Both are covered in 2.6.
+
+### `cannot load certificate .../grid.example.org/...`
+
+The config was installed without substituting the domain, so it still names the example
+host and points at a certificate that does not exist. Install it again — the command in
+2.10 substitutes while it copies, so the two cannot come apart:
+
+```sh
+: "${DOMAIN:?set DOMAIN first: DOMAIN=your.domain}"
+sudo sh -c "sed 's/grid\.example\.org/$DOMAIN/g' deploy/nginx.conf \
+  > /etc/nginx/sites-available/grid-authority"
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+If the same message says `Permission denied` rather than `No such file`, `nginx -t` was
+run without `sudo`: an unprivileged process cannot read `/etc/letsencrypt` at all, so it
+reports the wrong reason for the right problem.
 
 ### A check prints nothing at all
 

@@ -498,13 +498,19 @@ any address it likes. Also set Cloudflare's SSL mode to Full (strict).
 
 This runs for 60–90 minutes, so detach it: an SSH drop would otherwise kill it partway.
 
+Run tmux as yourself and drop to `grid` for the job itself. `grid` is a `--system`
+account, so its shell is `/usr/sbin/nologin`: `sudo -u grid tmux` opens a session whose
+shell exits immediately, printing `[exited]`, and leaves you typing at your own prompt as
+yourself.
+
 ```sh
-sudo -u grid -H tmux new -s backfill
-cd /srv/grid-authority && uv run --env-file .env eia backfill --days 90
-# ctrl-b d to detach; sudo -u grid -H tmux attach -t backfill to return
+tmux new -s backfill
+cd /srv/grid-authority && sudo -u grid -H uv run --env-file .env eia backfill --days 90
+# ctrl-b d to detach; tmux attach -t backfill to return
 ```
 
-Without tmux, `nohup` needs nothing installed:
+`nohup` works too, and detaches without tmux at all — `bash -c` names the shell, so the
+nologin shell never comes into it:
 
 ```sh
 sudo -u grid -H bash -c 'cd /srv/grid-authority && \
@@ -679,6 +685,14 @@ reads its own config. And do not add it for root: git's refusal is the only thin
 stopping root from writing objects into `.git` that `grid` will later be unable to
 update. If that has already happened, `sudo chown -R grid:grid /srv/grid-authority`
 puts it right.
+
+### `tmux` prints `[exited]` and drops me back at my own prompt
+
+`sudo -u grid tmux` was used. `grid` is a system account with `/usr/sbin/nologin`, so the
+session's shell exits the moment it starts. The next command you type then runs as *you*,
+and fails on `.env`, which is mode 600 and owned by `grid`.
+
+Run tmux as yourself and put the `sudo -u grid -H` on the job inside it; see 2.11.
 
 ### A job keeps failing
 

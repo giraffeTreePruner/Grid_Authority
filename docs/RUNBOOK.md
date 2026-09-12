@@ -392,16 +392,24 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t && sudo systemctl reload nginx
 
 # confirm the challenge path is reachable before asking Let's Encrypt to use it
-echo ok | sudo tee /var/www/certbot/probe >/dev/null
+# The location uses `root`, so nginx appends the whole URI: the file has to sit at
+# webroot + the full path, which is also the layout certbot --webroot creates.
+sudo install -d -o www-data -g www-data /var/www/certbot/.well-known/acme-challenge
+echo ok | sudo tee /var/www/certbot/.well-known/acme-challenge/probe >/dev/null
 curl -sS "http://$DOMAIN/.well-known/acme-challenge/probe"   # must print: ok
-sudo rm /var/www/certbot/probe
+sudo rm /var/www/certbot/.well-known/acme-challenge/probe
 
 sudo certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN"
 ```
 
 If that `curl` does not print `ok`, stop: certbot will fail the same way, and failed
-attempts count against Let's Encrypt's rate limit. Check DNS resolves to this host and
-that port 80 is open.
+attempts count against Let's Encrypt's rate limit.
+
+A **404 from nginx** is the good failure — it means DNS resolves here, port 80 is open,
+and nginx answered for this `server_name`. Only the file is in the wrong place. Anything
+else (a timeout, a connection refused, a page from some other server) means the request
+never arrived, so check DNS and the firewall first. This host has no `dig`; use
+`getent hosts "$DOMAIN"` or `curl -sS -o /dev/null -w '%{remote_ip}\n' "http://$DOMAIN/"`.
 
 **Pass two — swap in the real config.**
 

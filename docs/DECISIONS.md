@@ -481,3 +481,12 @@ is.
 Verified by loading each built entry point from a wrapper module, which is the shape PM2
 uses: before, neither started; after, the API serves and the scheduler registers its
 three cron jobs.
+
+## 2026-09-12 — The PM2 service gets a system PATH, not the operator's
+
+`pm2 startup` prints `sudo env PATH=$PATH pm2 startup ...`, which copies the invoking
+user's PATH into a unit that runs as `grid`. The generated unit then searches the
+operator's home directory first for every binary it executes, including the `uv` the
+scheduler spawns for each job. Anything that could write to that home would be executed
+by the service on boot. The runbook passes an explicit system PATH instead, and checks
+that `/usr/local/bin` is in it, since that is where `uv` is installed.

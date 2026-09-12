@@ -359,7 +359,32 @@ sudo -u grid -H pm2 set pm2-logrotate:compress true
 sudo -u grid -H pm2 startup systemd -u grid --hp /srv/grid-authority
 ```
 
+The command it prints starts `sudo env PATH=$PATH ...`, which bakes **your** PATH into
+a service that runs as `grid`. That leaves the unit searching your home directory first
+for every binary it executes, including the `uv` the scheduler spawns. Give it a system
+PATH instead:
+
+```sh
+sudo env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+  pm2 startup systemd -u grid --hp /srv/grid-authority
+
+# then freeze the current process list, so `pm2 resurrect` has something to restore
+sudo -u grid -H pm2 save
+```
+
+Check what was written: `grep PATH= /etc/systemd/system/pm2-grid.service` should contain
+no home directory. `/usr/local/bin` must be there — that is where `uv` lives.
+
 Confirm both are online: `sudo -u grid -H pm2 status`.
+
+Then prove the boot path actually works, rather than finding out at the next reboot:
+
+```sh
+sudo systemctl is-enabled pm2-grid       # enabled
+sudo -u grid -H pm2 kill
+sudo systemctl start pm2-grid
+sudo -u grid -H pm2 status               # both apps back
+```
 
 ### 2.10 TLS and nginx
 

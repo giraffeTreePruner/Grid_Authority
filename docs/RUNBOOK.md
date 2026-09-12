@@ -218,7 +218,17 @@ sudo install -d -o grid -g grid -m 755 /srv/grid-authority
 sudo -u grid -H git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
 
 cd /srv/grid-authority
+
+# Optional, but it makes `git log` and `git status` work as yourself. The checkout is
+# owned by grid, and git refuses to read a repository owned by someone else without
+# this. It grants read convenience only: writes still require running as grid.
+git config --global --add safe.directory /srv/grid-authority
 ```
+
+**Never run git here with plain `sudo`.** As root it writes root-owned objects into
+`.git`, and every later pull as `grid` then fails on files it cannot touch. Git's
+"dubious ownership" refusal is what stops that happening; take it as a signal to use
+`sudo -u grid -H`, not as something to work around.
 
 **Two things about every `sudo -u grid` command below**, both of which fail quietly
 rather than loudly if you get them wrong.
@@ -535,6 +545,26 @@ If a command then fails with `EACCES` on a path under _your_ home — pnpm looki
 `package.json`, uv looking for `uv.toml`, PM2 writing its process list — one of two
 things happened: the command ran from the wrong directory, or it ran without `-H` and
 inherited your `HOME`. Both are covered in 2.6.
+
+### `git pull` refuses, one way or the other
+
+Two different refusals, both correct.
+
+`cannot open '.git/FETCH_HEAD': Permission denied` — you are not `grid`, and the checkout
+belongs to `grid`. `fatal: detected dubious ownership` — you used `sudo`, so git is
+running as root against a repository owned by `grid`, and refuses.
+
+Either way the answer is the same:
+
+```sh
+sudo -u grid -H git -C /srv/grid-authority pull
+```
+
+Adding `safe.directory` to your own config does not help `sudo git pull`, because root
+reads its own config. And do not add it for root: git's refusal is the only thing
+stopping root from writing objects into `.git` that `grid` will later be unable to
+update. If that has already happened, `sudo chown -R grid:grid /srv/grid-authority`
+puts it right.
 
 ### A job keeps failing
 

@@ -45,11 +45,23 @@ pnpm --filter @grid-authority/web dev                     # http://localhost:517
 The Vite dev server proxies `/api` to port 3000, so the browser sees one origin and CORS
 behaves as it does in production.
 
-With no ingest yet the map will be empty and `/health` reports `starting`. To get data:
+With no ingest yet the map is empty and `/health` reports `starting`. Two ways to get
+data into it:
+
+**Without an API key**, load the recorded fixtures:
 
 ```sh
-uv run --env-file .env eia poll             # one cycle, about 9 requests
-uv run --env-file .env eia backfill --days 7
+uv run --env-file .env eia seed-fixtures
+```
+
+Real EIA responses, frozen at the hour they were recorded, written through the normal
+ingest path. The map will show a stale banner, which is itself worth seeing.
+
+**With a key** in `.env`, fetch current data:
+
+```sh
+uv run --env-file .env eia poll              # one cycle, about 9 requests
+uv run --env-file .env eia backfill --days 7 # a week of history
 ```
 
 ### Checks

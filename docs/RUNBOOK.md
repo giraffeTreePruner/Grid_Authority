@@ -369,7 +369,13 @@ config serves the ACME challenge over plain HTTP and nothing else.
 
 Every command here needs root. Run them from `/srv/grid-authority`.
 
+Set the domain once, in the shell you are working in. Every command below uses it, so
+the config, the certificate and the checks cannot end up naming different hosts — which
+is exactly the mistake that produces a working site and a certificate for the wrong name.
+
 ```sh
+DOMAIN=grid.example.org      # the exact name people will type, subdomain included
+
 sudo apt install -y certbot
 sudo install -d -o www-data -g www-data /var/www/certbot
 sudo install -d -o www-data -g www-data /var/cache/nginx/grid
@@ -379,8 +385,7 @@ sudo install -d -o www-data -g www-data /var/cache/nginx/grid
 
 ```sh
 sudo cp deploy/nginx-bootstrap.conf /etc/nginx/sites-available/grid-authority
-sudo sed -i 's/grid\.example\.org/YOUR.DOMAIN/g' \
-  /etc/nginx/sites-available/grid-authority
+sudo sed -i "s/grid\.example\.org/$DOMAIN/g" /etc/nginx/sites-available/grid-authority
 sudo ln -sf /etc/nginx/sites-available/grid-authority /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 
@@ -388,10 +393,10 @@ sudo nginx -t && sudo systemctl reload nginx
 
 # confirm the challenge path is reachable before asking Let's Encrypt to use it
 echo ok | sudo tee /var/www/certbot/probe >/dev/null
-curl -s http://YOUR.DOMAIN/.well-known/acme-challenge/probe    # must print: ok
+curl -sS "http://$DOMAIN/.well-known/acme-challenge/probe"   # must print: ok
 sudo rm /var/www/certbot/probe
 
-sudo certbot certonly --webroot -w /var/www/certbot -d YOUR.DOMAIN
+sudo certbot certonly --webroot -w /var/www/certbot -d "$DOMAIN"
 ```
 
 If that `curl` does not print `ok`, stop: certbot will fail the same way, and failed
@@ -402,11 +407,28 @@ that port 80 is open.
 
 ```sh
 sudo cp deploy/nginx.conf /etc/nginx/sites-available/grid-authority
-sudo sed -i 's/grid\.example\.org/YOUR.DOMAIN/g' \
-  /etc/nginx/sites-available/grid-authority
+sudo sed -i "s/grid\.example\.org/$DOMAIN/g" /etc/nginx/sites-available/grid-authority
 
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+Then check the edge, with `-S` so a failure says so rather than printing nothing:
+
+```sh
+# twice: MISS then HIT
+curl -sS -o /dev/null -D - "https://$DOMAIN/api/v1/zones" | grep -i x-cache-status
+curl -sS -o /dev/null -D - "https://$DOMAIN/api/v1/zones" | grep -i x-cache-status
+
+# must be no-store: a cached health check hides an outage
+curl -sS -o /dev/null -D - "https://$DOMAIN/api/v1/health" | grep -i cache-control
+
+curl -sS "https://$DOMAIN/robots.txt" | head -3
+```
+
+If `x-cache-status` prints nothing, the request is not reaching that location. In order of
+likelihood: the bootstrap config is still installed (it has no `/api/` block at all), the
+`server_name` does not match the name you typed, or the certificate is for a different
+name so TLS fails before nginx routes anything. `curl -iS` without `grep` shows which.
 
 `nginx -t` must pass before the reload. Note that `sudo nginx -t && systemctl reload
 nginx` does **not** work: the `sudo` applies only to the first command and the reload is
@@ -545,6 +567,28 @@ If a command then fails with `EACCES` on a path under _your_ home — pnpm looki
 `package.json`, uv looking for `uv.toml`, PM2 writing its process list — one of two
 things happened: the command ran from the wrong directory, or it ran without `-H` and
 inherited your `HOME`. Both are covered in 2.6.
+
+### A check prints nothing at all
+
+`curl -s ... | grep -i x-cache-status` printing nothing means one of four things, and
+`-s` is hiding which: it silences DNS failures, refused connections and TLS errors
+alike. Drop the pipe and the `-s`:
+
+```sh
+curl -iS "https://$DOMAIN/api/v1/zones" | head -20
+```
+
+- **503 "not configured yet"** — the bootstrap config is still installed. It has no
+  `/api/` block, so there is no `X-Cache-Status` to print. Do pass two of 2.10.
+- **A certificate name mismatch** — the certificate was issued for a different name than
+  the one you are requesting. `sudo certbot certificates` lists what exists; reissue for
+  the exact name, subdomain included.
+- **A default nginx page, or a connection that hangs** — `server_name` does not match
+  what you typed, so another server block answered.
+  `sudo grep server_name /etc/nginx/sites-available/grid-authority` shows what it is set
+  to.
+- **502** — nginx is fine and the API is not.
+  `curl -sS localhost:3000/api/v1/health` and `sudo -u grid -H pm2 status`.
 
 ### `git pull` refuses, one way or the other
 

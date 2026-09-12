@@ -441,3 +441,18 @@ and in one case a half-applied command: `sudo nginx -t && systemctl reload nginx
 sudo to the test and not to the reload. Each command now carries its own `sudo`, and the
 two places that redirect into a root-owned file use `tee`, since a redirect runs in the
 caller's shell and is refused.
+
+## 2026-09-12 — The domain is set once, as a shell variable
+
+The TLS section substituted the domain into the config by hand and then repeated it in
+the certbot call and again in every check. Typing it more than once invites exactly one
+failure: a certificate issued for `example.com` while nginx serves
+`sub.example.com`, which produces a site that looks configured and a TLS handshake that
+does not match. `DOMAIN` is now set at the top of 2.10 and used throughout.
+
+## 2026-09-12 — Verification commands do not use `curl -s`
+
+`curl -s ... | grep -i x-cache-status` prints nothing when the header is absent, and also
+prints nothing when DNS fails, the connection is refused, or TLS does not match. A check
+that cannot distinguish "the feature is missing" from "I never reached the server" is not
+a check. These now use `-sS`, and the troubleshooting entry says what each outcome means.

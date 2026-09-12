@@ -1,0 +1,28 @@
+# Data source registry. Drives /api/v1/sources and the About Data page.
+#
+# Inactive entries are registered here before they are used so that their display
+# label is fixed from the start and cannot drift between stages.
+
+- id: eia
+  label: EIA Form 930
+  attribution: U.S. Energy Information Administration, Hourly Electric Grid Monitor
+  url: https://www.eia.gov/electricity/gridmonitor/
+  license: Public domain (U.S. Government work)
+  independent: true
+  notes: Hourly. Provisional and revised for several days after publication.
+  active: true
+
+# Reserved, inactive in MVP 1. Any series computed with this methodology must display
+# the label below verbatim wherever it appears: chart legends, tooltips, comparison
+# tables and API meta.sources.
+- id: emaps_method
+  label: Electricity Maps methodology (our implementation)
+  attribution: Methodology and emission factors from electricitymaps-contrib (AGPL-3.0)
+  url: https://github.com/electricitymaps/electricitymaps-contrib
+  license: AGPL-3.0 (methodology and configuration reused; data computed by this project)
+  independent: false
+  notes: >
+    Not Electricity Maps data. This project applies their published methodology and
+    emission factors to EIA data. Figures are ours, not theirs, and this project is
+    not affiliated with or endorsed by Electricity Maps.
+  active: false

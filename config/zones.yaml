@@ -1,0 +1,71 @@
+# Zone registry: the single source of truth for what exists.
+#
+# Every EIA-930 respondent must appear here or in excluded_respondents.yaml.
+# Regional aggregates and the national total are included with in_map: false so
+# they are available for national charts without being double-counted on the map.
+#
+# Populated in full in task 3 from the live EIA respondent facet endpoint.
+
+- key: US-TEX-ERCO
+  eia_respondent: ERCO
+  name: Electric Reliability Council of Texas, Inc.
+  short_name: ERCOT
+  interconnection: texas
+  timezone: America/Chicago
+  type: balancing_authority
+  parent: null
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-CAL-CISO
+  eia_respondent: CISO
+  name: California Independent System Operator
+  short_name: CAISO
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: null
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-NW-BPAT
+  eia_respondent: BPAT
+  name: Bonneville Power Administration
+  short_name: BPA
+  interconnection: western
+  timezone: America/Los_Angeles
+  type: balancing_authority
+  parent: null
+  in_map: true
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: true
+
+- key: US-US48
+  eia_respondent: US48
+  name: United States Lower 48
+  short_name: US48
+  interconnection: null
+  timezone: UTC
+  type: country_total
+  parent: null
+  in_map: false
+  capabilities:
+    demand: true
+    demand_forecast: true
+    net_generation: true
+    fuel_mix: true
+    interchange: false

@@ -1,0 +1,8 @@
+# EIA-930 respondent codes that are deliberately not zones in config/zones.yaml.
+#
+# Every respondent returned by the EIA respondent facet endpoint must appear either
+# here or in zones.yaml. sync-zones fails if one appears in neither, so a new
+# respondent cannot be silently ignored.
+
+- code: PLACEHOLDER
+  reason: Populated in task 3 from the live EIA respondent facet endpoint.

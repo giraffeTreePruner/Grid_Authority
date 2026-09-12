@@ -1,0 +1,41 @@
+# Canonical generation modes and the per-source mapping onto them.
+#
+# Source facet codes are never hardcoded in application code: they are discovered
+# from the EIA facet endpoints at worker startup and validated against this file.
+# A code that appears at the facet endpoint but not here is a fatal startup error,
+# not an "unknown" bucket. That is how a category expansion gets noticed.
+
+canonical_modes:
+  - coal
+  - gas
+  - oil
+  - nuclear
+  - hydro
+  - pumped_storage
+  - wind
+  - solar
+  - geothermal
+  - biomass
+  - battery_storage
+  - other_storage
+  - imports
+  - unknown
+
+renewable: [hydro, wind, solar, geothermal, biomass]
+low_carbon: [hydro, wind, solar, geothermal, biomass, nuclear]
+
+# Storage discharge and imports are not generation. Including them would inflate a
+# renewable percentage, so they are excluded from the denominator of every share.
+excluded_from_mix_percent: [imports, battery_storage, other_storage, pumped_storage]
+
+sources:
+  eia:
+    # EIA-930 fueltype facet code -> canonical mode.
+    COL: coal
+    NG: gas
+    OIL: oil
+    NUC: nuclear
+    WAT: hydro
+    SUN: solar
+    WND: wind
+    OTH: unknown

@@ -143,8 +143,12 @@ hours that are silently offset.
 A safety net against the OOM killer taking down Postgres during a traffic burst,
 autovacuum, or a backfill landing at the same time. Not meant to carry steady-state load.
 
+4 GB, twice the RAM. That is deliberately generous for a safety net: the web build in 2.7
+is a far larger and far spikier allocation than anything serving traffic does, and disk
+is cheap next to a deploy that gets OOM-killed halfway through.
+
 ```sh
-fallocate -l 2G /swapfile
+fallocate -l 4G /swapfile
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
@@ -159,7 +163,7 @@ echo 'vm.swappiness=10' >> /etc/sysctl.conf
 sysctl -p
 ```
 
-Confirm: `swapon --show` and `free -h` both show the 2G swapfile.
+Confirm: `swapon --show` and `free -h` both show the 4G swapfile.
 
 ### 2.5 Database
 

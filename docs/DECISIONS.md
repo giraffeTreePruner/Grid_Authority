@@ -381,10 +381,13 @@ The alternative — taking whatever Postgres Ubuntu ships — would mean re-pinn
 version in `docker-compose.yml`, both CI jobs and the runbook, so that dev, CI and
 production stop agreeing.
 
-A 2 GB swapfile is added with `vm.swappiness=10`. It is a safety net for the overlap
-between a poll cycle, autovacuum and a traffic burst, not a way to carry steady-state
-load. Without it the kernel's OOM killer picks a victim under pressure, and the victim it
-picks is often Postgres.
+A 4 GB swapfile is added with `vm.swappiness=10` — twice the RAM, which is deliberately
+generous for something that should never carry steady-state load. It is a safety net for
+the overlap between a poll cycle, autovacuum and a traffic burst, and more importantly for
+the web build, which is the largest and spikiest allocation on the host. Without it the
+kernel's OOM killer picks a victim under pressure, and the victim it picks is often
+Postgres. Low swappiness keeps Postgres's hot pages in RAM so the swap is only reached
+under real pressure.
 
 PM2's memory ceilings drop from 400M and 200M to 300M and 150M. The old figures claimed a
 quarter of a 4 GB host and would claim half of this one. Note these ceilings do not cover

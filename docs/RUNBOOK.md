@@ -204,12 +204,16 @@ sudo -u postgres psql -d grid_authority -c \
 ### 2.6 Checkout
 
 ```sh
-sudo -u grid -H git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
+# Create the directory first, owned by grid. /srv itself is root-owned, so grid
+# cannot create it, and the clone fails with "could not create leading directories".
+# adduser happens to make this directory the first time, but relying on that breaks
+# the moment anyone deletes it and re-clones.
+#
+# 755 rather than the 0750 adduser uses, so your own account can cd in and read the
+# checkout. Nothing there is secret: the source is public and both env files are 600.
+sudo install -d -o grid -g grid -m 755 /srv/grid-authority
 
-# adduser --system creates the home directory mode 0750 on Ubuntu, so your own
-# account cannot enter it. Nothing here is secret: the source is public and the two
-# env files are mode 600, so opening the directory itself costs nothing.
-sudo chmod 755 /srv/grid-authority
+sudo -u grid -H git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
 
 cd /srv/grid-authority
 ```
@@ -465,9 +469,19 @@ Check in this order:
 
 ### Permission denied on the checkout
 
-`cd: /srv/grid-authority: Permission denied` means `adduser --system` created the home
-directory mode 0750 and your account is not `grid`. `sudo chmod 755 /srv/grid-authority`
-fixes it; the two env files are mode 600 and stay unreadable.
+`fatal: could not create leading directories of '/srv/grid-authority': Permission denied`
+means the directory does not exist and `grid` cannot create it, because `/srv` is
+root-owned. This is what happens on a re-clone after deleting the checkout. Create it
+first:
+
+```sh
+sudo install -d -o grid -g grid -m 755 /srv/grid-authority
+```
+
+`cd: /srv/grid-authority: Permission denied` is the other half of the same thing: the
+directory exists but is mode 0750 from `adduser`, and your account is not `grid`. The
+same `install -d` command above fixes the mode; the two env files are 600 and stay
+unreadable either way.
 
 If a command then fails with `EACCES` on a path under _your_ home — pnpm looking for
 `package.json`, uv looking for `uv.toml`, PM2 writing its process list — one of two

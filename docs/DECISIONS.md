@@ -183,3 +183,22 @@ in the ingest path needs. Rate and the hourly ceiling are still enforced.
 Reaching 500 requests in an hour means a job is looping or a window is far larger than
 intended. Sleeping it off would hide that until someone noticed missing data, so the
 limiter raises and the job exits non-zero into `source_status`.
+
+## 2026-09-12 — `horizon_h` rounds to the nearest hour
+
+Issue times are poll-cycle starts, not hour boundaries, so a horizon is fractional.
+Postgres rounds rather than truncates on the cast to integer, which is the better answer:
+a forecast issued at 12:10 for 13:00 is fifty minutes out, nearer one hour than zero.
+
+## 2026-09-12 — EIA's published forecast horizon is far shorter than §5.4 assumes
+
+§5.4 requests day-ahead demand forecasts over `now → now+48h`. In the recorded capture,
+taken at 2026-09-12T01:47Z, DF reached only 2026-09-12T07 — six hours past the current
+hour, not forty-eight. The request was for the full window; that is simply all EIA had.
+
+This matters for §9's forecast selection rule, which takes "the most recent issue at or
+before `target − 24h`". At a six-hour horizon no such issue exists and the forecast series
+would come back empty. One capture cannot say whether the horizon varies by time of day —
+the forecast for a coming operating day may be published in a batch — and `probe` is what
+will answer that once it has run for a while. The constraint is pinned by a test so the
+rule and the data are reconciled deliberately rather than assumed compatible.

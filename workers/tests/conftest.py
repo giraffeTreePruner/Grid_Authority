@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import uuid
 from collections.abc import Iterator
+from typing import Any
 
 import psycopg
 import pytest
@@ -23,6 +24,17 @@ requires_database = pytest.mark.skipif(
     database_url() is None,
     reason="DATABASE_URL is not set; start docker compose and export it to run these",
 )
+
+
+def one(cursor: psycopg.Cursor) -> tuple[Any, ...]:
+    """The single row a query was expected to return.
+
+    psycopg types fetchone() as optional; a query written to return exactly one row
+    should fail loudly here rather than at an unhelpful index error later.
+    """
+    row = cursor.fetchone()
+    assert row is not None, "expected exactly one row, got none"
+    return row
 
 
 @pytest.fixture

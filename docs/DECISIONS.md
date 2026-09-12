@@ -129,3 +129,30 @@ overwrite, or roughly half of some zones' wind and solar would silently vanish.
 
 Despite the Southwest Power Pool being an Eastern Interconnection RTO, its West balancing
 authority area covers the former WACM and WAUW footprint and is Western. SWPP stays eastern.
+
+## 2026-09-11 — Time zones follow civil time, not EIA's operational clock
+
+EIA's `local-hourly` frequency labels each period with the respondent's own UTC offset,
+which makes the offsets directly derivable rather than assumed. Requesting it needs
+offset-suffixed period bounds (`2026-09-09T12-07`); plain labels return HTTP 500.
+
+Comparing a September window against a January one gives each respondent an offset pair
+that identifies its zone. That confirmed 64 of 72 entries and found no zone in the wrong
+band. The eight differences are EIA using the operating entity's clock rather than the
+territory's: MISO and MIDW on Eastern (MISO's market runs on EST), SWPW on Central (SPP
+operates from Little Rock), the whole Southwest region including EPE and PNM on MST with
+no DST, IPCO on Pacific, SEPA on Central, and the NW and US48 aggregates on a single clock
+for a footprint that spans several.
+
+`timezone` is display only, so the registry keeps civil time: a person looking at a clock
+for New Mexico expects it to shift for daylight saving, which EIA's model does not do.
+Anything that later reads `local-hourly` data must use EIA's offsets rather than this
+field.
+
+## 2026-09-11 — sync-zones never deletes
+
+A zone present in the database but absent from the registry is reported and kept, never
+removed, because observations reference it by foreign key. The sync writes a row only when
+a field actually differs, so `updated_at` is untouched on a no-op run and a second sync
+reports no changes at all. Zones are written parent-first, since `zones.parent` is a
+self-referencing foreign key.

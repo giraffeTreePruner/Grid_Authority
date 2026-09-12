@@ -13,7 +13,16 @@ from typing import Annotated
 import typer
 
 from workers.config import ConfigError, load_config
-from workers.db import MigrationError, applied_versions, connect, migrate_down, migrate_up
+from workers.db import (
+    MigrationError,
+    ZoneSyncError,
+    applied_versions,
+    connect,
+    migrate_down,
+    migrate_up,
+    sync_zones,
+    zones_with_observations,
+)
 from workers.db.migrate import available_migrations, pending_migrations
 
 app = typer.Typer(
@@ -65,6 +74,42 @@ def main() -> None:
 
 if __name__ == "__main__":
     sys.exit(app())
+
+
+@app.command("sync-zones")
+def sync_zones_command(
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Upsert the zone registry from zones.yaml into the database.
+
+    Upsert-only: a zone present in the database but absent from the registry is
+    reported, never deleted, because observations reference it.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    try:
+        with connect() as connection:
+            result = sync_zones(connection, config)
+            if result.orphaned:
+                referenced = zones_with_observations(connection, result.orphaned)
+            else:
+                referenced = []
+            connection.commit()
+    except ZoneSyncError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(result.summary())
+    for key in result.orphaned:
+        why = "has observations" if key in referenced else "no observations"
+        typer.echo(f"  kept, not in zones.yaml: {key} ({why})", err=True)
 
 
 migrate = typer.Typer(

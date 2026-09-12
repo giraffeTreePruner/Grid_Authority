@@ -13,6 +13,8 @@ from typing import Annotated
 import typer
 
 from workers.config import ConfigError, load_config
+from workers.db import MigrationError, applied_versions, connect, migrate_down, migrate_up
+from workers.db.migrate import available_migrations, pending_migrations
 
 app = typer.Typer(
     add_completion=False,
@@ -63,3 +65,69 @@ def main() -> None:
 
 if __name__ == "__main__":
     sys.exit(app())
+
+
+migrate = typer.Typer(
+    add_completion=False,
+    help="Apply or revert the numbered SQL migrations in db/migrations.",
+    no_args_is_help=True,
+)
+app.add_typer(migrate, name="migrate")
+
+
+@migrate.command("up")
+def migrate_up_command() -> None:
+    """Apply every migration this database has not yet applied."""
+    try:
+        with connect() as connection:
+            applied = migrate_up(connection)
+    except MigrationError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    if not applied:
+        typer.echo("already up to date")
+        return
+    for migration in applied:
+        typer.echo(f"applied {migration.label}")
+
+
+@migrate.command("down")
+def migrate_down_command(
+    steps: Annotated[
+        int, typer.Option("--steps", help="How many migrations to revert, newest first.")
+    ] = 1,
+) -> None:
+    """Revert the most recently applied migrations."""
+    try:
+        with connect() as connection:
+            reverted = migrate_down(connection, steps)
+    except MigrationError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    if not reverted:
+        typer.echo("nothing to revert")
+        return
+    for migration in reverted:
+        typer.echo(f"reverted {migration.label}")
+
+
+@migrate.command("status")
+def migrate_status_command() -> None:
+    """Show which migrations are applied and which are pending."""
+    try:
+        with connect() as connection:
+            applied = set(applied_versions(connection))
+            pending = {m.version for m in pending_migrations(connection)}
+            for migration in available_migrations():
+                if migration.version in applied:
+                    state = "applied"
+                elif migration.version in pending:
+                    state = "pending"
+                else:
+                    state = "unknown"
+                typer.echo(f"{state:<8} {migration.label}")
+    except MigrationError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error

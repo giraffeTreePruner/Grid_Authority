@@ -422,8 +422,8 @@ never arrived, so check DNS and the firewall first. This host has no `dig`; use
 sudo sh -c "sed 's/grid\.example\.org/$DOMAIN/g' deploy/nginx.conf \
   > /etc/nginx/sites-available/grid-authority"
 
-# prove the substitution landed before testing the config
-sudo grep -c "$DOMAIN" /etc/nginx/sites-available/grid-authority   # expect 3
+# prove the substitution landed: no placeholder may survive
+sudo grep -c 'grid\.example\.org' /etc/nginx/sites-available/grid-authority   # expect 0
 
 sudo nginx -t && sudo systemctl reload nginx
 ```

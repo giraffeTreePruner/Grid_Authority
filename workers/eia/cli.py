@@ -25,6 +25,7 @@ from workers.db import (
     zones_with_observations,
 )
 from workers.db.migrate import available_migrations, pending_migrations
+from workers.eia.backfill import DEFAULT_DAYS, run_backfill
 from workers.eia.client import EiaClient
 from workers.eia.poll import run_poll
 
@@ -117,6 +118,49 @@ def poll_command(
         typer.echo(f"{type(error).__name__}: {error}", err=True)
         raise typer.Exit(code=1) from error
 
+    for warning in summary.warnings:
+        typer.echo(f"warning: {warning}", err=True)
+    typer.echo(summary.as_json())
+
+
+@app.command("backfill")
+def backfill_command(
+    days: Annotated[
+        int, typer.Option("--days", help="How many trailing days to cover.")
+    ] = DEFAULT_DAYS,
+    force: Annotated[
+        bool, typer.Option("--force", help="Re-fetch days that already look complete.")
+    ] = False,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Backfill the trailing window, a day at a time, oldest first.
+
+    Resumable: a day that already holds a full set of hours is skipped, so an
+    interrupted run can simply be restarted.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    key = _api_key()
+    try:
+        with connect() as connection, EiaClient(key) as client:
+            summary = run_backfill(connection, client, config, days=days, force=force)
+    except Exception as error:
+        typer.echo(f"{type(error).__name__}: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(
+        f"{len(summary.days_fetched)} days fetched, "
+        f"{len(summary.days_skipped)} already complete, "
+        f"{summary.snapshots_built} snapshots rebuilt",
+        err=True,
+    )
     for warning in summary.warnings:
         typer.echo(f"warning: {warning}", err=True)
     typer.echo(summary.as_json())

@@ -43,6 +43,28 @@ const migrations = (): string[] => {
     .map((name) => readFileSync(join(dir, name), 'utf8'));
 };
 
+/** Run the worker's sync-zones against one schema, tolerating uv lock contention. */
+const syncZones = (schema: string, attempts = 3): void => {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      execFileSync('uv', ['run', 'eia', 'sync-zones'], {
+        cwd: repoRoot,
+        env: { ...process.env, PGOPTIONS: `-c search_path=${schema}` },
+        stdio: 'pipe',
+        timeout: 120_000,
+      });
+      return;
+    } catch (error) {
+      if (attempt >= attempts) {
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new Error(`sync-zones failed after ${attempts} attempts: ${detail}`);
+      }
+      // Deterministic short wait; this is contention, not a slow database.
+      execFileSync('sleep', [String(attempt)], { stdio: 'pipe' });
+    }
+  }
+};
+
 export interface Harness {
   app: FastifyInstance;
   sql: Sql;
@@ -64,12 +86,12 @@ export const createHarness = async (): Promise<Harness> => {
   }
   await admin.end();
 
-  // sync-zones is the worker's job; calling it keeps one definition of the registry.
-  execFileSync('uv', ['run', 'eia', 'sync-zones'], {
-    cwd: repoRoot,
-    env: { ...process.env, PGOPTIONS: `-c search_path=${schema}` },
-    stdio: 'pipe',
-  });
+  // sync-zones is the worker's job; calling it keeps one definition of the registry
+  // rather than a second copy seeded in SQL here.
+  //
+  // Test files run in parallel and each spawns uv, which can contend on its
+  // environment lock, so a first failure is retried before being treated as real.
+  syncZones(schema);
 
   const sql = postgres(url, {
     max: 5,

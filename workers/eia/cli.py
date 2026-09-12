@@ -28,6 +28,9 @@ from workers.db.migrate import available_migrations, pending_migrations
 from workers.eia.backfill import DEFAULT_DAYS, run_backfill
 from workers.eia.client import EiaClient
 from workers.eia.poll import run_poll
+from workers.eia.probe import run_probe
+from workers.eia.revise import DEFAULT_DAYS as REVISE_DAYS
+from workers.eia.revise import run_revise
 
 app = typer.Typer(
     add_completion=False,
@@ -163,6 +166,58 @@ def backfill_command(
     )
     for warning in summary.warnings:
         typer.echo(f"warning: {warning}", err=True)
+    typer.echo(summary.as_json())
+
+
+@app.command("revise")
+def revise_command(
+    days: Annotated[
+        int, typer.Option("--days", help="How many trailing days to re-fetch.")
+    ] = REVISE_DAYS,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Re-fetch the trailing week and record what EIA changed after publication."""
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    key = _api_key()
+    try:
+        with connect() as connection, EiaClient(key) as client:
+            summary = run_revise(connection, client, config, days=days)
+    except Exception as error:
+        typer.echo(f"{type(error).__name__}: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    typer.echo(
+        f"{summary.changed_rows} rows changed since publication, "
+        f"{summary.snapshots_built} snapshots rebuilt",
+        err=True,
+    )
+    typer.echo(summary.as_json())
+
+
+@app.command("probe")
+def probe_command() -> None:
+    """Measure and record how far behind each dataset is publishing."""
+    key = _api_key()
+    try:
+        with connect() as connection, EiaClient(key) as client:
+            summary = run_probe(connection, client)
+    except Exception as error:
+        typer.echo(f"{type(error).__name__}: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    for reading in summary.readings:
+        hours = reading.lag_minutes / 60
+        typer.echo(
+            f"{reading.dataset}: {hours:.1f}h behind (newest {reading.latest_period})", err=True
+        )
     typer.echo(summary.as_json())
 
 

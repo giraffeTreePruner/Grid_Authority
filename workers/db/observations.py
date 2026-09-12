@@ -11,7 +11,7 @@ Two properties every writer here holds:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 
 import psycopg
@@ -46,11 +46,16 @@ MIX_MODE_COLUMNS = (
 
 @dataclass
 class WriteResult:
-    """How a batch of upserts landed."""
+    """How a batch of upserts landed.
+
+    `changed_periods` holds only the hours that actually moved, so a caller rebuilding
+    snapshots rebuilds those hours rather than everything it happened to touch.
+    """
 
     inserted: int = 0
     revised: int = 0
     unchanged: int = 0
+    changed_periods: set[datetime] = field(default_factory=set)
 
     @property
     def written(self) -> int:
@@ -61,17 +66,20 @@ class WriteResult:
             inserted=self.inserted + other.inserted,
             revised=self.revised + other.revised,
             unchanged=self.unchanged + other.unchanged,
+            changed_periods=self.changed_periods | other.changed_periods,
         )
 
 
-def _tally(rows: list[tuple[bool, bool]]) -> WriteResult:
-    """Fold RETURNING rows of (inserted, revised) into a result."""
+def _tally(rows: list[tuple[bool, bool, datetime]]) -> WriteResult:
+    """Fold RETURNING rows of (inserted, revised, period) into a result."""
     result = WriteResult()
-    for inserted, revised in rows:
+    for inserted, revised, period in rows:
         if inserted:
             result.inserted += 1
+            result.changed_periods.add(period)
         elif revised:
             result.revised += 1
+            result.changed_periods.add(period)
         else:
             result.unchanged += 1
     return result
@@ -101,7 +109,7 @@ def write_region(
         RETURNING (xmax = 0) AS inserted, (revised_at IS NOT NULL) AS revised
     """
 
-    rows: list[tuple[bool, bool]] = []
+    rows: list[tuple[bool, bool, datetime]] = []
     unchanged = 0
     with connection.cursor() as cursor:
         for observation in observations:
@@ -120,7 +128,7 @@ def write_region(
             if row is None:
                 unchanged += 1
             else:
-                rows.append((bool(row[0]), bool(row[1])))
+                rows.append((bool(row[0]), bool(row[1]), observation.period_utc))
 
     result = _tally(rows)
     result.unchanged += unchanged
@@ -162,7 +170,7 @@ def write_mix(connection: psycopg.Connection, observations: list[MixObservation]
         RETURNING (xmax = 0) AS inserted, (revised_at IS NOT NULL) AS revised
     """
 
-    rows: list[tuple[bool, bool]] = []
+    rows: list[tuple[bool, bool, datetime]] = []
     unchanged = 0
     with connection.cursor() as cursor:
         for observation in observations:
@@ -187,7 +195,7 @@ def write_mix(connection: psycopg.Connection, observations: list[MixObservation]
             if row is None:
                 unchanged += 1
             else:
-                rows.append((bool(row[0]), bool(row[1])))
+                rows.append((bool(row[0]), bool(row[1]), observation.period_utc))
 
     result = _tally(rows)
     result.unchanged += unchanged
@@ -211,7 +219,7 @@ def write_interchange(
         RETURNING (xmax = 0) AS inserted, (revised_at IS NOT NULL) AS revised
     """
 
-    rows: list[tuple[bool, bool]] = []
+    rows: list[tuple[bool, bool, datetime]] = []
     unchanged = 0
     with connection.cursor() as cursor:
         for observation in observations:
@@ -229,7 +237,7 @@ def write_interchange(
             if row is None:
                 unchanged += 1
             else:
-                rows.append((bool(row[0]), bool(row[1])))
+                rows.append((bool(row[0]), bool(row[1]), observation.period_utc))
 
     result = _tally(rows)
     result.unchanged += unchanged

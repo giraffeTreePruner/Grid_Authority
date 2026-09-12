@@ -202,3 +202,18 @@ would come back empty. One capture cannot say whether the horizon varies by time
 the forecast for a coming operating day may be published in a batch — and `probe` is what
 will answer that once it has run for a while. The constraint is pinned by a test so the
 rule and the data are reconciled deliberately rather than assumed compatible.
+
+## 2026-09-12 — The probe reads route metadata, not data
+
+§7.4 describes requesting the newest period of each dataset. Route metadata already
+carries `endPeriod`, which is exactly that measurement, and returns no rows at all. One
+request per dataset per hour, four an hour, with no data transferred.
+
+A dataset whose `endPeriod` runs ahead of now reports zero lag rather than a negative
+number: region-data is always ahead because it contains the forward forecast.
+
+## 2026-09-12 — Writers report which hours actually changed
+
+`WriteResult` carries the set of periods whose values moved, so `revise` rebuilds only
+those snapshots. Rebuilding every hour it re-fetched would redo a week of snapshots
+nightly to no effect.

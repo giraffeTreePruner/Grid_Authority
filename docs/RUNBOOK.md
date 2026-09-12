@@ -80,7 +80,7 @@ node geo/build/validate.js
 
 ```sh
 sudo adduser --system --group --home /srv/grid-authority grid
-sudo sudo apt update && sudo apt install -y curl git nginx ufw ca-certificates
+sudo sudo apt update && sudo apt install -y curl git nginx ufw ca-certificates tmux
 ```
 
 Postgres 16 is pinned across dev, CI and prod (see `docs/DECISIONS.md`), but a fresh
@@ -496,9 +496,21 @@ any address it likes. Also set Cloudflare's SSL mode to Full (strict).
 
 ### 2.11 Backfill
 
+This runs for 60–90 minutes, so detach it: an SSH drop would otherwise kill it partway.
+
 ```sh
-cd /srv/grid-authority
-sudo -u grid -H uv run --env-file .env eia backfill --days 90
+sudo -u grid -H tmux new -s backfill
+cd /srv/grid-authority && uv run --env-file .env eia backfill --days 90
+# ctrl-b d to detach; sudo -u grid -H tmux attach -t backfill to return
+```
+
+Without tmux, `nohup` needs nothing installed:
+
+```sh
+sudo -u grid -H bash -c 'cd /srv/grid-authority && \
+  nohup uv run --env-file .env eia backfill --days 90 > backfill.log 2>&1 &'
+
+tail -f /srv/grid-authority/backfill.log
 ```
 
 Roughly 540 requests, well inside the client's 500/hour ceiling per run but not per

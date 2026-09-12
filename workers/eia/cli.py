@@ -6,6 +6,7 @@ and prints a single-line JSON summary as its last line of stdout.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -24,6 +25,8 @@ from workers.db import (
     zones_with_observations,
 )
 from workers.db.migrate import available_migrations, pending_migrations
+from workers.eia.client import EiaClient
+from workers.eia.poll import run_poll
 
 app = typer.Typer(
     add_completion=False,
@@ -74,6 +77,49 @@ def main() -> None:
 
 if __name__ == "__main__":
     sys.exit(app())
+
+
+def _api_key() -> str:
+    key = os.environ.get("EIA_API_KEY", "").strip()
+    if not key:
+        typer.echo(
+            "EIA_API_KEY is not set. Add it to .env and run with "
+            "`uv run --env-file .env ...`, or export it.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    return key
+
+
+@app.command("poll")
+def poll_command(
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Fetch and store a recent window of every EIA series.
+
+    Exits non-zero on any failure, having recorded it in source_status. The last line
+    of stdout is a single-line JSON summary.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    key = _api_key()
+    try:
+        with connect() as connection, EiaClient(key) as client:
+            summary = run_poll(connection, client, config)
+    except Exception as error:
+        typer.echo(f"{type(error).__name__}: {error}", err=True)
+        raise typer.Exit(code=1) from error
+
+    for warning in summary.warnings:
+        typer.echo(f"warning: {warning}", err=True)
+    typer.echo(summary.as_json())
 
 
 @app.command("sync-zones")

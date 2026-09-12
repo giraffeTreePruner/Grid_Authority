@@ -5,7 +5,10 @@
 # Deliberately not a one-command "deploy from my laptop": the migration step needs a
 # decision if it fails, and a script that hides that is worse than a short checklist.
 #
-# Usage:  sudo -u grid ./deploy/deploy.sh
+# Usage:  sudo -u grid -H ./deploy/deploy.sh
+#
+# -H matters: without it HOME points at the invoking user's home, which grid cannot
+# write to, and pnpm, uv and PM2 all keep state there.
 set -euo pipefail
 
 ROOT="${GRID_ROOT:-/srv/grid-authority}"

@@ -397,3 +397,21 @@ CI stays on the `ubuntu-24.04` runner. The runner image does not affect what is 
 Postgres comes from a pinned `postgres:16` service container, Node from `.nvmrc` and
 Python from uv. GitHub does not offer a 26.04 runner, and pinning to `ubuntu-latest`
 would let the CI environment move without anyone deciding to move it.
+
+## 2026-09-12 — Every `sudo -u grid` uses `-H`, and the checkout is mode 755
+
+Two failures the first real deploy hit, both of which are quiet rather than loud.
+
+`adduser --system` creates the home directory mode 0750 on Ubuntu, so the operator's own
+account cannot `cd` into `/srv/grid-authority`. When that `cd` fails in a copied block of
+commands, everything after it runs in the operator's home instead, and the errors name
+paths that look nothing like the problem. The directory is now explicitly `chmod 755`:
+the source is public and both env files are mode 600, so opening the directory costs
+nothing.
+
+`sudo` does not set `HOME` for the target user unless asked. Without `-H`, pnpm, uv and
+PM2 all try to write caches and state into the invoking user's home, which `grid` cannot
+write to. PM2 is the worst of the three: it would keep its process list in the operator's
+home while `pm2 startup --hp /srv/grid-authority` points systemd at grid's, so the
+processes would simply not come back after a reboot — and nothing would say so until one
+happened.

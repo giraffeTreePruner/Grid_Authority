@@ -204,9 +204,28 @@ sudo -u postgres psql -d grid_authority -c \
 ### 2.6 Checkout
 
 ```sh
-sudo -u grid git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
+sudo -u grid -H git clone https://github.com/giraffeTreePruner/Grid_Authority.git /srv/grid-authority
+
+# adduser --system creates the home directory mode 0750 on Ubuntu, so your own
+# account cannot enter it. Nothing here is secret: the source is public and the two
+# env files are mode 600, so opening the directory itself costs nothing.
+sudo chmod 755 /srv/grid-authority
+
 cd /srv/grid-authority
 ```
+
+**Two things about every `sudo -u grid` command below**, both of which fail quietly
+rather than loudly if you get them wrong.
+
+`-H` sets `HOME` to `/srv/grid-authority`. Without it `sudo` leaves `HOME` pointing at
+_your_ home directory, and the `grid` user cannot write there — so pnpm, uv and PM2 all
+try to put their caches and state somewhere they have no access to. PM2 is the one that
+bites hardest: it would write its process list to your home while
+`pm2 startup --hp /srv/grid-authority` points systemd at grid's, so nothing would come
+back after a reboot.
+
+And run them from `/srv/grid-authority`. `sudo` does not change directory, so a command
+issued from elsewhere looks for `package.json` wherever you happen to be standing.
 
 Environment files are written in 2.8, once the database roles exist.
 
@@ -214,20 +233,20 @@ Environment files are written in 2.8, once the database roles exist.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid pnpm install --frozen-lockfile
-sudo -u grid uv sync --all-groups --frozen
+sudo -u grid -H pnpm install --frozen-lockfile
+sudo -u grid -H uv sync --all-groups --frozen
 
-sudo -u grid uv run --env-file .env eia check-config
-sudo -u grid uv run --env-file .env eia migrate up
-sudo -u grid uv run --env-file .env eia sync-zones
+sudo -u grid -H uv run --env-file .env eia check-config
+sudo -u grid -H uv run --env-file .env eia migrate up
+sudo -u grid -H uv run --env-file .env eia sync-zones
 
 sudo -u postgres psql -d grid_authority -c \
   'GRANT SELECT ON ALL TABLES IN SCHEMA public TO grid_api;'
 
-sudo -u grid pnpm --filter @grid-authority/api build
-sudo -u grid pnpm --filter @grid-authority/scheduler build
-sudo -u grid pnpm --filter @grid-authority/web build
-sudo -u grid node geo/build/validate.js
+sudo -u grid -H pnpm --filter @grid-authority/api build
+sudo -u grid -H pnpm --filter @grid-authority/scheduler build
+sudo -u grid -H pnpm --filter @grid-authority/web build
+sudo -u grid -H node geo/build/validate.js
 ```
 
 The web build is the largest memory spike this host ever sees — larger than serving
@@ -250,17 +269,17 @@ any committed file.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid cp deploy/grid-authority.env.example .env
-sudo -u grid cp deploy/grid-authority.api.env.example .env.api
-sudo -u grid chmod 600 .env .env.api
-sudo -u grid "$EDITOR" .env       # EIA_API_KEY and the grid_owner password
-sudo -u grid "$EDITOR" .env.api   # the grid_api password and PUBLIC_BASE_URL
+sudo -u grid -H cp deploy/grid-authority.env.example .env
+sudo -u grid -H cp deploy/grid-authority.api.env.example .env.api
+sudo -u grid -H chmod 600 .env .env.api
+sudo -u grid -H "$EDITOR" .env       # EIA_API_KEY and the grid_owner password
+sudo -u grid -H "$EDITOR" .env.api   # the grid_api password and PUBLIC_BASE_URL
 ```
 
 Both are gitignored. Verify before going further:
 
 ```sh
-sudo -u grid grep -c . .env .env.api        # both non-empty
+sudo -u grid -H grep -c . .env .env.api        # both non-empty
 git check-ignore -v .env .env.api           # both ignored
 ```
 
@@ -268,19 +287,19 @@ git check-ignore -v .env .env.api           # both ignored
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid pm2 start ecosystem.config.cjs
-sudo -u grid pm2 save
+sudo -u grid -H pm2 start ecosystem.config.cjs
+sudo -u grid -H pm2 save
 
-sudo -u grid pm2 install pm2-logrotate
-sudo -u grid pm2 set pm2-logrotate:max_size 10M
-sudo -u grid pm2 set pm2-logrotate:retain 14
-sudo -u grid pm2 set pm2-logrotate:compress true
+sudo -u grid -H pm2 install pm2-logrotate
+sudo -u grid -H pm2 set pm2-logrotate:max_size 10M
+sudo -u grid -H pm2 set pm2-logrotate:retain 14
+sudo -u grid -H pm2 set pm2-logrotate:compress true
 
 # Survive a reboot. Run the command this prints, as root.
-sudo -u grid pm2 startup systemd -u grid --hp /srv/grid-authority
+sudo -u grid -H pm2 startup systemd -u grid --hp /srv/grid-authority
 ```
 
-Confirm both are online: `sudo -u grid pm2 status`.
+Confirm both are online: `sudo -u grid -H pm2 status`.
 
 ### 2.10 TLS and nginx
 
@@ -310,7 +329,7 @@ every client will be counted as one address and the rate limits will be wrong.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid uv run --env-file .env eia backfill --days 90
+sudo -u grid -H uv run --env-file .env eia backfill --days 90
 ```
 
 Roughly 540 requests, well inside the client's 500/hour ceiling per run but not per
@@ -325,9 +344,11 @@ again and it skips the days already complete.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid git pull
-sudo -u grid ./deploy/deploy.sh
+sudo -u grid -H git pull
+sudo -u grid -H ./deploy/deploy.sh
 ```
+
+If `cd` is refused, the directory is still mode 0750 from `adduser`; see 2.6.
 
 The script installs, migrates, syncs zones, builds, validates the geometry, reloads PM2
 and checks health. `pm2 reload` is zero-downtime because the API is clustered.
@@ -346,7 +367,7 @@ curl -s https://YOUR.DOMAIN/api/v1/health | jq
 ### What the jobs have done
 
 ```sh
-sudo -u grid uv run --env-file .env python - <<'PY'
+sudo -u grid -H uv run --env-file .env python - <<'PY'
 import os, psycopg
 with psycopg.connect(os.environ["DATABASE_URL"]) as c, c.cursor() as cur:
     cur.execute("SELECT job, last_success_at, last_failure_at, rows_written, last_error "
@@ -359,8 +380,8 @@ PY
 ### Logs
 
 ```sh
-sudo -u grid pm2 logs --lines 200
-sudo -u grid pm2 logs scheduler --lines 200      # job outcomes and summaries
+sudo -u grid -H pm2 logs --lines 200
+sudo -u grid -H pm2 logs scheduler --lines 200      # job outcomes and summaries
 tail -f /var/log/nginx/grid-error.log
 ```
 
@@ -371,9 +392,9 @@ warnings. A job that fails logs its stderr with it.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid uv run --env-file .env eia poll
-sudo -u grid uv run --env-file .env eia probe
-sudo -u grid uv run --env-file .env eia revise
+sudo -u grid -H uv run --env-file .env eia poll
+sudo -u grid -H uv run --env-file .env eia probe
+sudo -u grid -H uv run --env-file .env eia revise
 ```
 
 Safe at any time: every job is idempotent, and the scheduler skips a tick if the same job
@@ -394,9 +415,20 @@ Check in this order:
 
 1. `curl -s localhost:3000/api/v1/health` — is the API up and the database reachable?
 2. `curl -s 'localhost:3000/api/v1/map/snapshot' | head -c 200` — is there a snapshot?
-3. `sudo -u grid pm2 logs scheduler` — has `poll` run, and did it succeed?
+3. `sudo -u grid -H pm2 logs scheduler` — has `poll` run, and did it succeed?
 4. If `poll` succeeds but writes nothing, EIA may be lagging. `eia probe` then check
    `probe_log`: interchange has been observed 42 hours behind.
+
+### Permission denied on the checkout
+
+`cd: /srv/grid-authority: Permission denied` means `adduser --system` created the home
+directory mode 0750 and your account is not `grid`. `sudo chmod 755 /srv/grid-authority`
+fixes it; the two env files are mode 600 and stay unreadable.
+
+If a command then fails with `EACCES` on a path under _your_ home — pnpm looking for
+`package.json`, uv looking for `uv.toml`, PM2 writing its process list — one of two
+things happened: the command ran from the wrong directory, or it ran without `-H` and
+inherited your `HOME`. Both are covered in 2.6.
 
 ### A job keeps failing
 
@@ -420,15 +452,15 @@ Cloudflare real-IP block matches how traffic actually arrives.
 
 ```sh
 cd /srv/grid-authority
-sudo -u grid git checkout <previous-tag>
-sudo -u grid ./deploy/deploy.sh
+sudo -u grid -H git checkout <previous-tag>
+sudo -u grid -H ./deploy/deploy.sh
 ```
 
 Migrations are reversible one step at a time:
 
 ```sh
-sudo -u grid uv run --env-file .env eia migrate status
-sudo -u grid uv run --env-file .env eia migrate down --steps 1
+sudo -u grid -H uv run --env-file .env eia migrate status
+sudo -u grid -H uv run --env-file .env eia migrate down --steps 1
 ```
 
 Reverting a migration drops its tables. Take a dump first:

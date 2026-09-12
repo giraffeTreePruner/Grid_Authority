@@ -267,6 +267,21 @@ any committed file.
 | `.env`     | scheduler, and the workers it spawns | `grid_owner` — writes   |
 | `.env.api` | api                                  | `grid_api` — reads only |
 
+Neither `DATABASE_URL` is something to look up. You assemble it from the role name, the
+password you chose in 2.5, and the local database:
+
+```
+postgresql://<role>:<the password you chose>@127.0.0.1:5432/grid_authority
+```
+
+Percent-encode the password if it contains `:` `/` `?` `#` `[` `]` `@` or a space. If you
+no longer have it, set a new one rather than hunting for it — Postgres stores a hash, not
+the password:
+
+```sh
+sudo -u postgres psql -c "ALTER ROLE grid_owner PASSWORD 'new-password';"
+```
+
 ```sh
 cd /srv/grid-authority
 sudo -u grid -H cp deploy/grid-authority.env.example .env
@@ -279,9 +294,38 @@ sudo -u grid -H "$EDITOR" .env.api   # the grid_api password and PUBLIC_BASE_URL
 Both are gitignored. Verify before going further:
 
 ```sh
-sudo -u grid -H grep -c . .env .env.api        # both non-empty
+sudo -u grid -H grep -c . .env .env.api     # both non-empty
 git check-ignore -v .env .env.api           # both ignored
 ```
+
+Then prove each URL connects as the role you intended, rather than finding out at the
+first migration:
+
+```sh
+# must print grid_owner, and must be able to create a table
+sudo -u grid -H uv run --env-file .env python -c "
+import os, psycopg
+with psycopg.connect(os.environ['DATABASE_URL']) as c, c.cursor() as cur:
+    cur.execute('SELECT current_user'); print('.env     ->', cur.fetchone()[0])
+    cur.execute('CREATE TABLE _probe (x int)'); cur.execute('DROP TABLE _probe')
+    print('            can write: yes')
+"
+
+# must print grid_api, and must NOT be able to create a table
+sudo -u grid -H uv run --env-file .env.api python -c "
+import os, psycopg
+with psycopg.connect(os.environ['DATABASE_URL']) as c, c.cursor() as cur:
+    cur.execute('SELECT current_user'); print('.env.api ->', cur.fetchone()[0])
+    try:
+        cur.execute('CREATE TABLE _probe (x int)')
+        print('            can write: YES — wrong role in .env.api')
+    except Exception:
+        print('            can write: no, as intended')
+"
+```
+
+If `.env` reports `grid_api`, every ingest job fails and `migrate up` stops at the first
+`CREATE TABLE`. That is the one mistake worth catching here rather than later.
 
 ### 2.9 PM2
 

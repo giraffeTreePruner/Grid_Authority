@@ -28,6 +28,7 @@ from workers.db.observations import (
     write_mix,
     write_region,
 )
+from workers.db.snapshots import rebuild_snapshots, recent_complete_hours
 from workers.eia.client import (
     ROUTE_FUEL_TYPE,
     ROUTE_INTERCHANGE,
@@ -63,6 +64,7 @@ class PollSummary:
     mix: WriteResult = field(default_factory=WriteResult)
     interchange: WriteResult = field(default_factory=WriteResult)
     forecast_issues: int = 0
+    snapshots_built: int = 0
     periods_touched: set[datetime] = field(default_factory=set)
     data_latest_period: datetime | None = None
 
@@ -148,6 +150,15 @@ def run_poll(
             | {o.period_utc for o in mix}
             | {o.period_utc for o in interchange}
         )
+
+        # §7.1: every period touched, plus the two newest complete hours regardless,
+        # so a snapshot is never left stale because its hour received no revision.
+        summary.snapshots_built = rebuild_snapshots(
+            connection,
+            summary.periods_touched | recent_complete_hours(connection),
+            config,
+        )
+
         summary.rows_written = (
             summary.region.written
             + summary.mix.written

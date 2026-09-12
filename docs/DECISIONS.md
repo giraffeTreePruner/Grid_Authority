@@ -292,3 +292,23 @@ Moving nine zones off the map exposed the completeness check being scoped to `in
 zones. Backfill ingests every zone and the API serves them all, including the regional
 aggregates which are deliberately off the map but very much expected to have data. The
 check now covers every zone whose capabilities say it publishes demand.
+
+## 2026-09-12 — No router dependency for two pages
+
+§3's approved web dependencies do not include a router, and the site has two paths. A
+seven-line `routeFor` covers it. If a third page with parameters arrives, that is the
+point to reconsider.
+
+## 2026-09-12 — The About page is generated from the API, not from a copy
+
+`/about/data` renders whatever `/api/v1/sources` returns, including inactive entries, so
+it cannot drift from the registry the ingest actually uses. The `emaps_method` label is
+asserted verbatim by a test: the exact wording is the requirement, not an approximation
+of it.
+
+## 2026-09-12 — Playback is tested by driving frames, not by faking timers
+
+Fake timers deadlock against `waitFor`, which uses real timers internally. Driving
+`requestAnimationFrame` by hand is deterministic and also tests the pacing itself — that
+a frame arriving sooner than the interval does not advance the cursor — which a
+timer-based test would have hidden.

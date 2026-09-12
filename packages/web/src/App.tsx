@@ -12,6 +12,7 @@ import { Legend } from './components/Legend.tsx';
 import { MapView } from './components/MapView.tsx';
 import { MetricSwitcher } from './components/MetricSwitcher.tsx';
 import { StatusBar } from './components/StatusBar.tsx';
+import { ZoneList } from './components/ZoneList.tsx';
 import { ZonePanel } from './components/ZonePanel.tsx';
 import { TimeSlider } from './components/TimeSlider.tsx';
 import { useGridStore } from './store/useGridStore.ts';
@@ -97,6 +98,8 @@ export const App = (): JSX.Element => {
       </main>
 
       <TimeSlider />
+
+      <ZoneList zones={zones.data?.zones ?? []} />
 
       <footer className="flex flex-wrap items-center gap-3 border-t border-zinc-800 px-4 py-2 text-[11px] text-zinc-500">
         <a

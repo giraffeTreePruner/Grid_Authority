@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
+import { AboutData } from './pages/AboutData.tsx';
+import { routeFor } from './lib/route.ts';
 import './index.css';
 
 const client = new QueryClient({
@@ -22,7 +24,7 @@ if (container === null) throw new Error('#root is missing from index.html');
 createRoot(container).render(
   <StrictMode>
     <QueryClientProvider client={client}>
-      <App />
+      {routeFor(window.location.pathname) === 'about-data' ? <AboutData /> : <App />}
     </QueryClientProvider>
   </StrictMode>,
 );

@@ -3,12 +3,16 @@
  *
  * On load it fetches the registry and one week of map data in parallel. Everything the
  * slider and the metric switcher need is in that one window response; neither issues a
- * request afterwards.
+ * request afterwards, which is what §10 requires and what the control tests assert.
  */
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { fetchWindow, fetchZones } from './api/client.ts';
+import { ApiError, fetchWindow, fetchZones } from './api/client.ts';
+import { Legend } from './components/Legend.tsx';
 import { MapView } from './components/MapView.tsx';
+import { MetricSwitcher } from './components/MetricSwitcher.tsx';
+import { StatusBar } from './components/StatusBar.tsx';
+import { TimeSlider } from './components/TimeSlider.tsx';
 import { useGridStore } from './store/useGridStore.ts';
 
 const WINDOW_HOURS = 168;
@@ -24,8 +28,12 @@ export const defaultWindowRange = (now: Date = new Date()): { from: string; to: 
   return { from: iso(start), to: iso(end) };
 };
 
+const messageFor = (error: unknown): string =>
+  error instanceof ApiError ? error.message : 'An unexpected error occurred.';
+
 export const App = (): JSX.Element => {
   const setWindow = useGridStore((state) => state.setWindow);
+  const windowPayload = useGridStore((state) => state.window);
 
   const zones = useQuery({
     queryKey: ['zones'],
@@ -34,35 +42,71 @@ export const App = (): JSX.Element => {
   });
 
   const range = defaultWindowRange();
-  const window = useQuery({
+  const windowQuery = useQuery({
     queryKey: ['window', range.from, range.to],
     queryFn: ({ signal }) => fetchWindow(range.from, range.to, signal),
     staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
-    if (window.data !== undefined) setWindow(window.data);
-  }, [window.data, setWindow]);
+    if (windowQuery.data !== undefined) setWindow(windowQuery.data);
+  }, [windowQuery.data, setWindow]);
+
+  const failure = windowQuery.error ?? zones.error ?? null;
+  const loading = zones.isPending || windowQuery.isPending;
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-baseline gap-3 border-b border-zinc-800 px-4 py-2">
-        <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
-        <p className="text-xs text-zinc-400">
-          United States balancing authorities, hourly, from EIA Form 930
-        </p>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-2">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
+          <p className="hidden text-xs text-zinc-400 sm:block">
+            United States balancing authorities, hourly, from EIA Form 930
+          </p>
+        </div>
+        <MetricSwitcher />
       </header>
+
+      <StatusBar
+        meta={windowPayload?.meta ?? null}
+        error={failure === null ? null : messageFor(failure)}
+        onRetry={() => void windowQuery.refetch()}
+      />
 
       <main className="relative flex-1">
         <MapView geometryVersion={GEOMETRY_VERSION} />
-        {(zones.isPending || window.isPending) && (
+
+        <div className="pointer-events-none absolute bottom-4 left-4">
+          <div className="pointer-events-auto">
+            <Legend />
+          </div>
+        </div>
+
+        {loading && failure === null && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
             <p className="rounded bg-zinc-900/80 px-3 py-2 text-xs text-zinc-300">
-              Loading grid data…
+              Loading a week of grid data…
             </p>
           </div>
         )}
       </main>
+
+      <TimeSlider />
+
+      <footer className="flex flex-wrap items-center gap-3 border-t border-zinc-800 px-4 py-2 text-[11px] text-zinc-500">
+        <a
+          className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
+          href="https://github.com/giraffeTreePruner/Grid_Authority"
+        >
+          Source code (AGPL-3.0)
+        </a>
+        <a
+          className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
+          href="/about/data"
+        >
+          About the data
+        </a>
+      </footer>
     </div>
   );
 };

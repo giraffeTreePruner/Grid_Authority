@@ -37,7 +37,7 @@ from workers.eia.backfill import (
 from workers.eia.client import EiaClient
 from workers.eia.poll import run_poll
 from workers.eia.probe import run_probe
-from workers.eia.ratelimit import BACKFILL_PER_HOUR, RateLimiter
+from workers.eia.ratelimit import BACKFILL_PER_HOUR, RateLimiter, sustainable_rate
 from workers.eia.revise import DEFAULT_DAYS as REVISE_DAYS
 from workers.eia.revise import run_revise
 from workers.eia.seed import SeedError, seed_from_fixtures
@@ -195,7 +195,8 @@ def backfill_command(
 
     key = _api_key()
     try:
-        limiter = RateLimiter(per_hour=max_per_hour)
+        # Paced so that hours of steady requests never reach the job's own ceiling.
+        limiter = RateLimiter(per_second=sustainable_rate(max_per_hour), per_hour=max_per_hour)
         with connect() as connection, EiaClient(key, limiter=limiter) as client:
             summary = run_backfill(connection, client, config, days=days, force=force)
     except Exception as error:

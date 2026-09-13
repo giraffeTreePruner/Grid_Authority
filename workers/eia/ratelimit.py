@@ -27,6 +27,26 @@ MAX_REQUESTS_PER_HOUR = 500
 BACKFILL_PER_HOUR = 4500
 
 
+def sustainable_rate(per_hour: int) -> int:
+    """The per-second rate a job can hold all hour without reaching `per_hour`.
+
+    The hourly ceiling exists to catch a burst: the recurring jobs send a handful of
+    requests, so a loop reaches the ceiling long before an hour is out and raises where
+    someone can see it. A backfill is not a burst — it is hours of steady requests — so
+    pacing it at the default four a second would trip its own ceiling every nineteen
+    minutes and need restarting all day.
+
+    Pacing to the sustainable rate instead means a long run never reaches the ceiling,
+    and the ceiling keeps its meaning for the jobs it was written for.
+
+    Below 3,600 an hour there is no such rate: the pacer's window is one second, and
+    one request a second is already 3,600. The floor of 1 is returned rather than 0,
+    which would stall outright — a job given a ceiling that low is a short job, and is
+    meant to reach it.
+    """
+    return max(1, per_hour // 3600)
+
+
 @dataclass
 class RateLimiter:
     """Paces requests to a rate, and refuses to exceed an hourly ceiling.

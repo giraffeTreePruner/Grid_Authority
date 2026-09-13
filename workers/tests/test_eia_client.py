@@ -25,7 +25,7 @@ from workers.eia.client import (
     validate_facets,
 )
 from workers.eia.errors import EiaRateLimitExceeded, EiaRequestError, UnknownFacetCode
-from workers.eia.ratelimit import RateLimiter
+from workers.eia.ratelimit import BACKFILL_PER_HOUR, RateLimiter, sustainable_rate
 from workers.tests.fixtures import envelope, load, rows
 
 
@@ -224,6 +224,25 @@ def test_backoff_grows_and_is_jittered(client: EiaClient) -> None:
 
 
 # -- pacing ---------------------------------------------------------------------------
+
+
+def test_a_sustainable_rate_cannot_reach_its_own_ceiling() -> None:
+    """An hour at the paced rate must stay under the ceiling that paces it.
+
+    Otherwise a long backfill trips the limit it was given and has to be restarted
+    all day, which is how an operator learns to pass a ceiling nobody believes in.
+    """
+    for per_hour in (3600, BACKFILL_PER_HOUR, 9000, 14_400):
+        assert sustainable_rate(per_hour) * 3600 <= per_hour
+
+    # The backfill's own default must be paceable, or the pacing is decorative.
+    assert sustainable_rate(BACKFILL_PER_HOUR) >= 1
+
+    # Below 3,600/hour no rate is sustainable with a one-second window. The floor is
+    # 1 rather than 0, which would stall; such a ceiling belongs to a short job that
+    # is meant to reach it.
+    assert sustainable_rate(500) == 1
+    assert sustainable_rate(1) == 1
 
 
 def test_the_hourly_ceiling_raises_rather_than_waiting() -> None:

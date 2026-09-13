@@ -20,6 +20,7 @@ from datetime import UTC, datetime, timedelta
 import psycopg
 
 from workers.config import AppConfig
+from workers.db.aggregates import refresh_buckets_for
 from workers.db.observations import (
     WriteResult,
     record_status,
@@ -65,6 +66,7 @@ class PollSummary:
     interchange: WriteResult = field(default_factory=WriteResult)
     forecast_issues: int = 0
     snapshots_built: int = 0
+    aggregates_built: int = 0
     periods_touched: set[datetime] = field(default_factory=set)
     data_latest_period: datetime | None = None
 
@@ -153,11 +155,12 @@ def run_poll(
 
         # §7.1: every period touched, plus the two newest complete hours regardless,
         # so a snapshot is never left stale because its hour received no revision.
-        summary.snapshots_built = rebuild_snapshots(
-            connection,
-            summary.periods_touched | recent_complete_hours(connection),
-            config,
-        )
+        touched = summary.periods_touched | recent_complete_hours(connection)
+        summary.snapshots_built = rebuild_snapshots(connection, touched, config)
+
+        # The day, week and month those hours fall in, so the coarse views stay current
+        # without a separate job. Bulk history is built by `eia rebuild-aggregates`.
+        summary.aggregates_built = refresh_buckets_for(connection, touched, config)
 
         summary.rows_written = (
             summary.region.written

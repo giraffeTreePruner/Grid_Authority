@@ -26,6 +26,7 @@ from workers.db import (
     sync_zones,
     zones_with_observations,
 )
+from workers.db.aggregates import RESOLUTIONS, build_aggregates, store_aggregates
 from workers.db.migrate import available_migrations, pending_migrations
 from workers.db.snapshots import hours_needing_snapshots, rebuild_snapshots
 from workers.eia.backfill import (
@@ -252,6 +253,63 @@ def rebuild_snapshots_command(
     typer.echo(
         json.dumps({"job": "rebuild-snapshots", "snapshots_built": built}, separators=(",", ":"))
     )
+
+
+@app.command("rebuild-aggregates")
+def rebuild_aggregates_command(
+    since: Annotated[
+        str | None,
+        typer.Option("--since", help="Earliest day to cover, as YYYY-MM-DD. Defaults to all."),
+    ] = None,
+    resolution: Annotated[
+        str | None,
+        typer.Option(
+            "--resolution",
+            help=f"One of {', '.join(RESOLUTIONS)}. Defaults to all three.",
+        ),
+    ] = None,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Build the day, week and month snapshots from observations already stored.
+
+    Makes no EIA requests. Run it once after a long backfill; from then on the poll
+    job keeps the current buckets fresh on its own.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    if resolution is not None and resolution not in RESOLUTIONS:
+        typer.echo(f"--resolution must be one of {', '.join(RESOLUTIONS)}", err=True)
+        raise typer.Exit(code=1)
+    wanted = RESOLUTIONS if resolution is None else (resolution,)
+
+    if since is None:
+        start = EARLIEST_PERIOD
+    else:
+        try:
+            start = datetime.strptime(since, "%Y-%m-%d").replace(tzinfo=UTC)
+        except ValueError as error:
+            typer.echo(f"--since must be YYYY-MM-DD, got {since!r}", err=True)
+            raise typer.Exit(code=1) from error
+
+    # Exclusive, and one hour past the newest hour so the period containing it is built.
+    end = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+
+    built: dict[str, int] = {}
+    with connect() as connection:
+        for unit in wanted:
+            periods = build_aggregates(connection, unit, start, end, config)
+            built[unit] = store_aggregates(connection, unit, periods)
+            connection.commit()
+            typer.echo(f"{built[unit]} {unit} periods built", err=True)
+
+    typer.echo(json.dumps({"job": "rebuild-aggregates", **built}, separators=(",", ":")))
 
 
 @app.command("revise")

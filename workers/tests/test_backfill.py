@@ -14,9 +14,11 @@ from workers.config import load_config
 from workers.db.migrate import migrate_up
 from workers.db.zones import sync_zones
 from workers.eia.backfill import (
+    EARLIEST_PERIOD,
     day_bounds,
     day_is_complete,
     days_in_window,
+    days_since,
     run_backfill,
 )
 from workers.eia.client import ROUTE_REGION, EiaClient
@@ -54,6 +56,17 @@ def test_a_day_covers_all_twenty_four_hours() -> None:
     start, end = day_bounds(datetime(2026, 9, 10, 13, 45, tzinfo=UTC))
     assert start == datetime(2026, 9, 10, 0, tzinfo=UTC)
     assert end == datetime(2026, 9, 10, 23, tzinfo=UTC)
+
+
+def test_days_since_counts_both_ends() -> None:
+    assert days_since(datetime(2026, 9, 10, tzinfo=UTC), datetime(2026, 9, 12, 7, tzinfo=UTC)) == 3
+    assert days_since(datetime(2026, 9, 12, tzinfo=UTC), datetime(2026, 9, 12, 7, tzinfo=UTC)) == 1
+
+
+def test_the_full_history_is_a_few_thousand_days() -> None:
+    """A sanity bound on the largest run anyone can ask for."""
+    days = days_since(EARLIEST_PERIOD, datetime(2026, 9, 12, tzinfo=UTC))
+    assert 2800 < days < 2900
 
 
 # -- completeness ----------------------------------------------------------------------

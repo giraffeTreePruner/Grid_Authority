@@ -1,9 +1,14 @@
 """Client-side request pacing.
 
-EIA's published guidance is roughly 9,000 requests an hour and 5 a second. The limits
-here are an order of magnitude under that, deliberately: staying far below costs nothing
-at this volume, and the hourly ceiling turns a runaway loop into a loud failure rather
-than a ban.
+EIA's published guidance is roughly 9,000 requests an hour and 5 a second. The default
+ceiling here is an order of magnitude under that, deliberately: staying far below costs
+nothing at the volume the recurring jobs need, and it turns a runaway loop into a loud
+failure rather than a ban.
+
+The ceiling is a default, not a law. A backfill covering years legitimately needs more
+requests than it allows — about 17,000 for the full EIA-930 history — and a limit a
+correct job cannot satisfy only teaches an operator to ignore it. `BACKFILL_PER_HOUR`
+is the raised figure for that case, still comfortably under EIA's guidance.
 """
 
 from __future__ import annotations
@@ -16,6 +21,10 @@ from workers.eia.errors import EiaRateLimitExceeded
 
 MAX_REQUESTS_PER_SECOND = 4
 MAX_REQUESTS_PER_HOUR = 500
+
+# For the one-off backfill, which is bounded by the days it was asked for rather than
+# by a loop that could run away. Half of EIA's published guidance.
+BACKFILL_PER_HOUR = 4500
 
 
 @dataclass

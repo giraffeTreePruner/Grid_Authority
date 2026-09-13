@@ -28,10 +28,16 @@ from workers.db import (
 )
 from workers.db.migrate import available_migrations, pending_migrations
 from workers.db.snapshots import hours_needing_snapshots, rebuild_snapshots
-from workers.eia.backfill import DEFAULT_DAYS, run_backfill
+from workers.eia.backfill import (
+    DEFAULT_DAYS,
+    EARLIEST_PERIOD,
+    days_since,
+    run_backfill,
+)
 from workers.eia.client import EiaClient
 from workers.eia.poll import run_poll
 from workers.eia.probe import run_probe
+from workers.eia.ratelimit import BACKFILL_PER_HOUR, RateLimiter
 from workers.eia.revise import DEFAULT_DAYS as REVISE_DAYS
 from workers.eia.revise import run_revise
 from workers.eia.seed import SeedError, seed_from_fixtures
@@ -135,19 +141,52 @@ def backfill_command(
     days: Annotated[
         int, typer.Option("--days", help="How many trailing days to cover.")
     ] = DEFAULT_DAYS,
+    since: Annotated[
+        str | None,
+        typer.Option(
+            "--since",
+            help="Earliest day to cover, as YYYY-MM-DD. Overrides --days. "
+            f"EIA-930 begins {EARLIEST_PERIOD:%Y-%m-%d}.",
+        ),
+    ] = None,
     force: Annotated[
         bool, typer.Option("--force", help="Re-fetch days that already look complete.")
     ] = False,
+    max_per_hour: Annotated[
+        int,
+        typer.Option(
+            "--max-per-hour",
+            help="Client-side hourly request ceiling. The default is raised well above "
+            "the recurring jobs', because a long backfill legitimately needs it.",
+        ),
+    ] = BACKFILL_PER_HOUR,
     config_dir: Annotated[
         Path | None,
         typer.Option("--config-dir", help="Directory holding the YAML config files."),
     ] = None,
 ) -> None:
-    """Backfill the trailing window, a day at a time, oldest first.
+    """Backfill a trailing window, a day at a time, oldest first.
 
     Resumable: a day that already holds a full set of hours is skipped, so an
     interrupted run can simply be restarted.
     """
+    if since is not None:
+        try:
+            earliest = datetime.strptime(since, "%Y-%m-%d").replace(tzinfo=UTC)
+        except ValueError as error:
+            typer.echo(f"--since must be YYYY-MM-DD, got {since!r}", err=True)
+            raise typer.Exit(code=1) from error
+        if earliest < EARLIEST_PERIOD:
+            typer.echo(
+                f"EIA-930 begins {EARLIEST_PERIOD:%Y-%m-%d}; --since {since} would "
+                "spend requests on days that do not exist",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        days = days_since(earliest, datetime.now(UTC))
+        if days < 1:
+            typer.echo(f"--since {since} is in the future", err=True)
+            raise typer.Exit(code=1)
     try:
         config = load_config(config_dir)
     except ConfigError as error:
@@ -156,7 +195,8 @@ def backfill_command(
 
     key = _api_key()
     try:
-        with connect() as connection, EiaClient(key) as client:
+        limiter = RateLimiter(per_hour=max_per_hour)
+        with connect() as connection, EiaClient(key, limiter=limiter) as client:
             summary = run_backfill(connection, client, config, days=days, force=force)
     except Exception as error:
         typer.echo(f"{type(error).__name__}: {error}", err=True)

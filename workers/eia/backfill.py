@@ -76,6 +76,15 @@ class BackfillSummary:
         )
 
 
+# EIA-930 begins here. All three datasets report 2019-01-01T00 as their first hour.
+EARLIEST_PERIOD = datetime(2019, 1, 1, tzinfo=UTC)
+
+
+def days_since(earliest: datetime, now: datetime) -> int:
+    """How many trailing days reach back to `earliest`, inclusive of both ends."""
+    return (now.astimezone(UTC).date() - earliest.astimezone(UTC).date()).days + 1
+
+
 def day_bounds(day: datetime) -> tuple[datetime, datetime]:
     """The UTC hour range covering one day, inclusive of both ends."""
     start = day.replace(hour=0, minute=0, second=0, microsecond=0)

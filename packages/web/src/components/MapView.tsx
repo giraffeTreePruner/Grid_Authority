@@ -8,12 +8,12 @@
  * what lets the slider scrub and the metric switch repaint from memory.
  */
 import maplibregl, { type MapGeoJSONFeature } from 'maplibre-gl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { METRICS, metricIndex } from '../lib/metrics.ts';
 import { fillColourExpression, fillOpacityExpression, lineWidthExpression } from '../lib/paint.ts';
 import { registerPmtilesProtocol, zonesArchiveUrl } from '../lib/pmtiles.ts';
-import { useGridStore, valuesAtCursor } from '../store/useGridStore.ts';
+import { useGridStore, valuesAcrossWindow, valuesAtCursor } from '../store/useGridStore.ts';
 
 const SOURCE_ID = 'zones';
 const SOURCE_LAYER = 'zones';
@@ -22,6 +22,17 @@ const LINE_LAYER = 'zones-line';
 
 /** Continental US, which is all MVP 1 draws. */
 const INITIAL_VIEW = { center: [-98.5, 39.5] as [number, number], zoom: 3.4 };
+
+/**
+ * The zoom range the tiles actually cover, from `tippecanoe -Z3 -z8` in
+ * `geo/build/README.md`.
+ *
+ * MapLibre over-zooms past a source's maxzoom but does not under-zoom below its
+ * minzoom: at a lower zoom there is simply no tile, and the map goes empty with no
+ * error. So the map may not be allowed to go below where the archive starts.
+ */
+const TILE_MIN_ZOOM = 3;
+const TILE_MAX_ZOOM = 8;
 
 export interface MapViewProps {
   geometryVersion: string;
@@ -83,8 +94,8 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
       },
       ...INITIAL_VIEW,
       attributionControl: false,
-      maxZoom: 8,
-      minZoom: 2,
+      maxZoom: TILE_MAX_ZOOM,
+      minZoom: TILE_MIN_ZOOM,
     });
 
     instance.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
@@ -160,6 +171,13 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
     };
   }, [geometryVersion, hoverZone, onReady, selectZone]);
 
+  // Computed from the window rather than the cursor, so scrubbing does not re-scale
+  // the ramp, and recomputed only when the window or the metric changes.
+  const windowValues = useMemo(
+    () => valuesAcrossWindow(windowPayload, metricIndex(metric)),
+    [windowPayload, metric],
+  );
+
   // --- painting, on every metric or cursor change -------------------------------------
   useEffect(() => {
     const instance = map.current;
@@ -181,9 +199,9 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
     instance.setPaintProperty(
       FILL_LAYER,
       'fill-color',
-      fillColourExpression(METRICS[metric], [...values.values()]),
+      fillColourExpression(METRICS[metric], windowValues),
     );
-  }, [metric, cursor, windowPayload, ready]);
+  }, [metric, cursor, windowPayload, windowValues, ready]);
 
   // --- selection ---------------------------------------------------------------------
   useEffect(() => {

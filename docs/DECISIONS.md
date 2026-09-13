@@ -531,3 +531,31 @@ Left as it is, rather than raised or made configurable: the job is resumable, th
 is per-process and resets on the next run, and two rounds inside one hour are still an
 order of magnitude below what EIA permits. A ceiling that a legitimate job cannot exceed
 is not a ceiling. The runbook now says this instead of claiming 540 is "well inside" 500.
+
+## 2026-09-12 — The colour domain spans the window, not the hour on screen
+
+`computeDomain` was fed the values at the cursor, so every step of the slider rescaled
+the ramp. The effect is that colour stops meaning anything across time: a zone holding a
+steady value changes colour as other zones move around it, and a zone whose demand
+doubles can keep its colour. Playback, which is the point of the slider, showed mostly
+the rescaling rather than the data.
+
+The domain is now computed once per window and metric, in a `useMemo`, and the legend
+reads the same one. Whether the legend dims itself is still a question about the hour on
+screen, so that stays on the cursor.
+
+The window is currently seven days, so this is stable across a week rather than
+absolutely fixed. A fixed per-metric domain would be steadier still but has to be chosen
+against data none of us has seen yet; spanning the loaded window costs nothing and
+removes the effect that made playback unreadable.
+
+## 2026-09-12 — The map's minimum zoom matches the tile archive's
+
+`tippecanoe -Z3 -z8` builds the archive, and the map was constructed with `minZoom: 2`.
+MapLibre over-zooms past a source's maxzoom but does not under-zoom below its minzoom, so
+below z3 there was no tile to draw and the map went blank — no error, no warning, just an
+empty background.
+
+The map now stops at z3. The alternative, rebuilding the archive from z0, spends tiles on
+a view no reader of a US-only map wants; the continental US fits at z3.4, which is where
+the map opens.

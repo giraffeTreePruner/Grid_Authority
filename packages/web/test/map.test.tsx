@@ -182,6 +182,45 @@ describe('MapView', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it('holds the colour ramp still while the cursor moves', async () => {
+    // The domain is computed from the window, not the hour on screen. Per-hour scaling
+    // means a zone can hold its value and change colour, or change value and hold its
+    // colour, so no two frames can be compared by eye.
+    render(<MapView geometryVersion="1" />);
+    fireLoad();
+    useGridStore.getState().setWindow(makeWindow());
+
+    const fillColour = (): unknown =>
+      paintProperties.findLast((entry) => entry.property === 'fill-color')?.value;
+
+    await waitFor(() => expect(fillColour()).toBeDefined());
+    useGridStore.getState().setCursor(0);
+    await waitFor(() => {
+      const erco = featureStates.findLast((entry) => entry.id === 'US-TEX-ERCO');
+      expect(erco?.state.value).toBe(58000);
+    });
+    const atFirstHour = fillColour();
+
+    // ERCO's demand rises by 100 an hour in the fixture, so an hour-scaled domain
+    // would move here and a window-scaled one would not.
+    useGridStore.getState().setCursor(3);
+    await waitFor(() => {
+      const erco = featureStates.findLast((entry) => entry.id === 'US-TEX-ERCO');
+      expect(erco?.state.value).toBe(58300);
+    });
+
+    expect(fillColour()).toEqual(atFirstHour);
+  });
+
+  it('will not zoom out past the zoom the tiles start at', () => {
+    // tippecanoe builds the archive with -Z3 -z8. MapLibre over-zooms past a maxzoom
+    // but does not under-zoom below a minzoom: below z3 there is no tile, and the map
+    // renders empty with no error to say why.
+    render(<MapView geometryVersion="1" />);
+    expect(constructedWith?.minZoom).toBe(3);
+    expect(constructedWith?.maxZoom).toBe(8);
+  });
+
   it('marks the selected zone through feature state', async () => {
     render(<MapView geometryVersion="1" />);
     fireLoad();

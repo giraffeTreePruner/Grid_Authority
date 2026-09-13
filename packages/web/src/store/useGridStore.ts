@@ -86,6 +86,27 @@ export const newestHourWithData = (payload: WindowResponse): number => {
   return Math.max(payload.periods.length - 1, 0);
 };
 
+/**
+ * Every value for one metric across the whole window, in no particular order.
+ *
+ * The colour domain is computed from this rather than from the cursor's hour, so the
+ * ramp holds still while the slider moves. Deriving it per hour re-scales the map at
+ * every step: a zone keeps its colour while its value changes, or changes colour while
+ * its value holds, and no two frames can be compared by eye.
+ */
+export const valuesAcrossWindow = (
+  payload: WindowResponse | null,
+  metricPosition: number,
+): (number | null)[] => {
+  if (payload === null) return [];
+
+  const values: (number | null)[] = [];
+  for (const series of Object.values(payload.zones)) {
+    for (const atHour of series) values.push(atHour?.[metricPosition] ?? null);
+  }
+  return values;
+};
+
 /** The values for one metric across every zone at the cursor's hour. */
 export const valuesAtCursor = (
   payload: WindowResponse | null,

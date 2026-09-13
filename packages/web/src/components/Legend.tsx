@@ -5,7 +5,7 @@
  * hatched as well as grey, so it is distinguishable without relying on hue.
  */
 import { computeDomain, METRICS, rampStops } from '../lib/metrics.ts';
-import { useGridStore, valuesAtCursor } from '../store/useGridStore.ts';
+import { useGridStore, valuesAcrossWindow, valuesAtCursor } from '../store/useGridStore.ts';
 import { metricIndex } from '../lib/metrics.ts';
 
 export const Legend = (): JSX.Element | null => {
@@ -16,10 +16,18 @@ export const Legend = (): JSX.Element | null => {
   if (windowPayload === null) return null;
 
   const definition = METRICS[metric];
-  const values = [...valuesAtCursor(windowPayload, cursor, metricIndex(metric)).values()];
-  const anyData = values.some((value) => value !== null);
-  const domain = computeDomain(definition, values);
+  const position = metricIndex(metric);
+
+  // The domain spans the window, matching what the map is painted with. Reading it
+  // from the cursor's hour instead would label the ramp with one hour's range while
+  // the map was coloured by another's.
+  const domain = computeDomain(definition, valuesAcrossWindow(windowPayload, position));
   const stops = rampStops(definition, domain);
+
+  // Whether to dim the ramp is still a question about the hour on screen.
+  const anyData = [...valuesAtCursor(windowPayload, cursor, position).values()].some(
+    (value) => value !== null,
+  );
 
   return (
     <div

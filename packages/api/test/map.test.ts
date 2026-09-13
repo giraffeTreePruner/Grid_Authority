@@ -3,7 +3,14 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { API_PREFIX } from '../src/app.js';
-import { hoursBetween, MAX_WINDOW_HOURS, parseHour, parseWindow } from '../src/lib/period.js';
+import {
+  hoursBetween,
+  MAX_WINDOW_HOURS,
+  parseHour,
+  parseResolution,
+  parseStatistic,
+  parseWindow,
+} from '../src/lib/period.js';
 import { createHarness, databaseUrl, type Harness } from './helpers.js';
 
 const withDatabase = databaseUrl() === undefined ? describe.skip : describe;
@@ -14,6 +21,36 @@ describe('period parsing', () => {
     expect(parseHour('2026-09-11T14', 'at').toISOString()).toBe('2026-09-11T14:00:00.000Z');
   });
 
+  it('lets a coarser resolution cover a longer range', () => {
+    // The same range that is refused by the hour is two months by the day, which is
+    // the point of having resolutions at all.
+    const range = ['2026-07-01T00:00:00Z', '2026-09-08T00:00:00Z'] as const;
+    expect(() => parseWindow(...range)).toThrow(/at most 168 periods/);
+    expect(() => parseWindow(...range, 'day')).not.toThrow();
+  });
+
+  it('caps each resolution at its own count, and says what to do instead', () => {
+    expect(() => parseWindow('2019-01-01T00:00:00Z', '2026-09-08T00:00:00Z', 'day')).toThrow(
+      /coarser resolution/,
+    );
+    // Ten years of months outlives the dataset, so nothing real is refused there.
+    expect(() =>
+      parseWindow('2019-01-01T00:00:00Z', '2026-09-08T00:00:00Z', 'month'),
+    ).not.toThrow();
+  });
+
+  it('names the resolutions it accepts rather than only refusing', () => {
+    expect(() => parseResolution('fortnight')).toThrow(/hour, day, week, month/);
+    expect(parseResolution(undefined)).toBe('hour');
+    expect(parseResolution('month')).toBe('month');
+  });
+
+  it('refuses a statistic on hourly data, which has no summary', () => {
+    expect(() => parseStatistic('peak', 'hour')).toThrow(/applies only to day, week/);
+    expect(parseStatistic('peak', 'month')).toBe('peak');
+    expect(parseStatistic(undefined, 'month')).toBe('mean');
+  });
+
   it('rejects anything not exactly on the hour', () => {
     expect(() => parseHour('2026-09-11T14:30:00Z', 'at')).toThrow(/exactly on the hour/);
   });
@@ -22,9 +59,9 @@ describe('period parsing', () => {
     expect(() => parseHour('yesterday', 'at')).toThrow(/ISO-8601/);
   });
 
-  it('caps a window at seven days', () => {
+  it('caps an hourly window at seven days', () => {
     expect(() => parseWindow('2026-09-01T00:00:00Z', '2026-09-08T01:00:00Z')).toThrow(
-      /at most 168 hours/,
+      /at most 168 periods/,
     );
     expect(parseWindow('2026-09-01T00:00:00Z', '2026-09-07T23:00:00Z')).toBeTruthy();
   });
@@ -67,6 +104,36 @@ withDatabase('map endpoints', () => {
             ],
             zones: { [zone!.key]: [1000 + index, 900 + index, -100, 0.41, 0.52] },
             built_at: '2026-09-11T13:00:00Z',
+          })}
+        )
+      `;
+    }
+
+    for (const [index, day] of ['2026-09-10', '2026-09-11'].entries()) {
+      await harness.sql`
+        INSERT INTO map_snapshot_agg (resolution, period_utc, payload)
+        VALUES (
+          'day',
+          ${`${day}T00:00:00Z`},
+          ${harness.sql.json({
+            period: `${day}T00:00:00Z`,
+            resolution: 'day',
+            metrics: [
+              'demand_mw',
+              'net_generation_mw',
+              'net_interchange_mw',
+              'renewable_share',
+              'low_carbon_share',
+            ],
+            statistics: ['mean', 'peak'],
+            zones: {
+              [zone!.key]: {
+                mean: [2000 + index, 1900 + index, -100, 0.41, 0.52],
+                peak: [5000 + index, 4900 + index, -900, 0.77, 0.88],
+              },
+            },
+            hours: 24,
+            built_at: '2026-09-12T00:00:00Z',
           })}
         )
       `;
@@ -147,11 +214,72 @@ withDatabase('map endpoints', () => {
       expect(series[2]![0]).toBe(1000);
     });
 
+    it('serves day summaries at day resolution', async () => {
+      const body = (
+        await get('/map/window?from=2026-09-10T00:00:00Z&to=2026-09-11T23:00:00Z&resolution=day')
+      ).json();
+
+      expect(body.resolution).toBe('day');
+      expect(body.statistic).toBe('mean');
+      expect(body.periods).toEqual(['2026-09-10T00:00:00Z', '2026-09-11T00:00:00Z']);
+
+      const series = Object.values(body.zones)[0] as (number | null)[][];
+      expect(series[0]![0]).toBe(2000);
+      expect(series[1]![0]).toBe(2001);
+    });
+
+    it('serves the peak when asked for it, in the same shape', async () => {
+      const body = (
+        await get(
+          '/map/window?from=2026-09-10T00:00:00Z&to=2026-09-11T23:00:00Z' +
+            '&resolution=day&statistic=peak',
+        )
+      ).json();
+
+      expect(body.statistic).toBe('peak');
+      const series = Object.values(body.zones)[0] as (number | null)[][];
+      // The same position in the same array: a client switches statistic without
+      // switching code path.
+      expect(series[0]![0]).toBe(5000);
+      expect(series[0]![2]).toBe(-900);
+    });
+
+    it('includes a day that starts before the requested hour', async () => {
+      // Asking from midday on the 10th still means the 10th: a day is the unit.
+      const body = (
+        await get('/map/window?from=2026-09-10T12:00:00Z&to=2026-09-11T23:00:00Z&resolution=day')
+      ).json();
+      expect(body.periods[0]).toBe('2026-09-10T00:00:00Z');
+    });
+
+    it('is 400 for an unknown resolution, naming the ones that work', async () => {
+      const response = await get(
+        '/map/window?from=2026-09-10T00:00:00Z&to=2026-09-11T00:00:00Z&resolution=fortnight',
+      );
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error.message).toMatch(/hour, day, week, month/);
+    });
+
+    it('is 400 for a statistic on hourly data', async () => {
+      const response = await get(
+        '/map/window?from=2026-09-11T10:00:00Z&to=2026-09-11T12:00:00Z&statistic=peak',
+      );
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('reports no statistic for an hourly window', async () => {
+      const body = (
+        await get('/map/window?from=2026-09-11T10:00:00Z&to=2026-09-11T12:00:00Z')
+      ).json();
+      expect(body.resolution).toBe('hour');
+      expect(body.statistic).toBeNull();
+    });
+
     it('is 400 on a range longer than seven days', async () => {
       const response = await get('/map/window?from=2026-09-01T00:00:00Z&to=2026-09-08T01:00:00Z');
       expect(response.statusCode).toBe(400);
       expect(response.json().error).toMatchObject({ code: 'bad_request' });
-      expect(response.json().error.message).toMatch(/at most 168 hours/);
+      expect(response.json().error.message).toMatch(/at most 168 periods/);
     });
 
     it('accepts exactly seven days', async () => {

@@ -11,6 +11,7 @@ import type {
   ZoneDetailResponse,
   ZonesResponse,
 } from './types.ts';
+import type { Resolution, Statistic } from '../lib/resolution.ts';
 
 export const API_BASE = '/api/v1';
 
@@ -64,12 +65,15 @@ export const fetchSources = (signal?: AbortSignal): Promise<SourcesResponse> =>
 export const fetchWindow = (
   from: string,
   to: string,
+  resolution: Resolution = 'hour',
+  statistic: Statistic = 'mean',
   signal?: AbortSignal,
-): Promise<WindowResponse> =>
-  request<WindowResponse>(
-    `/map/window?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
-    signal,
-  );
+): Promise<WindowResponse> => {
+  const query = new URLSearchParams({ from, to, resolution });
+  // The API refuses a statistic on hourly data, since an hour has no summary.
+  if (resolution !== 'hour') query.set('statistic', statistic);
+  return request<WindowResponse>(`/map/window?${query.toString()}`, signal);
+};
 
 export const fetchZoneDetail = (
   key: string,

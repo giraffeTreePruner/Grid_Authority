@@ -1,9 +1,12 @@
 /**
  * The application shell.
  *
- * On load it fetches the registry and one week of map data in parallel. Everything the
- * slider and the metric switcher need is in that one window response; neither issues a
+ * On load it fetches the registry and one window of map data in parallel. Everything
+ * the slider and the metric switcher need is in that one response; neither issues a
  * request afterwards, which is what §10 requires and what the control tests assert.
+ *
+ * Changing resolution is the one control that does refetch: a month of summaries is a
+ * different document from an hour of measurements.
  */
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -15,20 +18,15 @@ import { StatusBar } from './components/StatusBar.tsx';
 import { ZoneList } from './components/ZoneList.tsx';
 import { ZonePanel } from './components/ZonePanel.tsx';
 import { TimeSlider } from './components/TimeSlider.tsx';
+import { ResolutionSwitcher } from './components/ResolutionSwitcher.tsx';
+import { rangeFor } from './lib/resolution.ts';
 import { useGridStore } from './store/useGridStore.ts';
 
-const WINDOW_HOURS = 168;
 const GEOMETRY_VERSION = import.meta.env.VITE_GEOMETRY_VERSION ?? '1';
 
-/** The 168-hour range ending at the most recent complete hour. */
-export const defaultWindowRange = (now: Date = new Date()): { from: string; to: string } => {
-  const end = new Date(now);
-  end.setUTCMinutes(0, 0, 0);
-  end.setUTCHours(end.getUTCHours() - 1);
-  const start = new Date(end.getTime() - (WINDOW_HOURS - 1) * 3600_000);
-  const iso = (date: Date): string => `${date.toISOString().slice(0, 19)}Z`;
-  return { from: iso(start), to: iso(end) };
-};
+/** The default hourly range, kept as a named export because the tests pin it. */
+export const defaultWindowRange = (now: Date = new Date()): { from: string; to: string } =>
+  rangeFor('hour', now);
 
 const messageFor = (error: unknown): string =>
   error instanceof ApiError ? error.message : 'An unexpected error occurred.';
@@ -43,10 +41,13 @@ export const App = (): JSX.Element => {
     staleTime: 60 * 60 * 1000,
   });
 
-  const range = defaultWindowRange();
+  const resolution = useGridStore((state) => state.resolution);
+  const statistic = useGridStore((state) => state.statistic);
+
+  const range = rangeFor(resolution);
   const windowQuery = useQuery({
-    queryKey: ['window', range.from, range.to],
-    queryFn: ({ signal }) => fetchWindow(range.from, range.to, signal),
+    queryKey: ['window', resolution, statistic, range.from, range.to],
+    queryFn: ({ signal }) => fetchWindow(range.from, range.to, resolution, statistic, signal),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -68,6 +69,10 @@ export const App = (): JSX.Element => {
         </div>
         <MetricSwitcher />
       </header>
+
+      <div className="flex flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5">
+        <ResolutionSwitcher />
+      </div>
 
       <StatusBar
         meta={windowPayload?.meta ?? null}

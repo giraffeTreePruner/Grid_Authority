@@ -7,6 +7,7 @@
  */
 import { create } from 'zustand';
 import type { MetricId } from '../lib/metrics.ts';
+import type { Resolution, Statistic } from '../lib/resolution.ts';
 import type { WindowResponse } from '../api/types.ts';
 
 export type WindowLength = '24h' | '72h' | '168h';
@@ -20,6 +21,10 @@ interface GridState {
   playing: boolean;
   window: WindowResponse | null;
   detailWindow: WindowLength;
+  /** What one step of the slider covers. Chosen, never inferred from the range. */
+  resolution: Resolution;
+  /** Only meaningful above hourly: an hour has a measurement, not a summary. */
+  statistic: Statistic;
 
   setMetric: (metric: MetricId) => void;
   selectZone: (key: string | null) => void;
@@ -30,6 +35,8 @@ interface GridState {
   togglePlaying: () => void;
   setWindow: (payload: WindowResponse) => void;
   setDetailWindow: (window: WindowLength) => void;
+  setResolution: (resolution: Resolution) => void;
+  setStatistic: (statistic: Statistic) => void;
 }
 
 const clampCursor = (index: number, length: number): number => {
@@ -45,6 +52,8 @@ export const useGridStore = create<GridState>((set) => ({
   playing: false,
   window: null,
   detailWindow: '168h',
+  resolution: 'hour',
+  statistic: 'mean',
 
   setMetric: (metric) => set({ metric }),
   selectZone: (selectedZone) => set({ selectedZone }),
@@ -68,6 +77,19 @@ export const useGridStore = create<GridState>((set) => ({
   setWindow: (payload) => set({ window: payload, cursor: newestHourWithData(payload) }),
 
   setDetailWindow: (detailWindow) => set({ detailWindow }),
+
+  // The window that is loaded belongs to the old resolution, so it is cleared rather
+  // than left on screen: holding it would show months of data on an hourly slider
+  // until the fetch returned, and the cursor would point at the wrong period.
+  setResolution: (resolution) =>
+    set((state) =>
+      state.resolution === resolution
+        ? {}
+        : { resolution, window: null, cursor: 0, playing: false },
+    ),
+
+  setStatistic: (statistic) =>
+    set((state) => (state.statistic === statistic ? {} : { statistic, window: null })),
 }));
 
 /**

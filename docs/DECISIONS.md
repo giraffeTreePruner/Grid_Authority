@@ -559,3 +559,33 @@ empty background.
 The map now stops at z3. The alternative, rebuilding the archive from z0, spends tiles on
 a view no reader of a US-only map wants; the continental US fits at z3.4, which is where
 the map opens.
+
+## 2026-09-12 — Resolution is chosen, never inferred from the range
+
+The reader picks hour, day, week or month, and the slider's step is that period. The
+alternative — one slider over all history, coarsening as the visible range widens — needs
+fewer controls but makes a step mean different things at different times. A reader cannot
+then say what they are looking at, and neither can a screenshot of it.
+
+Every label names its unit for the same reason: "3 weeks earlier", not "3 earlier", and
+a month labelled "September 2026" rather than by the midnight that starts it.
+
+## 2026-09-12 — Coarse periods are labelled in UTC, unlike hours
+
+Hours are shown in the viewer's own clock, because an hour is an instant and that is the
+clock they are reading from. A day, week or month is not an instant — it is a UTC
+calendar period — and formatting its start locally labels September 2026 as "August 2026"
+for every viewer west of Greenwich, and shifts every daily label by one for half the
+world.
+
+Caught by a test that only failed because the machine running it was not on UTC. It now
+asserts the label under several zones rather than relying on where it happens to run.
+
+## 2026-09-12 — Changing resolution clears the loaded window
+
+A window belongs to the resolution it was fetched at. Keeping it on screen during the
+refetch would leave months of data on an hourly slider with the cursor pointing at a
+period that no longer exists. Playback stops for the same reason.
+
+Switching metric still costs nothing, which is the property §10 asks for: that one is
+served from the window already in memory.

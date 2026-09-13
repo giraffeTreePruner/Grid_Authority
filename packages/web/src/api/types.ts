@@ -41,6 +41,10 @@ export type MetricValues = (number | null)[];
 export interface WindowResponse {
   periods: string[];
   metrics: string[];
+  /** What the server actually served, which is the authority, not what was asked. */
+  resolution: string;
+  /** Null for hourly, which carries measurements rather than a summary. */
+  statistic: string | null;
   zones: Record<string, MetricValues[]>;
   meta: Meta;
 }

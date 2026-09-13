@@ -12,7 +12,11 @@ export const METRICS = [
 ];
 
 /** Hours ending at the given instant, one per step. */
-export const makeWindow = (hours = 4): WindowResponse => {
+export const makeWindow = (
+  hours = 4,
+  resolution: string = 'hour',
+  statistic: string | null = null,
+): WindowResponse => {
   const periods: string[] = [];
   for (let index = 0; index < hours; index += 1) {
     const at = new Date(Date.UTC(2026, 8, 11, 8 + index));
@@ -22,6 +26,8 @@ export const makeWindow = (hours = 4): WindowResponse => {
   return {
     periods,
     metrics: METRICS,
+    resolution,
+    statistic,
     zones: {
       // A zone with data in every hour.
       'US-TEX-ERCO': periods.map((_period, index) => [

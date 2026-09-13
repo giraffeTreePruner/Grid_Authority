@@ -32,19 +32,26 @@ export type SliderKey =
 /**
  * Where a key press moves the cursor.
  *
- * Arrows step an hour, PageUp and PageDown a day, Home and End to the ends. Returns
- * null for a key the slider does not handle, so the caller knows not to preventDefault.
+ * Arrows step one period; PageUp and PageDown step `page` of them, which is a day's
+ * worth at hourly resolution and a sensible jump at each of the others. Home and End go
+ * to the ends. Returns null for a key the slider does not handle, so the caller knows
+ * not to preventDefault.
  */
-export const indexForKey = (key: string, current: number, length: number): number | null => {
+export const indexForKey = (
+  key: string,
+  current: number,
+  length: number,
+  page: number = HOURS_PER_DAY,
+): number | null => {
   switch (key) {
     case 'ArrowLeft':
       return clampIndex(current - 1, length);
     case 'ArrowRight':
       return clampIndex(current + 1, length);
     case 'PageDown':
-      return clampIndex(current - HOURS_PER_DAY, length);
+      return clampIndex(current - page, length);
     case 'PageUp':
-      return clampIndex(current + HOURS_PER_DAY, length);
+      return clampIndex(current + page, length);
     case 'Home':
       return 0;
     case 'End':
@@ -54,6 +61,6 @@ export const indexForKey = (key: string, current: number, length: number): numbe
   }
 };
 
-/** How many hours before the newest an index sits, for a relative label. */
+/** How many periods before the newest an index sits, for a relative label. */
 export const hoursBehind = (index: number, length: number): number =>
   Math.max(length - 1 - clampIndex(index, length), 0);

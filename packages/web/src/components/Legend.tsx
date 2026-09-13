@@ -6,17 +6,21 @@
  */
 import { computeDomain, METRICS, rampStops } from '../lib/metrics.ts';
 import { useGridStore, valuesAcrossWindow, valuesAtCursor } from '../store/useGridStore.ts';
+import { RESOLUTIONS_BY_ID } from '../lib/resolution.ts';
 import { metricIndex } from '../lib/metrics.ts';
 
 export const Legend = (): JSX.Element | null => {
   const metric = useGridStore((state) => state.metric);
   const cursor = useGridStore((state) => state.cursor);
   const windowPayload = useGridStore((state) => state.window);
+  const resolution = useGridStore((state) => state.resolution);
 
   if (windowPayload === null) return null;
 
   const definition = METRICS[metric];
   const position = metricIndex(metric);
+  // The unit on screen, so the no-data wording matches what a step actually covers.
+  const step = RESOLUTIONS_BY_ID[resolution].step;
 
   // The domain spans the window, matching what the map is painted with. Reading it
   // from the cursor's hour instead would label the ramp with one hour's range while
@@ -41,7 +45,7 @@ export const Legend = (): JSX.Element | null => {
 
       {!anyData && (
         <p className="mb-2 text-[11px] text-amber-300/80" data-testid="legend-no-data">
-          No zone published this metric for this hour.
+          No zone published this metric for this {step}.
         </p>
       )}
 
@@ -59,7 +63,7 @@ export const Legend = (): JSX.Element | null => {
       <div className="mt-3 flex items-center gap-2 border-t border-zinc-800 pt-2">
         <span className="nodata-swatch h-3 w-6 rounded-sm" aria-hidden="true" />
         <span className="text-[11px] text-zinc-400">
-          No data: this zone published nothing for this hour
+          No data: this zone published nothing for this {step}
         </span>
       </div>
     </div>

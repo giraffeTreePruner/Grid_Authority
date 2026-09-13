@@ -490,3 +490,44 @@ operator's home directory first for every binary it executes, including the `uv`
 scheduler spawns for each job. Anything that could write to that home would be executed
 by the service on boot. The runbook passes an explicit system PATH instead, and checks
 that `/usr/local/bin` is in it, since that is where `uv` is installed.
+
+## 2026-09-12 — Snapshots are built per day, not once at the end of a backfill
+
+The backfill originally rebuilt every affected snapshot in one pass after the day loop,
+on the reasoning that per-day rebuilds would redo the same hours. They would not: the
+days in a backfill are disjoint, so either shape builds each hour exactly once.
+
+What the end-of-run shape did do was tie every snapshot to the run completing. A run
+interrupted partway — by the hourly request ceiling, which a ninety-day backfill reaches
+— keeps its observations, because each day is committed as it finishes, and loses every
+snapshot. The resumed run then skips those days as already complete, since completeness
+is judged from observations, and never builds them. The result is ninety days of
+observations and a handful of hours on the map.
+
+The rebuild now happens inside the loop, before each day's commit, so the derived data is
+as durable as the data it derives from. `snapshots_built` counts distinct hours and is
+updated in the loop, so a run that raises still reports what it managed to build.
+
+## 2026-09-12 — There is a command to rebuild snapshots without contacting EIA
+
+`eia rebuild-snapshots` rebuilds `map_snapshot` from observations already stored. It
+exists because the repair above was otherwise impossible: the only way to rebuild a
+snapshot was to re-fetch its day with `backfill --force`, which spends EIA requests to
+recompute something derivable from rows already in the database, and would hit the
+hourly ceiling doing it.
+
+It defaults to the hours that have no snapshot, takes `--all` for the hours whose
+snapshots exist but are stale, and considers all three observation tables so that it
+reproduces exactly the set an interrupted ingest would have built.
+
+## 2026-09-12 — A ninety-day backfill exceeds the client's own hourly ceiling
+
+The ceiling is 500 requests/hour against EIA's published guidance of roughly 9,000. That
+margin is deliberate for the recurring jobs, which spend a handful of requests each and
+should fail loudly if they ever loop. A ninety-day backfill needs about 540, so it raises
+partway through by design.
+
+Left as it is, rather than raised or made configurable: the job is resumable, the counter
+is per-process and resets on the next run, and two rounds inside one hour are still an
+order of magnitude below what EIA permits. A ceiling that a legitimate job cannot exceed
+is not a ceiling. The runbook now says this instead of claiming 540 is "well inside" 500.

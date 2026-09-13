@@ -136,7 +136,7 @@ def run_backfill(
     started = time.monotonic()
     moment = (now or datetime.now(UTC)).astimezone(UTC)
     summary = BackfillSummary()
-    touched: set[datetime] = set()
+    built: set[datetime] = set()
 
     try:
         validate_facets(client.discover_facets(), config)
@@ -181,16 +181,25 @@ def run_backfill(
 
             summary.rows_written += written.written
             summary.days_fetched.append(label)
-            touched |= (
+
+            # Rebuild this day's snapshots inside the loop, not once at the end. Days
+            # do not overlap, so this builds the same hours either way — but at the end
+            # an interruption discards every snapshot while keeping the observations,
+            # and the resumed run skips those days as complete and never rebuilds them.
+            # The map then has ninety days of observations and a handful of hours to
+            # draw. Costs nothing here: the snapshot is built from rows already stored.
+            day_periods = (
                 {o.period_utc for o in region}
                 | {o.period_utc for o in mix}
                 | {o.period_utc for o in interchange}
             )
+            rebuild_snapshots(connection, day_periods, config)
+            built |= day_periods
+            # Updated inside the loop, so a run that raises still reports what it built.
+            summary.snapshots_built = len(built)
             # Commit each day so an interruption keeps the days already done.
             connection.commit()
 
-        # §7.2: rebuild every affected snapshot once at the end, not per day.
-        summary.snapshots_built = rebuild_snapshots(connection, touched, config)
         summary.requests = client.requests_made
         summary.duration_s = time.monotonic() - started
 

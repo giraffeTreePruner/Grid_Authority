@@ -288,12 +288,52 @@ def test_a_failure_is_recorded_and_raised(prepared: psycopg.Connection) -> None:
 
 @respx.mock
 @requires_database
-def test_snapshots_are_rebuilt_once_at_the_end(prepared: psycopg.Connection) -> None:
-    """Per-day rebuilds would redo the same hours repeatedly."""
+def test_snapshots_survive_an_interruption(prepared: psycopg.Connection) -> None:
+    """The map serves snapshots, so observations alone are not a resumable state.
+
+    Rebuilding only at the end of the run loses every snapshot when the run raises,
+    while the observations are kept — and the resumed run then skips those days as
+    already complete and never builds them. The map ends up with far fewer hours than
+    the database has.
+    """
     mock_eia()
-    summary = run_backfill(prepared, client(), CONFIG, days=3, now=NOW)
+
+    calls = {"n": 0}
+    original = EiaClient.region_data
+
+    def fail_on_the_second_day(
+        self: EiaClient,
+        start: datetime,
+        end: datetime,
+        types: tuple[str, ...] = ("D", "NG", "TI"),
+    ) -> list[dict[str, Any]]:
+        calls["n"] += 1
+        if calls["n"] == 2:
+            raise EiaRequestError("interrupted")
+        return original(self, start, end, types)
+
+    EiaClient.region_data = fail_on_the_second_day  # type: ignore[method-assign]
+    try:
+        with pytest.raises(EiaRequestError):
+            run_backfill(prepared, client(), CONFIG, days=3, now=NOW)
+    finally:
+        EiaClient.region_data = original  # type: ignore[method-assign]
+
     with prepared.cursor() as cursor:
-        cursor.execute("SELECT count(DISTINCT built_at) FROM map_snapshot")
-        distinct_builds = one(cursor)[0]
-    assert summary.snapshots_built > 0
-    assert distinct_builds <= 2, "snapshots should be built in one pass, not per day"
+        cursor.execute("SELECT count(*) FROM map_snapshot")
+        snapshots = one(cursor)[0]
+        cursor.execute(
+            """
+            SELECT count(*) FROM (
+                SELECT period_utc FROM obs_region_hourly
+                UNION
+                SELECT period_utc FROM obs_mix_hourly
+                EXCEPT
+                SELECT period_utc FROM map_snapshot
+            ) AS unserved
+            """
+        )
+        unserved = one(cursor)[0]
+
+    assert snapshots > 0, "the first day should have survived the interruption"
+    assert unserved == 0, "every observed hour should have a snapshot to serve it"

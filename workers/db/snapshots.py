@@ -131,6 +131,42 @@ def rebuild_snapshots(
     return len(periods)
 
 
+def hours_needing_snapshots(
+    connection: psycopg.Connection,
+    start: datetime,
+    end: datetime,
+    *,
+    missing_only: bool = True,
+) -> set[datetime]:
+    """Observed hours in the range, by default only those with no snapshot yet.
+
+    An hour can hold observations and no snapshot: the snapshot is derived, and a run
+    that stored observations but did not reach its rebuild leaves the two out of step.
+    Nothing here contacts EIA — the snapshot is built entirely from stored rows.
+    """
+    # All three observation tables, matching what an ingest job counts as touched, so
+    # a repair reproduces exactly the set the interrupted run would have built.
+    observed = """
+        SELECT DISTINCT period_utc FROM obs_region_hourly
+         WHERE period_utc BETWEEN %(start)s AND %(end)s
+        UNION
+        SELECT DISTINCT period_utc FROM obs_mix_hourly
+         WHERE period_utc BETWEEN %(start)s AND %(end)s
+        UNION
+        SELECT DISTINCT period_utc FROM obs_interchange_hourly
+         WHERE period_utc BETWEEN %(start)s AND %(end)s
+    """
+    if missing_only:
+        observed += """
+        EXCEPT
+        SELECT period_utc FROM map_snapshot
+         WHERE period_utc BETWEEN %(start)s AND %(end)s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(observed, {"start": start, "end": end})
+        return {row[0] for row in cursor.fetchall()}
+
+
 def recent_complete_hours(connection: psycopg.Connection, count: int = 2) -> set[datetime]:
     """The newest hours that have any observation.
 

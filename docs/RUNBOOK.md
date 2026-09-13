@@ -519,9 +519,14 @@ sudo -u grid -H bash -c 'cd /srv/grid-authority && \
 tail -f /srv/grid-authority/backfill.log
 ```
 
-Roughly 540 requests, well inside the client's 500/hour ceiling per run but not per
-minute — it paces itself and takes a while. It is resumable: if it is interrupted, run it
-again and it skips the days already complete.
+Roughly 540 requests for ninety days, which is **more than the client's own 500/hour
+ceiling**, so a full run raises `EiaRateLimitExceeded` partway. That ceiling is
+self-imposed and sits an order of magnitude under EIA's published guidance of about
+9,000/hour; it exists to make a runaway loop fail loudly. It counts in memory, so it
+resets when the process exits.
+
+When it raises, simply run the command again. It skips the days already complete, and a
+second round of a few hundred requests is still far below what EIA permits.
 
 ---
 
@@ -582,6 +587,7 @@ cd /srv/grid-authority
 sudo -u grid -H uv run --env-file .env eia poll
 sudo -u grid -H uv run --env-file .env eia probe
 sudo -u grid -H uv run --env-file .env eia revise
+sudo -u grid -H uv run --env-file .env eia rebuild-snapshots   # no EIA requests
 ```
 
 Safe at any time: every job is idempotent, and the scheduler skips a tick if the same job
@@ -689,10 +695,37 @@ puts it right.
 ### `tmux` prints `[exited]` and drops me back at my own prompt
 
 `sudo -u grid tmux` was used. `grid` is a system account with `/usr/sbin/nologin`, so the
-session's shell exits the moment it starts. The next command you type then runs as *you*,
+session's shell exits the moment it starts. The next command you type then runs as _you_,
 and fails on `.env`, which is mode 600 and owned by `grid`.
 
 Run tmux as yourself and put the `sudo -u grid -H` on the job inside it; see 2.11.
+
+### The map shows far fewer hours than the database holds
+
+The map serves `map_snapshot`, which is derived from the observation tables. The two can
+come apart: a job that stored observations and then failed before building their
+snapshots leaves hours with data and nothing to draw. A resumed backfill will not repair
+it, because a day is judged complete from its observations.
+
+Rebuild them from what is already stored. This makes no EIA requests, so the hourly
+ceiling does not apply and it is safe to run at any time:
+
+```sh
+cd /srv/grid-authority
+sudo -u grid -H uv run --env-file .env eia rebuild-snapshots --days 90
+```
+
+By default it builds only the hours that have no snapshot. `--all` rebuilds every
+observed hour in the window, for when the snapshots exist but are wrong — after a
+zone registry change, for instance.
+
+To see the size of the gap first:
+
+```sh
+sudo -u postgres psql -d grid_authority -c \
+  "SELECT (SELECT count(DISTINCT period_utc) FROM obs_region_hourly) AS observed_hours,
+          (SELECT count(*) FROM map_snapshot) AS snapshots;"
+```
 
 ### A job keeps failing
 

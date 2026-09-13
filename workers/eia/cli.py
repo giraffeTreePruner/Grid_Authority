@@ -6,8 +6,10 @@ and prints a single-line JSON summary as its last line of stdout.
 
 from __future__ import annotations
 
+import json
 import os
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Annotated
 
@@ -25,6 +27,7 @@ from workers.db import (
     zones_with_observations,
 )
 from workers.db.migrate import available_migrations, pending_migrations
+from workers.db.snapshots import hours_needing_snapshots, rebuild_snapshots
 from workers.eia.backfill import DEFAULT_DAYS, run_backfill
 from workers.eia.client import EiaClient
 from workers.eia.poll import run_poll
@@ -168,6 +171,46 @@ def backfill_command(
     for warning in summary.warnings:
         typer.echo(f"warning: {warning}", err=True)
     typer.echo(summary.as_json())
+
+
+@app.command("rebuild-snapshots")
+def rebuild_snapshots_command(
+    days: Annotated[
+        int, typer.Option("--days", help="How many trailing days to cover.")
+    ] = DEFAULT_DAYS,
+    rebuild_all: Annotated[
+        bool,
+        typer.Option("--all", help="Rebuild every observed hour, not only hours that lack one."),
+    ] = False,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Rebuild map snapshots from observations already stored.
+
+    Makes no EIA requests, so it is not subject to the hourly ceiling and is safe to
+    run at any time. Use it when the map has fewer hours than the database does —
+    an interrupted backfill stores observations whose snapshots it never reached.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    now = datetime.now(UTC)
+    start = (now - timedelta(days=days)).replace(minute=0, second=0, microsecond=0)
+
+    with connect() as connection:
+        periods = hours_needing_snapshots(connection, start, now, missing_only=not rebuild_all)
+        built = rebuild_snapshots(connection, periods, config)
+        connection.commit()
+
+    typer.echo(f"{built} snapshots rebuilt", err=True)
+    typer.echo(
+        json.dumps({"job": "rebuild-snapshots", "snapshots_built": built}, separators=(",", ":"))
+    )
 
 
 @app.command("revise")

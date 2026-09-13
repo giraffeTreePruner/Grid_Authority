@@ -519,6 +519,14 @@ sudo -u grid -H bash -c 'cd /srv/grid-authority && \
 tail -f /srv/grid-authority/backfill.log
 ```
 
+To cover the full dataset rather than ninety days, give it a date. EIA-930 begins
+2019-01-01, which is about 2,811 days and 17,000 requests — roughly five hours, paced so
+it never reaches its own ceiling:
+
+```sh
+cd /srv/grid-authority && sudo -u grid -H uv run --env-file .env eia backfill --since 2019-01-01
+```
+
 Roughly 540 requests for ninety days, which is **more than the client's own 500/hour
 ceiling**, so a full run raises `EiaRateLimitExceeded` partway. That ceiling is
 self-imposed and sits an order of magnitude under EIA's published guidance of about
@@ -527,6 +535,20 @@ resets when the process exits.
 
 When it raises, simply run the command again. It skips the days already complete, and a
 second round of a few hundred requests is still far below what EIA permits.
+
+### 2.12 Build the coarse views
+
+The map can be read by day, week and month. Those summaries live in `map_snapshot_agg`
+and are built from observations already stored, so this contacts EIA not at all and can
+be run whenever. Run it once after a backfill:
+
+```sh
+cd /srv/grid-authority
+sudo -u grid -H uv run --env-file .env eia rebuild-aggregates
+```
+
+From then on the poll job keeps the current day, week and month fresh by itself; this
+command is only for history and for repair.
 
 ---
 
@@ -587,7 +609,8 @@ cd /srv/grid-authority
 sudo -u grid -H uv run --env-file .env eia poll
 sudo -u grid -H uv run --env-file .env eia probe
 sudo -u grid -H uv run --env-file .env eia revise
-sudo -u grid -H uv run --env-file .env eia rebuild-snapshots   # no EIA requests
+sudo -u grid -H uv run --env-file .env eia rebuild-snapshots    # no EIA requests
+sudo -u grid -H uv run --env-file .env eia rebuild-aggregates   # no EIA requests
 ```
 
 Safe at any time: every job is idempotent, and the scheduler skips a tick if the same job
@@ -699,6 +722,19 @@ session's shell exits the moment it starts. The next command you type then runs 
 and fails on `.env`, which is mode 600 and owned by `grid`.
 
 Run tmux as yourself and put the `sudo -u grid -H` on the job inside it; see 2.11.
+
+### The day, week or month view is empty while the hourly one works
+
+The coarse views read `map_snapshot_agg`, which the hourly path never touches. If the
+hourly map is fine and a coarser resolution is blank, the summaries have not been built:
+
+```sh
+cd /srv/grid-authority
+sudo -u grid -H uv run --env-file .env eia rebuild-aggregates
+```
+
+Safe at any time and free of EIA requests. `--resolution day` limits it to one;
+`--since` limits how far back it goes.
 
 ### The map shows far fewer hours than the database holds
 

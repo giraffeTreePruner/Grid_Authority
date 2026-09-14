@@ -135,9 +135,54 @@ withDatabase('zone detail', () => {
   });
 
   it('rejects an unknown window', async () => {
-    const response = await get(`/zones/${zoneKey}?window=30d`);
+    const response = await get(`/zones/${zoneKey}?window=fortnight`);
     expect(response.statusCode).toBe(400);
     expect(response.json().error.message).toMatch(/window must be one of/);
+  });
+
+  it('offers the long windows the map can reach', async () => {
+    // The map spans 2019 to now. A panel capped at a week makes the two halves of the
+    // same page disagree about what the reader is looking at.
+    for (const window of ['30d', '90d', '1y', 'all']) {
+      const response = await get(`/zones/${zoneKey}?window=${window}`);
+      expect(response.statusCode, window).toBe(200);
+    }
+  });
+
+  it('buckets a long window by day, not by hour', async () => {
+    const body = (await get(`/zones/${zoneKey}?window=1y`)).json();
+    const periods: string[] = body.series.period;
+
+    expect(periods.length).toBeGreaterThan(300);
+    expect(periods.length).toBeLessThanOrEqual(367);
+    // Every step is a midnight, and consecutive steps are a day apart.
+    expect(periods.every((period) => period.endsWith('T00:00:00Z'))).toBe(true);
+    const first = new Date(periods[0]!).getTime();
+    const second = new Date(periods[1]!).getTime();
+    expect(second - first).toBe(86_400_000);
+  });
+
+  it('steps a month window by the calendar, not by thirty days', async () => {
+    // Months differ in length; stepping by a fixed interval drifts off the 1st.
+    const periods: string[] = (await get(`/zones/${zoneKey}?window=all`)).json().series.period;
+    expect(periods.every((period) => period.slice(8) === '01T00:00:00Z')).toBe(true);
+  });
+
+  it('keeps every series the same length as the axis at every window', async () => {
+    for (const window of ['24h', '30d', 'all']) {
+      const body = (await get(`/zones/${zoneKey}?window=${window}`)).json();
+      const length = body.series.period.length;
+      expect(body.series.demand_mw, window).toHaveLength(length);
+      expect(body.series.demand_forecast_mw, window).toHaveLength(length);
+      expect(body.series.mix.wind, window).toHaveLength(length);
+    }
+  });
+
+  it('leaves an unreported period as a gap rather than closing it up', async () => {
+    // Generated from the calendar, not from the rows that happen to exist: a day
+    // nobody reported has to stay visible as a day nobody reported.
+    const body = (await get(`/zones/${zoneKey}?window=1y`)).json();
+    expect(body.series.demand_mw.some((value: number | null) => value === null)).toBe(true);
   });
 
   it('is 404 for an unknown zone', async () => {

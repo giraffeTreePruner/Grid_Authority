@@ -192,3 +192,39 @@ describe('ZonePanel', () => {
     await waitFor(() => expect(useGridStore.getState().selectedZone).toBeNull());
   });
 });
+
+describe('ZonePanel over long windows', () => {
+  beforeEach(() => {
+    respondWith(detail());
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO', detailWindow: '168h' });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('offers the windows the map can reach', async () => {
+    // The map spans 2019 to now; a panel capped at a week makes the two halves of the
+    // same page disagree about what is being looked at.
+    render(<ZonePanel />, { wrapper });
+    for (const window of ['24h', '168h', '30d', '1y', 'all']) {
+      expect(await screen.findByRole('button', { name: window })).toBeInTheDocument();
+    }
+  });
+
+  it('says nothing about buckets while the window is hourly', async () => {
+    render(<ZonePanel />, { wrapper });
+    await screen.findByRole('button', { name: '24h' });
+    expect(screen.queryByTestId('panel-bucket-note')).not.toBeInTheDocument();
+  });
+
+  it('says what one point covers once the window is bucketed', async () => {
+    // A chart that looks hourly and is not invites every conclusion an hourly chart
+    // would support.
+    useGridStore.setState({ detailWindow: 'all' });
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('panel-bucket-note')).toHaveTextContent(
+      'Each point is one month',
+    );
+  });
+});

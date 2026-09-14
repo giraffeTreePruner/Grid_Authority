@@ -10,7 +10,7 @@ import type { MetricId } from '../lib/metrics.ts';
 import type { Resolution, Statistic } from '../lib/resolution.ts';
 import type { WindowResponse } from '../api/types.ts';
 
-export type WindowLength = '24h' | '72h' | '168h';
+export type WindowLength = '24h' | '72h' | '168h' | '30d' | '90d' | '1y' | 'all';
 
 interface GridState {
   metric: MetricId;

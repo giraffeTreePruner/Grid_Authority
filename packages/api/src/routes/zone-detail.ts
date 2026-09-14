@@ -14,11 +14,36 @@ import type { FastifyInstance } from 'fastify';
 import type { Sql } from '../lib/db.js';
 import { ApiError } from '../lib/errors.js';
 import { buildMeta, isoInstant, latestDataPeriod } from '../lib/meta.js';
+import { loadModes } from '../config/index.js';
 
 export const FORECAST_HORIZON_HOURS = 24;
 
-const WINDOWS = { '24h': 24, '72h': 72, '168h': 168 } as const;
+/**
+ * The ranges the panel can plot, and the period each one buckets into.
+ *
+ * Short windows are served hour by hour, as measured. Long ones are aggregated on the
+ * way out — a year of hourly points is 8,760 of them, which is neither readable as a
+ * chart nor honest as a comparison against a day-ahead forecast.
+ *
+ * Aggregated here rather than from `map_snapshot_agg`, which carries only the five map
+ * metrics for in-map zones. The panel needs every generation mode, and for one zone the
+ * aggregation is cheap: a year is 8,760 rows against `obs_mix_hourly_zone_period_idx`.
+ *
+ * `hours: null` means everything there is.
+ */
+const WINDOWS = {
+  '24h': { hours: 24, bucket: 'hour' },
+  '72h': { hours: 72, bucket: 'hour' },
+  '168h': { hours: 168, bucket: 'hour' },
+  '30d': { hours: 24 * 30, bucket: 'day' },
+  '90d': { hours: 24 * 90, bucket: 'day' },
+  '1y': { hours: 24 * 365, bucket: 'day' },
+  all: { hours: null, bucket: 'month' },
+} as const;
 type WindowKey = keyof typeof WINDOWS;
+
+/** How long one step of a bucketed series lasts, for generating the period axis. */
+const BUCKET_MS = { hour: 3600_000, day: 86_400_000, month: 0 } as const;
 
 const MODES = [
   'coal',
@@ -67,6 +92,41 @@ interface ForecastRow {
   horizon_h: number | null;
 }
 
+/** EIA-930 begins here, which is what `all` means. */
+const EARLIEST_PERIOD = new Date(Date.UTC(2019, 0, 1));
+
+/**
+ * The mix columns behind each share, built from `modes.yaml` rather than written out.
+ *
+ * Adding a canonical mode must not leave these counting the old set, which is exactly
+ * the kind of drift that produces a plausible wrong percentage rather than an error.
+ */
+const columnsFor = (modes: string[]): string => {
+  // These names reach the database as a raw fragment, because a column list cannot be
+  // a bind parameter. They come from modes.yaml, not from a request — but the check
+  // costs nothing and means a typo in config fails here rather than as SQL.
+  for (const mode of modes) {
+    if (!/^[a-z_]+$/.test(mode)) {
+      throw new Error(`mode "${mode}" is not a plain column name; refusing to build SQL`);
+    }
+  }
+  return modes.length === 0
+    ? '0'
+    : [...modes]
+        .sort()
+        .map((mode) => `coalesce(${mode}_mw, 0)`)
+        .join(' + ');
+};
+
+const MODES_CONFIG = loadModes();
+const RENEWABLE_SUM = columnsFor(MODES_CONFIG.renewable);
+const LOW_CARBON_SUM = columnsFor(MODES_CONFIG.low_carbon);
+const COUNTED_SUM = columnsFor(
+  MODES_CONFIG.canonical_modes.filter(
+    (mode) => !MODES_CONFIG.excluded_from_mix_percent.includes(mode),
+  ),
+);
+
 const toNumber = (value: string | null | undefined): number | null =>
   value === null || value === undefined ? null : Number(value);
 
@@ -80,7 +140,7 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
           `window must be one of ${Object.keys(WINDOWS).join(', ')}, got "${requested}"`,
         );
       }
-      const hours = WINDOWS[requested as WindowKey];
+      const { hours, bucket } = WINDOWS[requested as WindowKey];
 
       const zones = await sql<ZoneRow[]>`
         SELECT key, name, short_name, interconnection, timezone, type, in_map, capabilities
@@ -109,44 +169,84 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         });
       }
 
-      const from = new Date(latestPeriod.getTime() - (hours - 1) * 3600_000);
+      const from =
+        hours === null
+          ? EARLIEST_PERIOD
+          : new Date(latestPeriod.getTime() - (hours - 1) * 3600_000);
 
-      const [regionRows, mixRows, forecastRows, latest] = await Promise.all([
+      // Every query below groups by date_trunc, including the hourly windows, where
+      // each bucket holds exactly one row and the aggregates return it unchanged. One
+      // shape for all resolutions beats a branch that can drift apart.
+      const [axisRows, regionRows, mixRows, forecastRows, latest] = await Promise.all([
+        // The axis comes from the database so that months, which vary in length, are
+        // stepped by the calendar rather than by an assumed number of milliseconds.
+        // Generated rather than taken from the rows that exist: a period nobody
+        // reported has to appear as a gap, not close up silently.
+        sql<{ period: Date }[]>`
+          SELECT generate_series(
+                   date_trunc(${bucket}, ${from}::timestamptz),
+                   date_trunc(${bucket}, ${latestPeriod}::timestamptz),
+                   ('1 ' || ${bucket})::interval
+                 ) AS period
+        `,
         sql<RegionRow[]>`
-          SELECT period_utc, demand_mw, net_generation_mw, total_interchange_mw
+          SELECT date_trunc(${bucket}, period_utc) AS period_utc,
+                 avg(demand_mw) AS demand_mw,
+                 avg(net_generation_mw) AS net_generation_mw,
+                 avg(total_interchange_mw) AS total_interchange_mw
             FROM obs_region_hourly
            WHERE zone_key = ${zone.key} AND period_utc BETWEEN ${from} AND ${latestPeriod}
-           ORDER BY period_utc
+           GROUP BY 1
+           ORDER BY 1
         `,
+        // Modes are averaged so the stacked chart stays in MW and remains comparable
+        // with demand. The two shares are re-derived from summed generation instead:
+        // averaging hourly percentages weights a quiet hour the same as a working one.
         sql<MixRow[]>`
-          SELECT period_utc, renewable_share, low_carbon_share,
-                 coal_mw, gas_mw, oil_mw, nuclear_mw, hydro_mw, pumped_storage_mw,
-                 wind_mw, solar_mw, geothermal_mw, biomass_mw, battery_storage_mw,
-                 other_storage_mw, imports_mw, unknown_mw
+          SELECT date_trunc(${bucket}, period_utc) AS period_utc,
+                 sum(${sql.unsafe(RENEWABLE_SUM)}) / nullif(sum(${sql.unsafe(COUNTED_SUM)}), 0)
+                   AS renewable_share,
+                 sum(${sql.unsafe(LOW_CARBON_SUM)}) / nullif(sum(${sql.unsafe(COUNTED_SUM)}), 0)
+                   AS low_carbon_share,
+                 avg(coal_mw) AS coal_mw, avg(gas_mw) AS gas_mw, avg(oil_mw) AS oil_mw,
+                 avg(nuclear_mw) AS nuclear_mw, avg(hydro_mw) AS hydro_mw,
+                 avg(pumped_storage_mw) AS pumped_storage_mw, avg(wind_mw) AS wind_mw,
+                 avg(solar_mw) AS solar_mw, avg(geothermal_mw) AS geothermal_mw,
+                 avg(biomass_mw) AS biomass_mw, avg(battery_storage_mw) AS battery_storage_mw,
+                 avg(other_storage_mw) AS other_storage_mw, avg(imports_mw) AS imports_mw,
+                 avg(unknown_mw) AS unknown_mw
             FROM obs_mix_hourly
            WHERE zone_key = ${zone.key} AND period_utc BETWEEN ${from} AND ${latestPeriod}
-           ORDER BY period_utc
+           GROUP BY 1
+           ORDER BY 1
         `,
-        // One vintage per target: the freshest issued early enough to count as
-        // day-ahead. DISTINCT ON picks it in a single pass.
+        // One vintage per target hour first — the freshest issued early enough to count
+        // as day-ahead — and only then averaged into the bucket. Averaging every
+        // vintage instead would blend a day-ahead prediction with a same-hour revision
+        // and quietly flatter the forecast.
         sql<ForecastRow[]>`
-          SELECT DISTINCT ON (target_time_utc)
-                 target_time_utc, value, horizon_h
-            FROM forecast_issues
-           WHERE zone_key = ${zone.key}
-             AND metric = 'demand'
-             AND target_time_utc BETWEEN ${from} AND ${latestPeriod}
-             AND issue_time_utc <= target_time_utc
-                 - make_interval(hours => ${FORECAST_HORIZON_HOURS})
-           ORDER BY target_time_utc, issue_time_utc DESC
+          WITH chosen AS (
+            SELECT DISTINCT ON (target_time_utc)
+                   target_time_utc, value, horizon_h
+              FROM forecast_issues
+             WHERE zone_key = ${zone.key}
+               AND metric = 'demand'
+               AND target_time_utc BETWEEN ${from} AND ${latestPeriod}
+               AND issue_time_utc <= target_time_utc
+                   - make_interval(hours => ${FORECAST_HORIZON_HOURS})
+             ORDER BY target_time_utc, issue_time_utc DESC
+          )
+          SELECT date_trunc(${bucket}, target_time_utc) AS target_time_utc,
+                 avg(value) AS value,
+                 min(horizon_h) AS horizon_h
+            FROM chosen
+           GROUP BY 1
+           ORDER BY 1
         `,
         latestDataPeriod(sql),
       ]);
 
-      const periods: Date[] = [];
-      for (let t = from.getTime(); t <= latestPeriod.getTime(); t += 3600_000) {
-        periods.push(new Date(t));
-      }
+      const periods = axisRows.map((row) => row.period);
 
       const region = new Map(regionRows.map((row) => [row.period_utc.getTime(), row]));
       const mix = new Map(mixRows.map((row) => [row.period_utc.getTime(), row]));

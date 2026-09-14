@@ -13,7 +13,21 @@ import { DemandChart } from './DemandChart.tsx';
 import { MixChart } from './MixChart.tsx';
 import { SourceBadge } from './SourceBadge.tsx';
 
-const WINDOWS: WindowLength[] = ['24h', '72h', '168h'];
+const WINDOWS: WindowLength[] = ['24h', '72h', '168h', '30d', '90d', '1y', 'all'];
+
+/**
+ * How long one point covers, for the windows that are not plotted hour by hour.
+ *
+ * A point on a year-long chart is a day's average, not a reading. Saying so is the
+ * same obligation as labelling the map's coarse views: a chart that looks hourly and
+ * is not invites every conclusion an hourly chart would support.
+ */
+const BUCKETED: Partial<Record<WindowLength, string>> = {
+  '30d': 'Each point is one day, averaged over the hours that reported.',
+  '90d': 'Each point is one day, averaged over the hours that reported.',
+  '1y': 'Each point is one day, averaged over the hours that reported.',
+  all: 'Each point is one month, averaged over the hours that reported.',
+};
 
 /**
  * EIA reports every series in megawatthours, including demand. The unit is taken from
@@ -77,6 +91,12 @@ export const ZonePanel = (): JSX.Element | null => {
           </button>
         ))}
       </div>
+
+      {BUCKETED[detailWindow] !== undefined && (
+        <p className="text-[11px] text-zinc-500" data-testid="panel-bucket-note">
+          {BUCKETED[detailWindow]}
+        </p>
+      )}
 
       {detail.isPending && (
         <p className="text-xs text-zinc-500" data-testid="panel-loading">

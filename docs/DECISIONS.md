@@ -614,3 +614,38 @@ scanned the whole history twice an hour forever.
 `test_building_a_snapshot_uses_an_index_and_not_a_table_scan` asserts on the query plan
 rather than on a duration: a timing threshold over a small fixture is noise, while "no
 Seq Scan" is exactly the property that broke.
+
+## 2026-09-14 — The zone panel aggregates on the fly, not from `map_snapshot_agg`
+
+The panel now reaches as far as the map does: 30 days, 90 days, a year, and everything
+since 2019. The long windows are bucketed by day, and `all` by month.
+
+Not served from `map_snapshot_agg`, which carries only the five map metrics for in-map
+zones. The panel plots every generation mode, and for a single zone the aggregation is
+cheap — a year is 8,760 rows against `obs_mix_hourly_zone_period_idx`. The map cannot do
+this on the fly because it needs every zone at once; the panel can because it needs one.
+
+Every window, hourly ones included, goes through the same `date_trunc` grouping. At
+hourly resolution each bucket holds one row and the aggregates return it unchanged, which
+is one code path instead of a branch that can drift.
+
+Three rules carried over from the map's aggregates. Shares are re-derived from summed
+generation, never averaged. The forecast picks its day-ahead vintage per hour _before_
+bucketing, because averaging every vintage would blend a day-ahead prediction with a
+same-hour revision and flatter the forecast. And the period axis is generated from the
+calendar rather than from the rows that exist, so a day nobody reported stays a visible
+gap — and months are stepped by the calendar, not by an assumed thirty days.
+
+The panel says what one point covers whenever it is not an hour. A chart that looks
+hourly and is not invites every conclusion an hourly chart would support.
+
+## 2026-09-14 — Raw SQL fragments use `sql.unsafe`, with a name check
+
+The mix columns behind each share are built from `modes.yaml` and cannot be bind
+parameters, because they are a column list. `sql(fragment)` quotes its argument as an
+identifier — the first attempt produced `column "coalesce(wind_mw, 0) + ..." does not
+exist` — so the fragment goes through `sql.unsafe`.
+
+The names come from config rather than from a request, so this is not an injection path.
+It is still checked against `^[a-z_]+$` on the way in: the check costs nothing, and it
+turns a typo in config into a clear error here instead of a SQL syntax failure later.

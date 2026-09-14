@@ -56,6 +56,32 @@ def _round(value: Decimal | None, places: Decimal) -> float | None:
     return float(value.quantize(places))
 
 
+SNAPSHOT_QUERY = """
+            WITH region AS MATERIALIZED (
+                SELECT zone_key, source, demand_mw, net_generation_mw,
+                       total_interchange_mw
+                  FROM obs_region_hourly
+                 WHERE period_utc = %(period)s
+                   AND zone_key = ANY(%(keys)s)
+            ), mix AS MATERIALIZED (
+                SELECT zone_key, source, renewable_share, low_carbon_share
+                  FROM obs_mix_hourly
+                 WHERE period_utc = %(period)s
+                   AND zone_key = ANY(%(keys)s)
+            )
+            SELECT COALESCE(r.zone_key, m.zone_key) AS zone_key,
+                   r.demand_mw,
+                   r.net_generation_mw,
+                   r.total_interchange_mw,
+                   m.renewable_share,
+                   m.low_carbon_share
+              FROM region r
+              FULL OUTER JOIN mix m
+                ON m.zone_key = r.zone_key
+               AND m.source = r.source
+            """
+
+
 def build_snapshot(connection: psycopg.Connection, period: datetime, config: AppConfig) -> Snapshot:
     """Assemble the document for one hour.
 
@@ -65,22 +91,20 @@ def build_snapshot(connection: psycopg.Connection, period: datetime, config: App
     in_map = [zone.key for zone in config.zones.in_map()]
 
     with connection.cursor() as cursor:
+        # Each side is filtered to the hour BEFORE the join, not after it.
+        #
+        # Written the obvious way -- joining first and filtering on
+        # COALESCE(r.period_utc, m.period_utc) -- Postgres cannot push the predicate
+        # through a full outer join, so it builds the whole join and filters the
+        # result: two sequential scans of two growing tables, per hour. That is
+        # invisible at ninety days and ruinous at seven years, where a backfill
+        # rebuilding twenty-four snapshots a day scans millions of rows each time and
+        # the cost grows with every day it completes.
+        #
+        # Filtering first lets both indexes do their job and makes the cost a function
+        # of one hour rather than of the whole table.
         cursor.execute(
-            """
-            SELECT COALESCE(r.zone_key, m.zone_key) AS zone_key,
-                   r.demand_mw,
-                   r.net_generation_mw,
-                   r.total_interchange_mw,
-                   m.renewable_share,
-                   m.low_carbon_share
-              FROM obs_region_hourly r
-              FULL OUTER JOIN obs_mix_hourly m
-                ON m.zone_key = r.zone_key
-               AND m.period_utc = r.period_utc
-               AND m.source = r.source
-             WHERE COALESCE(r.period_utc, m.period_utc) = %(period)s
-               AND COALESCE(r.zone_key, m.zone_key) = ANY(%(keys)s)
-            """,
+            SNAPSHOT_QUERY,
             {"period": period, "keys": in_map},
         )
         measured = {

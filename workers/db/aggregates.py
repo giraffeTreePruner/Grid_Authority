@@ -76,7 +76,25 @@ def _aggregate_query(config: AppConfig) -> str:
         [m for m in config.modes.canonical_modes if m not in config.modes.excluded_from_mix_percent]
     )
 
+    # Both sides are filtered to the range BEFORE the join. Filtering after it -- on
+    # COALESCE(r.period_utc, m.period_utc) -- reads correctly and cannot use an index:
+    # Postgres will not push a predicate through a full outer join, so it scans both
+    # tables in full whatever range was asked for. Harmless for a bulk rebuild, which
+    # wants every row anyway; ruinous for refresh_buckets_for, which runs on every poll
+    # cycle and would scan seven years of observations to refresh one day.
     return f"""
+        WITH region AS MATERIALIZED (
+            SELECT zone_key, period_utc, source, demand_mw, net_generation_mw,
+                   total_interchange_mw
+              FROM obs_region_hourly
+             WHERE period_utc >= %(start)s AND period_utc < %(end)s
+               AND zone_key = ANY(%(keys)s)
+        ), mix AS MATERIALIZED (
+            SELECT *
+              FROM obs_mix_hourly
+             WHERE period_utc >= %(start)s AND period_utc < %(end)s
+               AND zone_key = ANY(%(keys)s)
+        )
         SELECT date_trunc(%(unit)s, COALESCE(r.period_utc, m.period_utc)) AS bucket,
                COALESCE(r.zone_key, m.zone_key) AS zone_key,
                count(*) AS hours,
@@ -104,14 +122,11 @@ def _aggregate_query(config: AppConfig) -> str:
                max(m.renewable_share) AS renewable_peak,
                max(m.low_carbon_share) AS low_carbon_peak
 
-          FROM obs_region_hourly r
-          FULL OUTER JOIN obs_mix_hourly m
+          FROM region r
+          FULL OUTER JOIN mix m
             ON m.zone_key = r.zone_key
            AND m.period_utc = r.period_utc
            AND m.source = r.source
-         WHERE COALESCE(r.period_utc, m.period_utc) >= %(start)s
-           AND COALESCE(r.period_utc, m.period_utc) < %(end)s
-           AND COALESCE(r.zone_key, m.zone_key) = ANY(%(keys)s)
          GROUP BY 1, 2
          ORDER BY 1, 2
     """

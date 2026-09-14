@@ -589,3 +589,28 @@ period that no longer exists. Playback stops for the same reason.
 
 Switching metric still costs nothing, which is the property §10 asks for: that one is
 served from the window already in memory.
+
+## 2026-09-14 — A predicate cannot be pushed through a full outer join
+
+Both derived-data queries filtered after their join, on
+`COALESCE(r.period_utc, m.period_utc)`. That reads correctly and is the natural way to
+write it, and Postgres will not push such a predicate through a full outer join: it
+builds the entire join and filters the result. Both queries therefore scanned both
+observation tables in full, whatever single hour or single day was asked for.
+
+Invisible at ninety days. At seven years it decides whether the work finishes: the
+backfill builds twenty-four snapshots a day, so the cost grows with every day already
+completed, and a run that should take five hours was still going after two — with the
+CPU pegged and the disk mostly idle, which is what distinguished this from the slow
+storage it was first assumed to be.
+
+Filtering each side before the join, in a materialised CTE, measured 52.6 ms to 0.644 ms
+on a hundred days of rows — and, more to the point, made the cost a function of the hour
+requested rather than of the table.
+
+`refresh_buckets_for` had the same fault and runs on every poll cycle, so it would have
+scanned the whole history twice an hour forever.
+
+`test_building_a_snapshot_uses_an_index_and_not_a_table_scan` asserts on the query plan
+rather than on a duration: a timing threshold over a small fixture is noise, while "no
+Seq Scan" is exactly the property that broke.

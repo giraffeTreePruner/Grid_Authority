@@ -19,6 +19,7 @@ from workers.config import load_config
 from workers.db.migrate import migrate_up
 from workers.db.snapshots import (
     METRICS,
+    SNAPSHOT_QUERY,
     build_snapshot,
     snapshot_bytes,
     store_snapshot,
@@ -228,3 +229,37 @@ def test_snapshots_carry_the_values_that_were_ingested(
     for zone_key, demand in observed.items():
         if zone_key in payload["zones"]:
             assert payload["zones"][zone_key][0] == float(Decimal(demand).quantize(Decimal("0.1")))
+
+
+# -- query shape ------------------------------------------------------------------------
+
+
+@requires_database
+def test_building_a_snapshot_uses_an_index_and_not_a_table_scan(
+    prepared: psycopg.Connection,
+) -> None:
+    """A correctness-neutral property that decides whether a long backfill finishes.
+
+    The obvious way to write this query joins first and filters on
+    COALESCE(r.period_utc, m.period_utc). Postgres will not push that predicate through
+    a full outer join, so it builds the entire join and filters the result: two
+    sequential scans of two growing tables, for every hour built. A ninety-day backfill
+    absorbs it. A seven-year one does not -- the work grows with each day completed, and
+    the run stops looking finite.
+
+    Asserted on the plan rather than on a duration, because a timing threshold on a
+    small fixture would be noise.
+    """
+    zone = CONFIG.zones.in_map()[0].key
+    insert_region(prepared, zone, "58231", "57980", "-251")
+    insert_mix(prepared, zone, "0.4120", "0.5180")
+
+    in_map = [z.key for z in CONFIG.zones.in_map()]
+    with prepared.cursor() as cursor:
+        # Named parameters, so this explains whatever the query happens to be rather
+        # than a positional copy of the shape it has today.
+        cursor.execute("EXPLAIN " + SNAPSHOT_QUERY, {"period": PERIOD, "keys": in_map})
+        plan = "\n".join(row[0] for row in cursor.fetchall())
+
+    assert "Seq Scan" not in plan, f"a table scan crept back into the snapshot query:\n{plan}"
+    assert "Index" in plan, f"no index is being used:\n{plan}"

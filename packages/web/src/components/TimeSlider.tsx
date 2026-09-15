@@ -23,6 +23,22 @@ import { useGridStore } from '../store/useGridStore.ts';
 /** Roughly eight steps a second, as the spec asks. */
 export const PLAYBACK_INTERVAL_MS = 125;
 
+/**
+ * Pointer capture, which must never be load-bearing.
+ *
+ * It keeps events coming when a finger slides off a small control, which is worth
+ * having — but it throws if the pointer is already gone, and an exception here would
+ * take the whole gesture with it. So it is attempted, and the scrub proceeds either
+ * way.
+ */
+const capturePointer = (element: Element, pointerId: number): void => {
+  try {
+    element.setPointerCapture(pointerId);
+  } catch {
+    // No active pointer: the gesture still works, it just stops tracking off-element.
+  }
+};
+
 export const TimeSlider = (): JSX.Element | null => {
   const windowPayload = useGridStore((state) => state.window);
   const cursor = useGridStore((state) => state.cursor);
@@ -99,10 +115,12 @@ export const TimeSlider = (): JSX.Element | null => {
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLInputElement>) => {
-      event.currentTarget.setPointerCapture(event.pointerId);
+      // The cursor moves first. Capture is an enhancement and threw on a pointer that
+      // had already gone, which took the whole press with it.
       setDragging(true);
       setPlaying(false);
       setCursor(indexAt(event.clientX));
+      capturePointer(event.currentTarget, event.pointerId);
     },
     [indexAt, setCursor, setPlaying],
   );
@@ -117,8 +135,12 @@ export const TimeSlider = (): JSX.Element | null => {
 
   const endDrag = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
     setDragging(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    } catch {
+      // Already released; nothing to undo.
     }
   }, []);
 

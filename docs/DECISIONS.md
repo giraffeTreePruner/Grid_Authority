@@ -797,3 +797,38 @@ EIA Form 930 does not report Alaska, so it is missing from the map for a differe
 than Canada is — but it looks identical to a reader, and leaving it out made Canada end
 at a straight edge in the north-west that read as a rendering fault rather than as a
 boundary of the data. Drawn from the same source at the same faintness.
+
+## 2026-09-14 — Pointer capture is never load-bearing
+
+`setPointerCapture` throws `NotFoundError` when the pointer is already gone, and it was
+being called before the cursor moved — so the exception took the whole gesture with it.
+
+It now runs after the reading, inside a try/catch. Capture is worth having, because it
+keeps events arriving when a finger slides off a 44px control, but a gesture must not
+depend on it.
+
+This also invalidated an earlier verification: the slider appeared to work under
+synthetic pointer events when what actually moved it was Chrome's native jump-to-click.
+The handler had thrown. A test that passes for a different reason than the one intended
+is worse than a failing one.
+
+## 2026-09-14 — The charts can be scrubbed directly
+
+uPlot's cursor follows a mouse. A phone has none, so a reader could see the shape of a
+chart and never a number from it. Pressing anywhere on a chart and dragging now reads
+along it, and where the touched period exists in the map's window the map moves too, so
+the panel and the map never disagree about which hour is being discussed.
+
+`touch-action: none` is set only on a scrubbable chart, so a finger landing on any other
+chart still scrolls the page.
+
+## 2026-09-14 — The deploy health check judges the deploy, not the data
+
+`/health` answers 503 when any source has not succeeded in six hours. That is a true
+statement about the data and says nothing about whether the deploy worked — during a long
+backfill the poll job routinely falls that far behind — and `curl -f` turned it into a
+failed deploy.
+
+The check now retries until the API answers at all, fails if it never does or if the
+database is unreachable, and otherwise reports a stale source as what it is: an
+operational note, printed with the command to investigate it.

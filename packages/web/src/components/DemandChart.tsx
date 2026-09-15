@@ -30,6 +30,7 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
   // sources lag, so the final hour of a window is routinely empty.
   const mapWindow = useGridStore((state) => state.window);
   const mapCursor = useGridStore((state) => state.cursor);
+  const setMapCursor = useGridStore((state) => state.setCursor);
   const newestWithDemand = useMemo(() => {
     for (let index = detail.series.demand_mw.length - 1; index >= 0; index -= 1) {
       if (detail.series.demand_mw[index] !== null) return index;
@@ -86,6 +87,14 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
   const demand = detail.series.demand_mw[shown] ?? null;
   const forecast = detail.series.demand_forecast_mw[shown] ?? null;
 
+  // Touching the chart moves the map's hour, which moves this readout with it: the
+  // panel and the map are answering the same question and should not disagree.
+  const scrubTo = (index: number): void => {
+    const period = detail.series.period[index];
+    const at = period === undefined ? null : indexForPeriod(mapWindow?.periods ?? [], period);
+    if (at !== null) setMapCursor(at);
+  };
+
   return (
     <section data-testid="demand-chart">
       <h3 className="mb-1 text-xs font-medium text-zinc-200">Demand and day-ahead forecast</h3>
@@ -94,6 +103,7 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
         data={data as never}
         height={140}
         ariaLabel="Demand against the day-ahead forecast, hourly"
+        onScrub={scrubTo}
       />
       <dl
         className="mt-1 flex flex-wrap items-baseline gap-x-4 text-[11px]"

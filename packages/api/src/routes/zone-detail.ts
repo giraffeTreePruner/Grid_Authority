@@ -42,9 +42,6 @@ const WINDOWS = {
 } as const;
 type WindowKey = keyof typeof WINDOWS;
 
-/** How long one step of a bucketed series lasts, for generating the period axis. */
-const BUCKET_MS = { hour: 3600_000, day: 86_400_000, month: 0 } as const;
-
 const MODES = [
   'coal',
   'gas',

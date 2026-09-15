@@ -14,7 +14,6 @@ const featureStates: { id: string; state: Record<string, unknown> }[] = [];
 const paintProperties: { layer: string; property: string; value: unknown }[] = [];
 const handlers = new Map<string, (event: unknown) => void>();
 let constructedWith: Record<string, unknown> | null = null;
-let resizeCalls = 0;
 
 vi.mock('maplibre-gl', () => {
   class Map {
@@ -35,9 +34,9 @@ vi.mock('maplibre-gl', () => {
     getCanvas = vi.fn(() => ({ style: {} }));
     queryRenderedFeatures = vi.fn(() => []);
     remove = vi.fn();
-    resize = vi.fn(() => {
-      resizeCalls += 1;
-    });
+    // The real effect is guarded on ResizeObserver, which jsdom does not provide,
+    // so this only has to exist. The behaviour is verified in a browser instead.
+    resize = vi.fn();
   }
   return {
     default: {
@@ -71,7 +70,6 @@ describe('MapView', () => {
     paintProperties.length = 0;
     handlers.clear();
     constructedWith = null;
-    resizeCalls = 0;
     useGridStore.setState({
       metric: 'demand_mw',
       selectedZone: null,

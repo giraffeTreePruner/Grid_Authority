@@ -53,6 +53,20 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
   // Without it there is no readout at all on a touch screen, which has no hover.
   const mapWindow = useGridStore((state) => state.window);
   const mapCursor = useGridStore((state) => state.cursor);
+  const setMapCursor = useGridStore((state) => state.setCursor);
+
+  /**
+   * Scrubbing the chart moves the map with it, where the two share a period.
+   *
+   * A panel bucketed by day cannot address an hourly map exactly, so the map is only
+   * moved when the touched period exists in its window; the readout follows either way.
+   */
+  const scrubTo = (index: number): void => {
+    setHovered(index);
+    const period = detail.series.period[index];
+    const at = period === undefined ? null : indexForPeriod(mapWindow?.periods ?? [], period);
+    if (at !== null) setMapCursor(at);
+  };
   const followed = useMemo(
     () => indexForPeriod(detail.series.period, mapWindow?.periods[mapCursor] ?? null),
     [detail.series.period, mapWindow, mapCursor],
@@ -128,6 +142,8 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
         data={data as never}
         height={150}
         ariaLabel="Generation by energy source, stacked"
+        onScrub={scrubTo}
+        onScrubEnd={() => setHovered(null)}
       />
       <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
         {(() => {

@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ApiError, fetchZoneDetail } from '../api/client.ts';
 import { formatAge } from '../lib/format.ts';
 import { missingHours } from '../lib/series.ts';
+import type { Resolution } from '../lib/resolution.ts';
 import { useGridStore, type WindowLength } from '../store/useGridStore.ts';
 import { DemandChart } from './DemandChart.tsx';
 import { MixChart } from './MixChart.tsx';
@@ -22,6 +23,17 @@ const WINDOWS: WindowLength[] = ['24h', '72h', '168h', '30d', '90d', '1y', 'all'
  * same obligation as labelling the map's coarse views: a chart that looks hourly and
  * is not invites every conclusion an hourly chart would support.
  */
+/** What one point covers, per window. */
+const PANEL_RESOLUTION: Record<WindowLength, Resolution> = {
+  '24h': 'hour',
+  '72h': 'hour',
+  '168h': 'hour',
+  '30d': 'day',
+  '90d': 'day',
+  '1y': 'day',
+  all: 'month',
+};
+
 const BUCKETED: Partial<Record<WindowLength, string>> = {
   '30d': 'Each point is one day, averaged over the hours that reported.',
   '90d': 'Each point is one day, averaged over the hours that reported.',
@@ -123,7 +135,11 @@ export const ZonePanel = (): JSX.Element | null => {
           ) : (
             <>
               <DemandChart detail={detail.data} unit={UNIT} />
-              <MixChart detail={detail.data} unit={UNIT} />
+              <MixChart
+                detail={detail.data}
+                unit={UNIT}
+                resolution={PANEL_RESOLUTION[detailWindow]}
+              />
 
               <dl className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-zinc-800 pt-2 text-[11px]">
                 <dt className="text-zinc-500">Newest hour</dt>

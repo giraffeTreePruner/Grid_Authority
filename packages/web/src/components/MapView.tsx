@@ -12,13 +12,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { METRICS, metricIndex } from '../lib/metrics.ts';
 import { fillColourExpression, fillOpacityExpression, lineWidthExpression } from '../lib/paint.ts';
-import { registerPmtilesProtocol, zonesArchiveUrl } from '../lib/pmtiles.ts';
+import { contextUrl, registerPmtilesProtocol, zonesArchiveUrl } from '../lib/pmtiles.ts';
 import { useGridStore, valuesAcrossWindow, valuesAtCursor } from '../store/useGridStore.ts';
 
 const SOURCE_ID = 'zones';
 const SOURCE_LAYER = 'zones';
 const FILL_LAYER = 'zones-fill';
 const LINE_LAYER = 'zones-line';
+const CONTEXT_SOURCE = 'context';
+const CONTEXT_FILL = 'context-fill';
+const CONTEXT_LINE = 'context-line';
+
+/**
+ * Canada and Mexico: the shape of the land, and nothing more.
+ *
+ * Deliberately fainter than a no-data zone. On this map a grey shape already means "a
+ * zone that published nothing this hour", and context must not be mistakable for that:
+ * a no-data fill resolves to about #1d1f24 against the background, and this to about
+ * #11141a — present enough to read as land, too faint to read as a measurement.
+ *
+ * These layers are never queried for features, so they cannot be hovered, clicked or
+ * selected. A shape with no data behind it should not respond as though it had some.
+ */
+const CONTEXT_FILL_COLOUR = '#3f3f46';
+const CONTEXT_FILL_OPACITY = 0.12;
+const CONTEXT_LINE_COLOUR = '#242830';
 
 /** Continental US, which is all MVP 1 draws. */
 const INITIAL_VIEW = { center: [-98.5, 39.5] as [number, number], zoom: 3.4 };
@@ -73,9 +91,27 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
             // the tiles carry, so it becomes the id.
             promoteId: 'zone_key',
           },
+          [CONTEXT_SOURCE]: { type: 'geojson', data: contextUrl(geometryVersion) },
         },
         layers: [
           { id: 'background', type: 'background', paint: { 'background-color': '#0b0e14' } },
+          // Before the zone layers, so context sits underneath and a zone is never
+          // drawn over by its neighbours' surroundings.
+          {
+            id: CONTEXT_FILL,
+            type: 'fill',
+            source: CONTEXT_SOURCE,
+            paint: {
+              'fill-color': CONTEXT_FILL_COLOUR,
+              'fill-opacity': CONTEXT_FILL_OPACITY,
+            },
+          },
+          {
+            id: CONTEXT_LINE,
+            type: 'line',
+            source: CONTEXT_SOURCE,
+            paint: { 'line-color': CONTEXT_LINE_COLOUR, 'line-width': 0.5 },
+          },
           {
             id: FILL_LAYER,
             type: 'fill',

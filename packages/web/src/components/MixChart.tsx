@@ -3,20 +3,42 @@
  *
  * Only modes the zone actually reported are drawn: a zone with no coal gets no coal
  * band rather than a flat zero one that suggests a measurement of nothing.
+ *
+ * The legend below is live. A stacked area with eight bands and a swatch key tells a
+ * reader which colours exist, not what any of them is worth at the moment they are
+ * pointing at — so pointing at the chart names each source and gives its own value,
+ * unstacked. Without a cursor it reads the latest period, so the panel says something
+ * useful before it is touched at all.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Options } from 'uplot';
 import type { ZoneDetailResponse } from '../api/types.ts';
 import { buildMixData } from '../lib/series.ts';
+import { formatPeriod, type Resolution } from '../lib/resolution.ts';
 import { Chart } from './Chart.tsx';
 
 export interface MixChartProps {
   detail: ZoneDetailResponse;
   unit: string;
+  /**
+   * What one point covers, so the readout can label it correctly.
+   *
+   * Passed rather than guessed from the timestamps: an hourly window contains
+   * midnights too, so "ends at 00:00" does not distinguish an hour from a day.
+   */
+  resolution: Resolution;
 }
 
-export const MixChart = ({ detail, unit }: MixChartProps): JSX.Element => {
-  const { data, colours, labels } = useMemo(() => buildMixData(detail.series), [detail.series]);
+const NUMBER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+
+export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Element => {
+  const { data, colours, labels, raw } = useMemo(
+    () => buildMixData(detail.series),
+    [detail.series],
+  );
+
+  // null means "not pointing at anything", which reads the latest period instead.
+  const [hovered, setHovered] = useState<number | null>(null);
 
   const options = useMemo<Omit<Options, 'width' | 'height'>>(
     () => ({
@@ -45,6 +67,15 @@ export const MixChart = ({ detail, unit }: MixChartProps): JSX.Element => {
       ],
       legend: { show: false },
       cursor: { drag: { x: false, y: false } },
+      // uPlot owns its DOM, so the readout is rendered by React from this index rather
+      // than by styling uPlot's own legend into something that matches the panel.
+      hooks: {
+        setCursor: [
+          (plot: { cursor: { idx?: number | null } }) => {
+            setHovered(plot.cursor.idx ?? null);
+          },
+        ],
+      },
     }),
     [colours, labels],
   );
@@ -69,20 +100,44 @@ export const MixChart = ({ detail, unit }: MixChartProps): JSX.Element => {
         options={options}
         data={data as never}
         height={150}
-        ariaLabel="Generation by energy source, stacked, hourly"
+        ariaLabel="Generation by energy source, stacked"
       />
-      <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1" data-testid="mix-legend">
-        {labels.map((label, index) => (
-          <li key={label} className="flex items-center gap-1 text-[10px] text-zinc-400">
-            <span
-              className="h-2 w-2 rounded-sm"
-              style={{ backgroundColor: colours[index] }}
-              aria-hidden="true"
-            />
-            {label}
-          </li>
-        ))}
+      <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
+        {hovered === null || detail.series.period[hovered] === undefined
+          ? 'Latest period'
+          : formatPeriod(detail.series.period[hovered]!, resolution)}
+      </p>
+
+      <ul
+        className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 sm:grid-cols-3"
+        data-testid="mix-legend"
+      >
+        {labels.map((label, index) => {
+          const values = raw[index] ?? [];
+          const at = hovered ?? values.length - 1;
+          const value = values[at] ?? null;
+          return (
+            <li
+              key={label}
+              className="flex items-center gap-1.5 text-[11px] text-zinc-400"
+              data-testid="mix-legend-item"
+            >
+              <span
+                className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                style={{ backgroundColor: colours[index] }}
+                aria-hidden="true"
+              />
+              <span className="truncate">{label}</span>
+              <span className="ml-auto shrink-0 tabular-nums text-zinc-200">
+                {value === null ? '—' : NUMBER.format(value)}
+              </span>
+            </li>
+          );
+        })}
       </ul>
+      <p className="mt-1 text-[10px] text-zinc-600">
+        Values in {unit}. A dash means the source published nothing for that period.
+      </p>
     </section>
   );
 };

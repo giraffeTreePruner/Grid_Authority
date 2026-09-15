@@ -678,3 +678,50 @@ day EIA genuinely had nothing for would reproduce the original bug in miniature.
 The migration seeds the table from days already fetched, at a deliberately loose bar of
 half the expected zones: marking a partial day costs one `--force` to repair, while
 re-fetching every historical day is paid on every run for ever.
+
+## 2026-09-14 — Canada and Mexico are context, drawn fainter than no data
+
+The map ends at the US border with nothing to say whether that edge is a coastline or
+the limit of the dataset. Two country silhouettes fix that.
+
+They are drawn from the same electricitymaps-contrib `world.geojson` the zones come from,
+dissolved to one feature per country, so there is no second source, licence or
+attribution to track. Simplified to 10% of vertices with islands under 2,000 km² dropped:
+4 KB gzipped, against a 600 KB geometry budget.
+
+The constraint that shaped the styling: on this map a grey shape already means "a zone
+that published nothing this hour". Context has no data behind it at all and must not be
+mistakable for that, so it resolves to roughly #11141a against the background where a
+no-data zone resolves to about #1d1f24 — visible as land, too faint to read as a
+measurement. The layers are never queried for features, so they cannot be hovered,
+clicked or selected either.
+
+Still no basemap: every source is local and none is raster tiles, which the test now
+asserts directly rather than by counting layer types.
+
+## 2026-09-14 — The slider is sized for a finger, and claims the gesture
+
+Scrubbing did not work on a phone: the track was 4px tall, far under the ~44px a touch
+target needs, so a drag usually missed it and registered as a tap — which a range input
+answers by jumping to that position rather than scrubbing. And without `touch-action:
+none` the browser claims a horizontal drag as a page gesture and pans instead.
+
+The input is now 44px tall and transparent with the visible track drawn thin inside it,
+so the hit area is generous and the line looks unchanged.
+
+## 2026-09-14 — The generation mix legend carries values, not just colours
+
+A stacked area with eight bands and a swatch key tells a reader which colours exist. It
+does not tell them what any band is worth at the point they are looking at, which is the
+question the chart exists to answer.
+
+The legend now reads the cursor and gives each source its own value — unstacked, because
+`data` carries cumulative bands and a reader asking "how much wind" wants the wind, not
+the running total it sits on. With no cursor it reads the latest period, so the panel
+says something useful before it is touched. A source that published nothing shows a dash
+rather than a zero, and a source that never reported has no row at all.
+
+The readout is rendered by React from uPlot's `setCursor` hook rather than by styling
+uPlot's own legend, and takes the resolution as a prop rather than inferring it from the
+timestamps: an hourly window contains midnights too, so "ends at 00:00" does not
+distinguish an hour from a day.

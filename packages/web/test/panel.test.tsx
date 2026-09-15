@@ -228,3 +228,50 @@ describe('ZonePanel over long windows', () => {
     );
   });
 });
+
+describe('generation mix readout', () => {
+  beforeEach(() => {
+    respondWith(detail());
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO', detailWindow: '168h' });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('gives every source a name and a number, not just a colour', async () => {
+    // A stacked area with a swatch key says which colours exist. It does not say what
+    // any of them is worth, which is the question the chart is there to answer.
+    render(<ZonePanel />, { wrapper });
+    const items = await screen.findAllByTestId('mix-legend-item');
+    expect(items.length).toBeGreaterThan(0);
+
+    for (const item of items) {
+      expect(item.textContent).toMatch(/[A-Za-z]/);
+      expect(item.textContent).toMatch(/[\d,]+|—/);
+    }
+  });
+
+  it('reads the latest period before anything is pointed at', async () => {
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('mix-readout-period')).toHaveTextContent('Latest period');
+  });
+
+  it('says a source published nothing rather than showing it as zero', async () => {
+    const body = detail();
+    body.series.mix.wind = body.series.mix.wind.map(() => null);
+    body.series.mix.gas = body.series.mix.gas.map(() => 100);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    const items = await screen.findAllByTestId('mix-legend-item');
+    // Wind reported nothing at all, so it is not a band and must not appear as 0.
+    expect(items.some((item) => item.textContent?.includes('Wind'))).toBe(false);
+    expect(items.some((item) => item.textContent?.includes('Gas'))).toBe(true);
+  });
+
+  it('names the unit the numbers are in', async () => {
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('mix-chart')).toHaveTextContent('Values in MWh');
+  });
+});

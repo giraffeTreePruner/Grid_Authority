@@ -36,3 +36,61 @@
     );
   }
 }
+
+/**
+ * The time slider, sized for a finger.
+ *
+ * Two things stopped it scrubbing on a phone. The track was four pixels tall, which is
+ * far below the ~44px a touch target needs, so a drag usually missed it and registered
+ * as a tap — which a range input answers by jumping to that position. And without
+ * `touch-action: none` the browser claims the horizontal drag as a page gesture and
+ * pans instead of scrubbing.
+ *
+ * The visible track stays thin. The input itself is tall and transparent, so the hit
+ * area is generous while the line looks the same.
+ */
+.scrub {
+  touch-action: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 2.75rem;
+  padding: 0;
+  cursor: pointer;
+}
+
+.scrub::-webkit-slider-runnable-track {
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: #3f3f46;
+}
+
+.scrub::-moz-range-track {
+  height: 0.25rem;
+  border-radius: 9999px;
+  background: #3f3f46;
+}
+
+.scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: -0.4375rem;
+  border-radius: 9999px;
+  background: #fafafa;
+  border: 1px solid #18181b;
+}
+
+.scrub::-moz-range-thumb {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid #18181b;
+  border-radius: 9999px;
+  background: #fafafa;
+}
+
+.scrub:focus-visible {
+  outline: 2px solid #a1a1aa;
+  outline-offset: 2px;
+}

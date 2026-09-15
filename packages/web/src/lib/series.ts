@@ -88,6 +88,14 @@ export interface MixChartData {
   modes: string[];
   colours: string[];
   labels: string[];
+  /**
+   * Each mode's own value per period, unstacked.
+   *
+   * `data` carries cumulative bands, because that is what draws a stacked area. A
+   * reader asking "how much wind" wants the wind, not the running total it happens to
+   * sit on top of, so the readout needs these and the chart needs those.
+   */
+  raw: (number | null)[][];
 }
 
 /**
@@ -128,6 +136,10 @@ export const buildMixData = (series: ZoneSeries): MixChartData => {
     modes: [...present],
     colours: present.map((mode) => MIX_COLOURS[mode] ?? '#3f3f46'),
     labels: present.map((mode) => MIX_LABELS[mode] ?? mode),
+    raw: present.map((mode) => {
+      const values = series.mix[mode] ?? [];
+      return x.map((_period, index) => values[index] ?? null);
+    }),
   };
 };
 

@@ -115,7 +115,7 @@ export const TimeSlider = (): JSX.Element | null => {
         onKeyDown={onKeyDown}
         aria-label={`${step.charAt(0).toUpperCase()}${step.slice(1)} shown on the map`}
         aria-valuetext={`${label}, ${relative}`}
-        className="h-1 flex-1 cursor-pointer appearance-none rounded bg-zinc-700 accent-zinc-100"
+        className="scrub flex-1"
         data-testid="slider-input"
       />
 

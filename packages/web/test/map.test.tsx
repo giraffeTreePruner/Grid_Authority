@@ -95,10 +95,40 @@ describe('MapView', () => {
     expect(zoneSource!.url).toContain('v=7');
     // setFeatureState addresses features by id, so zone_key must be promoted.
     expect(zoneSource!.promoteId).toBe('zone_key');
-    // A background and the zone layers, and nothing else: there is no basemap.
-    expect(style.layers.map((layer) => layer.type).sort()).toEqual(
-      ['background', 'fill', 'line'].sort(),
-    );
+
+    // Still no basemap: every source is local, and none of them is raster tiles.
+    for (const source of Object.values(style.sources) as unknown as { type?: string }[]) {
+      expect(source.type).not.toBe('raster');
+    }
+    expect(JSON.stringify(style.sources)).not.toMatch(/https?:\/\/(?!localhost)/);
+  });
+
+  it('draws Canada and Mexico beneath the zones, and never over them', () => {
+    render(<MapView geometryVersion="7" />);
+    const style = constructedWith?.style as {
+      sources: Record<string, { type: string; data?: string }>;
+      layers: { id: string; source?: string }[];
+    };
+
+    expect(style.sources.context?.type).toBe('geojson');
+    expect(style.sources.context?.data).toContain('/context.geojson');
+
+    const order = style.layers.map((layer) => layer.id);
+    // Painted first, so a zone is never obscured by its surroundings.
+    expect(order.indexOf('context-fill')).toBeLessThan(order.indexOf('zones-fill'));
+    expect(order.indexOf('context-line')).toBeLessThan(order.indexOf('zones-fill'));
+  });
+
+  it('keeps context fainter than a zone with no data', () => {
+    // A grey shape on this map already means "published nothing this hour". Context has
+    // no data behind it at all and must not be mistakable for a zone that has some.
+    render(<MapView geometryVersion="7" />);
+    const style = constructedWith?.style as {
+      layers: { id: string; paint?: Record<string, unknown> }[];
+    };
+
+    const context = style.layers.find((layer) => layer.id === 'context-fill');
+    expect(context?.paint?.['fill-opacity'] as number).toBeLessThan(0.35);
   });
 
   it('paints when the window arrives before the map finishes loading', async () => {

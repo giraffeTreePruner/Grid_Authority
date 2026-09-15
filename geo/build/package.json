@@ -9,7 +9,9 @@
     "fetch": "node fetch-source.js",
     "prepare-zones": "node prepare-zones.js",
     "simplify": "mapshaper geo/src/zones.raw.geojson -simplify 4% keep-shapes -clean -o precision=0.0001 format=geojson geo/src/zones.simplified.geojson",
-    "validate": "node validate.js"
+    "validate": "node validate.js",
+    "prepare-context": "node prepare-context.js",
+    "simplify-context": "mapshaper geo/src/context.raw.geojson -simplify 10% keep-shapes -filter-islands min-area=2000km2 -clean -o precision=0.001 format=geojson geo/context.geojson"
   },
   "devDependencies": {
     "mapshaper": "^0.6.102",

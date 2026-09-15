@@ -851,3 +851,43 @@ radius underneath shows as a dark rim inside the rounded square.
 
 Variant B of three, chosen by the owner: banded, rather than one colour per block
 (seams close up at 16px) or letters knocked out of a carved tile (counters fill in).
+
+## 2026-09-14 — A chart takes the horizontal gesture and leaves the vertical one
+
+`touch-action: none` made the charts scrubbable and, in the same stroke, made the panel
+unscrollable: a finger landing anywhere on a chart was claimed by it, so a reader could
+not scroll past the demand chart to reach the generation mix underneath.
+
+`pan-y` is the right value. Vertical panning stays with the browser's scroller, and only
+the horizontal drag reaches the chart.
+
+That alone is not enough, because a scroll that begins on a chart still delivers a
+`pointerdown` there. A touch therefore has to earn the scrub: it starts only once the
+finger has moved more than six pixels sideways, and more sideways than vertically. A
+mouse scrubs from the press, having nothing to scroll with.
+
+## 2026-09-14 — Scrubbing drives uPlot's cursor, not only React state
+
+The numbers moved and the crosshair stayed where it was, because the scrub was setting
+component state and never telling uPlot where to draw. `setCursor` is now called with
+the position, and the default hairline — sized for a light theme and invisible against
+`#0b0e14` — is restyled to be legible.
+
+Both panel charts also keep their own reading rather than deriving one from the map's
+cursor. The panel's window ends at the selected zone's newest hour and the map's ends at
+the newest hour anywhere, so they overlap without matching: scrubbing into the part the
+map does not cover moved the crosshair and left every number behind.
+
+## 2026-09-14 — The stack is drawn largest band first, with opaque fills
+
+Every band in `buildMixData` is a cumulative total, drawn as an area from the axis up to
+that running sum — so each band covers the ones below it. uPlot paints series in array
+order, which meant the grand total went on last and hid every source under it. With
+translucent fills on top of that, eight bands blended into one olive mass while the
+legend and the cursor points beside it showed the right colours, which made it look like
+a palette problem rather than a draw-order one.
+
+Reversed, so the largest is laid down first and each smaller band paints over it, and the
+fills are opaque. `labels` and `colours` stay in reading order for the legend;
+`seriesLabels` and `seriesColours` carry the drawing order, and a test asserts the two
+are reverses of each other.

@@ -9,7 +9,7 @@
  * no qualifying vintage and the line is empty. That is stated rather than left looking
  * like a rendering fault.
  */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Options } from 'uplot';
 import type { ZoneDetailResponse } from '../api/types.ts';
 import { buildDemandData, indexForPeriod } from '../lib/series.ts';
@@ -31,6 +31,14 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
   const mapWindow = useGridStore((state) => state.window);
   const mapCursor = useGridStore((state) => state.cursor);
   const setMapCursor = useGridStore((state) => state.setCursor);
+
+  // The chart's own reading, which is not the same thing as the map's cursor.
+  //
+  // The panel's window ends at this zone's newest hour and the map's ends at the
+  // newest hour anywhere, so they overlap without matching. Relying on the map alone
+  // meant scrubbing into the part of the panel the map does not cover moved the
+  // crosshair and left every number where it was.
+  const [hovered, setHovered] = useState<number | null>(null);
   const newestWithDemand = useMemo(() => {
     for (let index = detail.series.demand_mw.length - 1; index >= 0; index -= 1) {
       if (detail.series.demand_mw[index] !== null) return index;
@@ -82,7 +90,7 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
       : `Forecast issued ${Math.min(...horizons)}–${Math.max(...horizons)} hours ahead`;
 
   const at = indexForPeriod(detail.series.period, mapWindow?.periods[mapCursor] ?? null);
-  const shown = at ?? newestWithDemand;
+  const shown = hovered ?? at ?? newestWithDemand;
   const period = detail.series.period[shown];
   const demand = detail.series.demand_mw[shown] ?? null;
   const forecast = detail.series.demand_forecast_mw[shown] ?? null;
@@ -90,6 +98,7 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
   // Touching the chart moves the map's hour, which moves this readout with it: the
   // panel and the map are answering the same question and should not disagree.
   const scrubTo = (index: number): void => {
+    setHovered(index);
     const period = detail.series.period[index];
     const at = period === undefined ? null : indexForPeriod(mapWindow?.periods ?? [], period);
     if (at !== null) setMapCursor(at);

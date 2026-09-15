@@ -33,7 +33,7 @@ export interface MixChartProps {
 const NUMBER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 
 export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Element => {
-  const { data, colours, labels, raw } = useMemo(
+  const { data, colours, labels, raw, seriesColours, seriesLabels } = useMemo(
     () => buildMixData(detail.series),
     [detail.series],
   );
@@ -85,13 +85,18 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
     () => ({
       series: [
         {},
-        // Drawn back to front: each band is a cumulative total, so later bands are
-        // filled beneath earlier ones to give the stacked appearance.
-        ...labels.map((label, index) => ({
+        // Largest cumulative band first, so the smaller ones paint over it and each
+        // source keeps its own colour. Drawn the other way round, the grand total goes
+        // on last and covers the lot — which is exactly what it did: one olive mass
+        // under a correctly coloured legend.
+        //
+        // Fills are opaque for the same reason. Translucent bands stacked eight deep
+        // blend into a single muddy colour that belongs to none of them.
+        ...seriesLabels.map((label, index) => ({
           label,
-          stroke: colours[index],
-          fill: `${colours[index]}cc`,
-          width: 0.75,
+          stroke: seriesColours[index],
+          fill: seriesColours[index],
+          width: 0.5,
           spanGaps: false,
         })),
       ],
@@ -118,7 +123,7 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
         ],
       },
     }),
-    [colours, labels],
+    [seriesColours, seriesLabels],
   );
 
   if (labels.length === 0) {
@@ -143,7 +148,6 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
         height={150}
         ariaLabel="Generation by energy source, stacked"
         onScrub={scrubTo}
-        onScrubEnd={() => setHovered(null)}
       />
       <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
         {(() => {

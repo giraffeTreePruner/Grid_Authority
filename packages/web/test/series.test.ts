@@ -69,15 +69,33 @@ describe('generation mix', () => {
     expect(built.labels).toEqual(['Gas', 'Wind']);
   });
 
-  it('stacks cumulatively in a fixed order', () => {
+  it('stacks cumulatively, largest band first so the smaller ones stay visible', () => {
     const mix = emptyMix();
     mix.gas = [400, 400, 400];
     mix.wind = [100, 100, 100];
 
     const built = buildMixData(series({ mix }));
-    // Gas is drawn before wind, so the wind band sits on top at 500.
-    expect(built.data[1]).toEqual([400, 400, 400]);
-    expect(built.data[2]).toEqual([500, 500, 500]);
+
+    // Gas then wind gives running totals of 400 and 500. They are handed to uPlot
+    // largest first: a cumulative band is an area from the axis to its total, so it
+    // covers everything beneath, and painting the grand total last hides the lot.
+    expect(built.data[1]).toEqual([500, 500, 500]);
+    expect(built.data[2]).toEqual([400, 400, 400]);
+
+    // Series colours follow that order; the legend keeps reading order.
+    expect(built.seriesLabels).toEqual([...built.labels].reverse());
+    expect(built.seriesColours).toEqual([...built.colours].reverse());
+    expect(built.labels).toEqual(['Gas', 'Wind']);
+  });
+
+  it('gives each source a distinct colour, which is the point of stacking them', () => {
+    const mix = emptyMix();
+    mix.gas = [400];
+    mix.wind = [100];
+    mix.solar = [50];
+
+    const built = buildMixData(series({ mix }));
+    expect(new Set(built.seriesColours).size).toBe(built.seriesColours.length);
   });
 
   it('leaves a gap where a mode did not report that hour', () => {
@@ -85,7 +103,9 @@ describe('generation mix', () => {
     mix.wind = [100, null, 140];
 
     const built = buildMixData(series({ mix }));
-    // The middle hour carries the running total, not a zero that would collapse the band.
+    // Wind is the only reporting mode, so it is the single band whichever way round
+    // the series are handed over. The middle hour carries null, not a zero that would
+    // collapse the band to the axis and read as "no wind" rather than "not reported".
     expect(built.data[1]?.[1]).toBeNull();
   });
 

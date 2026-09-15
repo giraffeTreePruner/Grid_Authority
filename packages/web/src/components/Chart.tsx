@@ -94,6 +94,12 @@ export const Chart = ({
   );
 
   const [scrubbing, setScrubbing] = useState(false);
+  // Where a touch began, and whether it has committed to being a scrub. A touch that
+  // has not moved sideways yet might still turn out to be a scroll.
+  const origin = useRef<{ x: number; y: number } | null>(null);
+
+  /** How far sideways a finger must travel before this is a scrub and not a scroll. */
+  const SCRUB_THRESHOLD_PX = 6;
 
   /**
    * The data index under a client x position.
@@ -101,32 +107,60 @@ export const Chart = ({
    * Measured against uPlot's own plotting area rather than the container, because the
    * axis gutter is part of the container and would shift every reading by its width.
    */
-  const indexAt = useCallback((clientX: number): number | null => {
+  const indexAt = useCallback((clientX: number, clientY?: number): number | null => {
     const instance = plot.current;
     if (instance === null) return null;
     const rect = instance.over.getBoundingClientRect();
     if (rect.width === 0) return null;
     const offset = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+
+    // Drive uPlot's own cursor as well as our state, so the crosshair follows the
+    // finger. Setting React state alone moves the numbers and leaves the lines behind.
+    const top =
+      clientY === undefined
+        ? rect.height / 2
+        : Math.min(Math.max(clientY - rect.top, 0), rect.height);
+    instance.setCursor({ left: offset, top });
+
     return instance.posToIdx(offset);
   }, []);
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
       if (onScrub === undefined) return;
-      const index = indexAt(event.clientX);
-      if (index === null) return;
-      // The reading happens first: capture is an enhancement, not a precondition.
-      setScrubbing(true);
-      onScrub(index);
-      capturePointer(event.currentTarget, event.pointerId);
+      origin.current = { x: event.clientX, y: event.clientY };
+
+      // A mouse has nothing to scroll with, so it scrubs from the press. A finger has
+      // to earn it: the same chart is in a scrolling panel, and jumping on contact
+      // would mean a reader trying to scroll past the chart moves the cursor instead.
+      if (event.pointerType === 'mouse') {
+        const index = indexAt(event.clientX, event.clientY);
+        if (index === null) return;
+        setScrubbing(true);
+        onScrub(index);
+        capturePointer(event.currentTarget, event.pointerId);
+      }
     },
     [indexAt, onScrub],
   );
 
   const onPointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (!scrubbing || onScrub === undefined) return;
-      const index = indexAt(event.clientX);
+      if (onScrub === undefined) return;
+
+      if (!scrubbing) {
+        const start = origin.current;
+        if (start === null) return;
+        const dx = Math.abs(event.clientX - start.x);
+        const dy = Math.abs(event.clientY - start.y);
+        // Sideways, and more sideways than up: anything else belongs to the scroller,
+        // which `touch-action: pan-y` has already let it keep.
+        if (dx < SCRUB_THRESHOLD_PX || dx <= dy) return;
+        setScrubbing(true);
+        capturePointer(event.currentTarget, event.pointerId);
+      }
+
+      const index = indexAt(event.clientX, event.clientY);
       if (index !== null) onScrub(index);
     },
     [indexAt, onScrub, scrubbing],
@@ -134,6 +168,7 @@ export const Chart = ({
 
   const endScrub = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
+      origin.current = null;
       if (!scrubbing) return;
       setScrubbing(false);
       try {
@@ -154,9 +189,10 @@ export const Chart = ({
       role="img"
       aria-label={ariaLabel}
       data-testid="chart"
-      // Only when the chart is scrubbable: otherwise this would stop the page
-      // scrolling under a finger that happened to land on a chart.
-      style={onScrub === undefined ? undefined : { touchAction: 'none' }}
+      // pan-y, not none. `none` claimed every gesture on the chart, so a reader could
+      // not scroll the panel past it to reach what was below. This leaves vertical
+      // panning to the browser and takes only the horizontal drag.
+      style={onScrub === undefined ? undefined : { touchAction: 'pan-y' }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endScrub}

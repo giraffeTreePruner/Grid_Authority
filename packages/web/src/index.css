@@ -94,3 +94,26 @@
   outline: 2px solid #a1a1aa;
   outline-offset: 2px;
 }
+
+/**
+ * uPlot's crosshair, made visible on a dark ground.
+ *
+ * The library's default is a hairline sized for a light theme; against #0b0e14 it is
+ * effectively invisible, which is why scrubbing moved the numbers with nothing on the
+ * chart to say where they came from.
+ */
+.u-cursor-x,
+.u-cursor-y {
+  border-color: rgb(212 212 216 / 0.55) !important;
+}
+
+.u-cursor-pt {
+  border-color: rgb(250 250 250 / 0.9) !important;
+  box-shadow: 0 0 0 1px rgb(11 14 20 / 0.9);
+}
+
+/* The crosshair is only meaningful while a position is being read. */
+.u-over:not(.u-select) .u-cursor-x,
+.u-over:not(.u-select) .u-cursor-y {
+  transition: opacity 80ms linear;
+}

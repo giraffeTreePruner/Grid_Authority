@@ -96,6 +96,19 @@ export interface MixChartData {
    * sit on top of, so the readout needs these and the chart needs those.
    */
   raw: (number | null)[][];
+  /**
+   * Colours and labels in the order the bands appear in `data`.
+   *
+   * Which is the reverse of reading order. A cumulative band is drawn as an area from
+   * the axis up to its running total, so every band covers the ones below it — and
+   * uPlot paints series in array order, meaning the last drawn is the grand total and
+   * hides everything. Ordering the largest first lets each smaller band paint on top,
+   * which is what makes the stack legible.
+   *
+   * `labels` and `colours` stay in reading order for the legend.
+   */
+  seriesColours: string[];
+  seriesLabels: string[];
 }
 
 /**
@@ -131,11 +144,17 @@ export const buildMixData = (series: ZoneSeries): MixChartData => {
     bands.push(band);
   }
 
+  const colours = present.map((mode) => MIX_COLOURS[mode] ?? '#3f3f46');
+  const labels = present.map((mode) => MIX_LABELS[mode] ?? mode);
+
   return {
-    data: [x, ...bands],
+    // Largest cumulative first, so each smaller band paints over it.
+    data: [x, ...[...bands].reverse()],
+    seriesColours: [...colours].reverse(),
+    seriesLabels: [...labels].reverse(),
     modes: [...present],
-    colours: present.map((mode) => MIX_COLOURS[mode] ?? '#3f3f46'),
-    labels: present.map((mode) => MIX_LABELS[mode] ?? mode),
+    colours,
+    labels,
     raw: present.map((mode) => {
       const values = series.mix[mode] ?? [];
       return x.map((_period, index) => values[index] ?? null);

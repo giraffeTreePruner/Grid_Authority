@@ -22,8 +22,22 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(here, '..', '..');
 
-/** Country keys to keep, and the name each one is published under. */
-const COUNTRIES = { CA: 'Canada', MX: 'Mexico' };
+/**
+ * What to draw as context, and the name each part is published under.
+ *
+ * Canada and Mexico are outside the dataset entirely. Alaska is not: it is US territory
+ * that EIA Form 930 does not report, so it is missing from the map for a different
+ * reason but looks identical to a reader — and leaving it out made Canada end at a
+ * straight edge in the north-west, which reads as a rendering fault rather than as a
+ * boundary of the data.
+ *
+ * `zones` names electricitymaps zones to take instead of a whole country.
+ */
+const PARTS = [
+  { name: 'Canada', countryKey: 'CA' },
+  { name: 'Mexico', countryKey: 'MX' },
+  { name: 'Alaska', zones: ['US-AK', 'US-AK-SEAPA'] },
+];
 
 const source = JSON.parse(readFileSync(join(repoRoot, 'geo', 'src', 'world.geojson'), 'utf8'));
 
@@ -35,13 +49,16 @@ const polygonsOf = (geometry) => {
   return [];
 };
 
-const features = Object.entries(COUNTRIES).map(([key, name]) => {
-  const parts = source.features
-    .filter((feature) => feature.properties?.countryKey === key)
-    .flatMap((feature) => polygonsOf(feature.geometry));
+const features = PARTS.map(({ name, countryKey, zones }) => {
+  const matches = (feature) =>
+    zones === undefined
+      ? feature.properties?.countryKey === countryKey
+      : zones.includes(feature.properties?.zoneName);
+
+  const parts = source.features.filter(matches).flatMap((feature) => polygonsOf(feature.geometry));
 
   if (parts.length === 0) {
-    throw new Error(`no features with countryKey "${key}" in world.geojson`);
+    throw new Error(`no features matched "${name}" in world.geojson`);
   }
 
   // Only `name`, and only so the layer is legible in a debugger. Nothing reads it, and

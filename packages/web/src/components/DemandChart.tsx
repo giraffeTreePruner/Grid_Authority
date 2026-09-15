@@ -12,8 +12,12 @@
 import { useMemo } from 'react';
 import type { Options } from 'uplot';
 import type { ZoneDetailResponse } from '../api/types.ts';
-import { buildDemandData } from '../lib/series.ts';
+import { buildDemandData, indexForPeriod } from '../lib/series.ts';
+import { formatHour } from '../lib/format.ts';
+import { useGridStore } from '../store/useGridStore.ts';
 import { Chart } from './Chart.tsx';
+
+const NUMBER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 
 export interface DemandChartProps {
   detail: ZoneDetailResponse;
@@ -21,6 +25,18 @@ export interface DemandChartProps {
 }
 
 export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => {
+  // The hour the map's slider is on, so the panel answers the same question the map is
+  // showing. Falls back to the newest hour that reported, never simply the last one:
+  // sources lag, so the final hour of a window is routinely empty.
+  const mapWindow = useGridStore((state) => state.window);
+  const mapCursor = useGridStore((state) => state.cursor);
+  const newestWithDemand = useMemo(() => {
+    for (let index = detail.series.demand_mw.length - 1; index >= 0; index -= 1) {
+      if (detail.series.demand_mw[index] !== null) return index;
+    }
+    return Math.max(detail.series.demand_mw.length - 1, 0);
+  }, [detail.series.demand_mw]);
+
   const { data, hasForecast, horizons } = useMemo(
     () => buildDemandData(detail.series),
     [detail.series],
@@ -51,7 +67,9 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
           size: 62,
         },
       ],
-      legend: { show: true },
+      // uPlot's own legend reads "--" until something hovers, which on a touch screen
+      // is for ever. The readout below is rendered from the slider instead.
+      legend: { show: false },
       cursor: { drag: { x: false, y: false } },
     }),
     [unit],
@@ -62,6 +80,12 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
       ? null
       : `Forecast issued ${Math.min(...horizons)}–${Math.max(...horizons)} hours ahead`;
 
+  const at = indexForPeriod(detail.series.period, mapWindow?.periods[mapCursor] ?? null);
+  const shown = at ?? newestWithDemand;
+  const period = detail.series.period[shown];
+  const demand = detail.series.demand_mw[shown] ?? null;
+  const forecast = detail.series.demand_forecast_mw[shown] ?? null;
+
   return (
     <section data-testid="demand-chart">
       <h3 className="mb-1 text-xs font-medium text-zinc-200">Demand and day-ahead forecast</h3>
@@ -71,6 +95,27 @@ export const DemandChart = ({ detail, unit }: DemandChartProps): JSX.Element => 
         height={140}
         ariaLabel="Demand against the day-ahead forecast, hourly"
       />
+      <dl
+        className="mt-1 flex flex-wrap items-baseline gap-x-4 text-[11px]"
+        data-testid="demand-readout"
+      >
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-500">{period === undefined ? '—' : formatHour(period)}</dt>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-500">Demand</dt>
+          <dd className="tabular-nums text-zinc-100">
+            {demand === null ? '—' : NUMBER.format(demand)}
+          </dd>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-500">Forecast</dt>
+          <dd className="tabular-nums text-zinc-100">
+            {forecast === null ? '—' : NUMBER.format(forecast)}
+          </dd>
+        </div>
+      </dl>
+
       {hasForecast ? (
         <p className="mt-1 text-[10px] text-zinc-500">{horizonNote}</p>
       ) : (

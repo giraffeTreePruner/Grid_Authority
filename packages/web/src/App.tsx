@@ -34,6 +34,7 @@ const messageFor = (error: unknown): string =>
 export const App = (): JSX.Element => {
   const setWindow = useGridStore((state) => state.setWindow);
   const windowPayload = useGridStore((state) => state.window);
+  const selectedZone = useGridStore((state) => state.selectedZone);
 
   const zones = useQuery({
     queryKey: ['zones'],
@@ -84,7 +85,14 @@ export const App = (): JSX.Element => {
         <div className="relative flex-1">
           <MapView geometryVersion={GEOMETRY_VERSION} />
 
-          <div className="pointer-events-none absolute bottom-4 left-4">
+          {/* Hidden under the zone sheet on a phone: there is no room for both, and
+              the legend describes a map the reader cannot currently see. */}
+          <div
+            className={[
+              'pointer-events-none absolute bottom-4 left-4',
+              selectedZone === null ? '' : 'hidden sm:block',
+            ].join(' ')}
+          >
             <div className="pointer-events-auto">
               <Legend />
             </div>

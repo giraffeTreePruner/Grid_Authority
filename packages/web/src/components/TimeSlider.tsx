@@ -9,7 +9,7 @@
  * on requestAnimationFrame at roughly eight steps a second and pauses when the tab is
  * hidden, so a backgrounded page is not animating a map nobody is looking at.
  */
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { formatHourUtc } from '../lib/format.ts';
 import {
   RESOLUTIONS_BY_ID,
@@ -17,7 +17,7 @@ import {
   formatPeriod,
   formatPeriodsBehind,
 } from '../lib/resolution.ts';
-import { hoursBehind, indexForKey, nextPlaybackIndex } from '../lib/slider.ts';
+import { clampIndex, hoursBehind, indexForKey, nextPlaybackIndex } from '../lib/slider.ts';
 import { useGridStore } from '../store/useGridStore.ts';
 
 /** Roughly eight steps a second, as the spec asks. */
@@ -35,6 +35,8 @@ export const TimeSlider = (): JSX.Element | null => {
 
   const frame = useRef<number | null>(null);
   const lastStep = useRef(0);
+  const track = useRef<HTMLInputElement | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const periods = windowPayload?.periods ?? [];
   const length = periods.length;
@@ -67,6 +69,58 @@ export const TimeSlider = (): JSX.Element | null => {
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [setPlaying]);
+
+  /**
+   * Scrubbing, driven by pointer events rather than left to the input.
+   *
+   * iOS is the reason. A range input there does not jump to a tapped position and does
+   * not follow a drag that began anywhere but on the thumb, so scrubbing meant hitting
+   * an 18px target exactly and then dragging it — which is why it kept "picking a
+   * point" instead. Chrome and Firefox jump on click but still will not start a drag
+   * from the track.
+   *
+   * Reading the position off the element makes every platform behave the same: press
+   * anywhere and drag, and the cursor follows the finger. Pointer capture keeps events
+   * coming even when the finger leaves the control, which matters on a 44px target.
+   *
+   * onChange stays for the keyboard and for anything that drives the input directly.
+   */
+  const indexAt = useCallback(
+    (clientX: number): number => {
+      const node = track.current;
+      if (node === null || length === 0) return 0;
+      const rect = node.getBoundingClientRect();
+      if (rect.width === 0) return 0;
+      const ratio = (clientX - rect.left) / rect.width;
+      return clampIndex(Math.round(ratio * (length - 1)), length);
+    },
+    [length],
+  );
+
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLInputElement>) => {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDragging(true);
+      setPlaying(false);
+      setCursor(indexAt(event.clientX));
+    },
+    [indexAt, setCursor, setPlaying],
+  );
+
+  const onPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLInputElement>) => {
+      if (!dragging) return;
+      setCursor(indexAt(event.clientX));
+    },
+    [dragging, indexAt, setCursor],
+  );
+
+  const endDrag = useCallback((event: React.PointerEvent<HTMLInputElement>) => {
+    setDragging(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }, []);
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -114,7 +168,12 @@ export const TimeSlider = (): JSX.Element | null => {
         max={length - 1}
         step={1}
         value={cursor}
+        ref={track}
         onChange={(event) => setCursor(Number(event.target.value))}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
         onKeyDown={onKeyDown}
         aria-label={`${step.charAt(0).toUpperCase()}${step.slice(1)} shown on the map`}
         aria-valuetext={`${label}, ${relative}`}

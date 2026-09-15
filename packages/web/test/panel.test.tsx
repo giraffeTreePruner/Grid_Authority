@@ -5,12 +5,13 @@
  * units the data was actually recorded in.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ZoneDetailResponse } from '../src/api/types.ts';
 import { ZonePanel } from '../src/components/ZonePanel.tsx';
 import { MIX_ORDER } from '../src/lib/series.ts';
+import { formatHour } from '../src/lib/format.ts';
 import { useGridStore } from '../src/store/useGridStore.ts';
 
 // uPlot needs a canvas, which jsdom does not provide. The series builders are tested
@@ -289,5 +290,77 @@ describe('generation mix readout', () => {
   it('names the unit the numbers are in', async () => {
     render(<ZonePanel />, { wrapper });
     expect(await screen.findByTestId('mix-chart')).toHaveTextContent('Values in MWh');
+  });
+});
+
+describe('the panel follows the map slider', () => {
+  beforeEach(() => {
+    respondWith(detail());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('reads the hour the slider is on, which is the only readout a touch screen gets', async () => {
+    // There is no hover on a phone, so without this the panel shows the same period
+    // whatever the reader does with the slider.
+    const periods = detail().series.period;
+    useGridStore.setState({
+      selectedZone: 'US-TEX-ERCO',
+      detailWindow: '168h',
+      window: {
+        periods,
+        metrics: [],
+        resolution: 'hour',
+        statistic: null,
+        zones: {},
+        meta: {
+          generated_at: periods[0]!,
+          sources: ['eia'],
+          data_latest_period: periods.at(-1) ?? null,
+          stale: false,
+        },
+      },
+      cursor: 1,
+    });
+
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('mix-readout-period')).toHaveTextContent(
+      formatHour(periods[1]!),
+    );
+  });
+
+  it('moves the readout when the cursor moves', async () => {
+    const periods = detail().series.period;
+    useGridStore.setState({
+      selectedZone: 'US-TEX-ERCO',
+      detailWindow: '168h',
+      window: {
+        periods,
+        metrics: [],
+        resolution: 'hour',
+        statistic: null,
+        zones: {},
+        meta: {
+          generated_at: periods[0]!,
+          sources: ['eia'],
+          data_latest_period: periods.at(-1) ?? null,
+          stale: false,
+        },
+      },
+      cursor: 0,
+    });
+
+    render(<ZonePanel />, { wrapper });
+    await screen.findByTestId('mix-readout-period');
+
+    act(() => {
+      useGridStore.getState().setCursor(2);
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('mix-readout-period')).toHaveTextContent(formatHour(periods[2]!)),
+    );
   });
 });

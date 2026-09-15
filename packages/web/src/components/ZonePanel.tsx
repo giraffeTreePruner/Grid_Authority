@@ -64,7 +64,11 @@ export const ZonePanel = (): JSX.Element | null => {
 
   return (
     <aside
-      className="flex h-full w-[26rem] max-w-full flex-col gap-3 overflow-y-auto border-l border-zinc-800 bg-zinc-950/95 p-4"
+      // On a phone this is a sheet over the map, not a column beside it. As a sibling
+      // it squeezed the map to a few pixels while still filling the screen, and the
+      // map's own legend — absolutely positioned over what was left — spilled across
+      // the panel's contents.
+      className="absolute inset-0 z-20 flex h-full w-full flex-col gap-3 overflow-y-auto border-zinc-800 bg-zinc-950/95 p-4 sm:relative sm:z-auto sm:w-[26rem] sm:border-l"
       aria-label="Zone detail"
       data-testid="zone-panel"
     >

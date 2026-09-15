@@ -13,7 +13,8 @@
 import { useMemo, useState } from 'react';
 import type { Options } from 'uplot';
 import type { ZoneDetailResponse } from '../api/types.ts';
-import { buildMixData } from '../lib/series.ts';
+import { buildMixData, indexForPeriod } from '../lib/series.ts';
+import { useGridStore } from '../store/useGridStore.ts';
 import { formatPeriod, type Resolution } from '../lib/resolution.ts';
 import { Chart } from './Chart.tsx';
 
@@ -48,6 +49,15 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
    * it opens the panel showing a dash for every source — the same fault the map had
    * when it opened on the newest hour rather than the newest hour with data.
    */
+  // The hour the map's slider is on, so scrubbing the map moves these numbers too.
+  // Without it there is no readout at all on a touch screen, which has no hover.
+  const mapWindow = useGridStore((state) => state.window);
+  const mapCursor = useGridStore((state) => state.cursor);
+  const followed = useMemo(
+    () => indexForPeriod(detail.series.period, mapWindow?.periods[mapCursor] ?? null),
+    [detail.series.period, mapWindow, mapCursor],
+  );
+
   const newest = useMemo(() => {
     for (let index = (raw[0]?.length ?? 0) - 1; index >= 0; index -= 1) {
       if (raw.some((values) => values[index] !== null && values[index] !== undefined)) {
@@ -121,7 +131,7 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
       />
       <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
         {(() => {
-          const at = hovered ?? newest;
+          const at = hovered ?? followed ?? newest;
           const period = detail.series.period[at];
           return period === undefined ? 'No data' : formatPeriod(period, resolution);
         })()}
@@ -133,7 +143,7 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
       >
         {labels.map((label, index) => {
           const values = raw[index] ?? [];
-          const at = hovered ?? newest;
+          const at = hovered ?? followed ?? newest;
           const value = values[at] ?? null;
           return (
             <li

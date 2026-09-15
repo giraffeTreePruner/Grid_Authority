@@ -146,3 +146,28 @@ export const buildMixData = (series: ZoneSeries): MixChartData => {
 /** Count of hours with no measurement, so the panel can say so plainly. */
 export const missingHours = (values: readonly (number | null)[]): number =>
   values.filter((value) => value === null).length;
+
+/**
+ * Where a period sits in a series, for a cursor that came from somewhere else.
+ *
+ * The map's slider and the panel's charts do not share an axis: the panel may be
+ * bucketed by day or month while the map is hourly, and the two windows differ in
+ * length. Matching by timestamp rather than by index is what lets the panel follow the
+ * slider at all — the last period at or before the target, which is the bucket the
+ * target falls inside.
+ *
+ * Returns null when the target is outside the series, so a caller can fall back rather
+ * than point at an edge and imply a reading that is not there.
+ */
+export const indexForPeriod = (
+  periods: readonly string[],
+  target: string | null,
+): number | null => {
+  if (target === null || periods.length === 0) return null;
+  if (target < periods[0]!) return null;
+
+  for (let index = periods.length - 1; index >= 0; index -= 1) {
+    if (periods[index]! <= target) return index;
+  }
+  return null;
+};

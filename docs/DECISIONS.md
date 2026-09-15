@@ -758,3 +758,42 @@ is routinely unpublished, so the panel opened showing a dash for every source.
 It now falls back to the newest period any source reported. A dash still means "published
 nothing", and a genuine zero still shows as 0 — coal at 0 and coal unknown must not look
 the same.
+
+## 2026-09-14 — Scrubbing is driven by pointer events, not left to the input
+
+On iOS a range input does not jump to a tapped position and will not follow a drag that
+began anywhere but on the thumb. Scrubbing therefore meant hitting an 18px target exactly
+and then dragging it, which is why it kept "picking a point" instead of scrubbing —
+sizing the control to 44px and setting `touch-action: none` were necessary and not
+sufficient.
+
+The position is now read off the element on `pointerdown` and followed on `pointermove`,
+with pointer capture so events keep arriving when the finger leaves the control. Every
+platform behaves the same: press anywhere, drag, the cursor follows. `onChange` stays for
+the keyboard.
+
+## 2026-09-14 — The zone panel is a sheet on a phone, not a column
+
+The panel was a flex sibling at `w-[26rem] max-w-full`, which on a 375px screen filled
+the width and squeezed the map to a few pixels — while the map's legend, absolutely
+positioned over what was left, spilled across the panel's contents. It is now an overlay
+below `sm`, and the map legend hides while it is up, because it describes a map the
+reader cannot currently see.
+
+## 2026-09-14 — The panel reads the hour the slider is on
+
+A touch screen has no hover, so a chart whose only readout follows the mouse has no
+readout at all on a phone: uPlot's legend showed "--" permanently.
+
+Both panel charts now read the period the map's slider is on, matched by timestamp rather
+than by index — the panel may be bucketed by day or month while the map is hourly, and
+the two windows differ in length, so `indexForPeriod` takes the last period at or before
+the target. Hovering the chart still overrides it, and when the slider points outside the
+panel's window it falls back to the newest period that reported.
+
+## 2026-09-14 — Alaska is context, like Canada and Mexico
+
+EIA Form 930 does not report Alaska, so it is missing from the map for a different reason
+than Canada is — but it looks identical to a reader, and leaving it out made Canada end
+at a straight edge in the north-west that read as a rendering fault rather than as a
+boundary of the data. Drawn from the same source at the same faintness.

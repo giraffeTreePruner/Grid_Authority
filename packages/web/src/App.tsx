@@ -22,7 +22,7 @@ import { ResolutionSwitcher } from './components/ResolutionSwitcher.tsx';
 import { rangeFor } from './lib/resolution.ts';
 import { useGridStore } from './store/useGridStore.ts';
 
-const GEOMETRY_VERSION = import.meta.env.VITE_GEOMETRY_VERSION ?? '1';
+const GEOMETRY_VERSION = import.meta.env.VITE_GEOMETRY_VERSION ?? '2';
 
 /** The default hourly range, kept as a named export because the tests pin it. */
 export const defaultWindowRange = (now: Date = new Date()): { from: string; to: string } =>

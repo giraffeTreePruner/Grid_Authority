@@ -93,7 +93,10 @@ export const TimeSlider = (): JSX.Element | null => {
 
   return (
     <div
-      className="flex items-center gap-3 border-t border-zinc-800 bg-zinc-950/80 px-4 py-2"
+      // Wraps on a narrow screen: the readout is a fixed 14rem, which on a 375px phone
+      // left the slider about 130px for a week of hours. A scrub target narrower than
+      // a thumbnail is unusable however well it handles the gesture.
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-zinc-800 bg-zinc-950/80 px-4 py-2"
       data-testid="time-slider"
     >
       <button
@@ -115,11 +118,11 @@ export const TimeSlider = (): JSX.Element | null => {
         onKeyDown={onKeyDown}
         aria-label={`${step.charAt(0).toUpperCase()}${step.slice(1)} shown on the map`}
         aria-valuetext={`${label}, ${relative}`}
-        className="scrub flex-1"
+        className="scrub min-w-[8rem] flex-1"
         data-testid="slider-input"
       />
 
-      <div className="w-56 shrink-0 text-right">
+      <div className="order-last w-full text-right sm:order-none sm:w-56 sm:shrink-0">
         <p className="text-xs font-medium text-zinc-100" data-testid="cursor-label">
           {label}
         </p>

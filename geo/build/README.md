@@ -32,7 +32,7 @@ pnpm --filter @grid-authority/geo-build exec \
   mapshaper geo/src/zones.raw.geojson -clean -simplify 50% keep-shapes \
   -o precision=0.00001 format=geojson geo/src/zones.simplified.geojson   # 3. simplify
 
-tippecanoe -o geo/zones.pmtiles -l zones -Z3 -z8 \
+tippecanoe -o geo/zones.pmtiles -l zones -Z2 -z8 \
   --drop-densest-as-needed --extend-zooms-if-still-dropping --force \
   geo/src/zones.simplified.geojson            # 4. build tiles
 

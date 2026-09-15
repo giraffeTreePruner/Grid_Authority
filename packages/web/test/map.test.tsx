@@ -14,6 +14,7 @@ const featureStates: { id: string; state: Record<string, unknown> }[] = [];
 const paintProperties: { layer: string; property: string; value: unknown }[] = [];
 const handlers = new Map<string, (event: unknown) => void>();
 let constructedWith: Record<string, unknown> | null = null;
+let resizeCalls = 0;
 
 vi.mock('maplibre-gl', () => {
   class Map {
@@ -34,6 +35,9 @@ vi.mock('maplibre-gl', () => {
     getCanvas = vi.fn(() => ({ style: {} }));
     queryRenderedFeatures = vi.fn(() => []);
     remove = vi.fn();
+    resize = vi.fn(() => {
+      resizeCalls += 1;
+    });
   }
   return {
     default: {
@@ -67,6 +71,7 @@ describe('MapView', () => {
     paintProperties.length = 0;
     handlers.clear();
     constructedWith = null;
+    resizeCalls = 0;
     useGridStore.setState({
       metric: 'demand_mw',
       selectedZone: null,
@@ -242,12 +247,22 @@ describe('MapView', () => {
     expect(fillColour()).toEqual(atFirstHour);
   });
 
+  it('opens fitted to the country rather than at a fixed zoom', () => {
+    // A fixed zoom that frames the US on a desktop shows half of it on a phone.
+    render(<MapView geometryVersion="1" />);
+    expect(constructedWith?.bounds).toEqual([
+      [-125.0, 24.4],
+      [-66.9, 49.4],
+    ]);
+    expect(constructedWith?.zoom).toBeUndefined();
+  });
+
   it('will not zoom out past the zoom the tiles start at', () => {
-    // tippecanoe builds the archive with -Z3 -z8. MapLibre over-zooms past a maxzoom
+    // tippecanoe builds the archive with -Z2 -z8. MapLibre over-zooms past a maxzoom
     // but does not under-zoom below a minzoom: below z3 there is no tile, and the map
     // renders empty with no error to say why.
     render(<MapView geometryVersion="1" />);
-    expect(constructedWith?.minZoom).toBe(3);
+    expect(constructedWith?.minZoom).toBe(2);
     expect(constructedWith?.maxZoom).toBe(8);
   });
 

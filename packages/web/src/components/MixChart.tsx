@@ -37,8 +37,25 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
     [detail.series],
   );
 
-  // null means "not pointing at anything", which reads the latest period instead.
+  // null means "not pointing at anything", which reads the newest period with data.
   const [hovered, setHovered] = useState<number | null>(null);
+
+  /**
+   * The period the readout falls back to.
+   *
+   * The newest period that reported anything, not simply the last one. Sources run
+   * hours behind, so the final period of a window is routinely empty and defaulting to
+   * it opens the panel showing a dash for every source — the same fault the map had
+   * when it opened on the newest hour rather than the newest hour with data.
+   */
+  const newest = useMemo(() => {
+    for (let index = (raw[0]?.length ?? 0) - 1; index >= 0; index -= 1) {
+      if (raw.some((values) => values[index] !== null && values[index] !== undefined)) {
+        return index;
+      }
+    }
+    return Math.max((raw[0]?.length ?? 0) - 1, 0);
+  }, [raw]);
 
   const options = useMemo<Omit<Options, 'width' | 'height'>>(
     () => ({
@@ -103,9 +120,11 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
         ariaLabel="Generation by energy source, stacked"
       />
       <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
-        {hovered === null || detail.series.period[hovered] === undefined
-          ? 'Latest period'
-          : formatPeriod(detail.series.period[hovered]!, resolution)}
+        {(() => {
+          const at = hovered ?? newest;
+          const period = detail.series.period[at];
+          return period === undefined ? 'No data' : formatPeriod(period, resolution);
+        })()}
       </p>
 
       <ul
@@ -114,7 +133,7 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
       >
         {labels.map((label, index) => {
           const values = raw[index] ?? [];
-          const at = hovered ?? values.length - 1;
+          const at = hovered ?? newest;
           const value = values[at] ?? null;
           return (
             <li

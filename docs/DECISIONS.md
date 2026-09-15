@@ -725,3 +725,36 @@ The readout is rendered by React from uPlot's `setCursor` hook rather than by st
 uPlot's own legend, and takes the resolution as a prop rather than inferring it from the
 timestamps: an hourly window contains midnights too, so "ends at 00:00" does not
 distinguish an hour from a day.
+
+## 2026-09-14 — The tile archive starts at zoom 2, and the map opens fitted
+
+The archive was built `-Z3`, and the continental US does not fit on a phone at zoom 3: a
+375px viewport needs about 2.2. The floor and the device were in direct conflict, so a
+mobile reader could never see the country whole. Rebuilt `-Z2`, which costs about 6 KB
+against a 600 KB budget.
+
+The map also opened at a fixed zoom of 3.4, right for a desktop and wrong for a phone. It
+now fits the continental bounds, which adapts to whatever viewport it lands in — 2.05 on
+a 375px screen, higher on a desktop.
+
+`GEOMETRY_VERSION` must be bumped to 2 on any host, or the old archive is served from
+cache and the zoom floor still bites.
+
+## 2026-09-14 — The map canvas follows its container, not just the window
+
+MapLibre listens for window resizes and nothing else. The zone panel is a flex sibling of
+the map, so opening it takes width from the map without any window resize, and the canvas
+kept its old size and drew stretched into a container that no longer matched.
+
+A `ResizeObserver` now calls `resize()`. It deliberately does not re-fit the bounds: that
+would snatch the map back from a reader who had panned somewhere.
+
+## 2026-09-14 — The mix readout falls back to the newest period with data
+
+Exactly the fault the map had when it opened on the newest hour rather than the newest
+hour with data, reproduced in the panel: the legend defaulted to the last period, which
+is routinely unpublished, so the panel opened showing a dash for every source.
+
+It now falls back to the newest period any source reported. A dash still means "published
+nothing", and a genuine zero still shows as 0 — coal at 0 and coal unknown must not look
+the same.

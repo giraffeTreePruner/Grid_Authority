@@ -38,18 +38,33 @@ const CONTEXT_FILL_COLOUR = '#3f3f46';
 const CONTEXT_FILL_OPACITY = 0.12;
 const CONTEXT_LINE_COLOUR = '#242830';
 
-/** Continental US, which is all MVP 1 draws. */
-const INITIAL_VIEW = { center: [-98.5, 39.5] as [number, number], zoom: 3.4 };
+/**
+ * Continental US, which is all MVP 1 draws.
+ *
+ * Opened by fitting these bounds rather than at a fixed zoom. A fixed 3.4 is right on a
+ * desktop and wrong on a phone, where 375px of width shows barely half the country and
+ * the reader arrives already lost. Fitting adapts to whatever viewport it lands in.
+ */
+const US_BOUNDS: [[number, number], [number, number]] = [
+  [-125.0, 24.4],
+  [-66.9, 49.4],
+];
+const FIT_PADDING = 16;
 
 /**
- * The zoom range the tiles actually cover, from `tippecanoe -Z3 -z8` in
+ * The zoom range the tiles actually cover, from `tippecanoe -Z2 -z8` in
  * `geo/build/README.md`.
  *
  * MapLibre over-zooms past a source's maxzoom but does not under-zoom below its
  * minzoom: at a lower zoom there is simply no tile, and the map goes empty with no
  * error. So the map may not be allowed to go below where the archive starts.
+ *
+ * The archive starts at 2 rather than 3 because the continental US does not fit on a
+ * phone at 3. A 375px viewport needs roughly 2.2 to show it, so a floor of 3 left a
+ * mobile reader panning around a map they could never see whole. The extra zoom level
+ * costs about 6 KB.
  */
-const TILE_MIN_ZOOM = 3;
+const TILE_MIN_ZOOM = 2;
 const TILE_MAX_ZOOM = 8;
 
 export interface MapViewProps {
@@ -128,7 +143,8 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
           },
         ],
       },
-      ...INITIAL_VIEW,
+      bounds: US_BOUNDS,
+      fitBoundsOptions: { padding: FIT_PADDING },
       attributionControl: false,
       maxZoom: TILE_MAX_ZOOM,
       minZoom: TILE_MIN_ZOOM,
@@ -238,6 +254,26 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
       fillColourExpression(METRICS[metric], windowValues),
     );
   }, [metric, cursor, windowPayload, windowValues, ready]);
+
+  // --- the canvas follows its container ------------------------------------------------
+  //
+  // MapLibre listens for window resizes and nothing else, so it never learns that the
+  // zone panel opened and took a third of the width from it. The canvas then keeps its
+  // old size and the map is drawn stretched into a container that no longer matches.
+  //
+  // The view itself is left alone: re-fitting here would snatch the map back from a
+  // reader who had panned somewhere.
+  useEffect(() => {
+    const node = container.current;
+    const instance = map.current;
+    if (node === null || instance === null || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver(() => {
+      if (node.clientWidth > 0 && node.clientHeight > 0) instance.resize();
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ready]);
 
   // --- selection ---------------------------------------------------------------------
   useEffect(() => {

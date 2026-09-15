@@ -252,15 +252,31 @@ describe('generation mix readout', () => {
     }
   });
 
-  it('reads the latest period before anything is pointed at', async () => {
+  it('falls back to the newest period that reported, not simply the last one', async () => {
+    // Sources run hours behind, so the final period is routinely empty. Defaulting to
+    // it opens the panel showing a dash for every source and saying nothing at all.
+    const body = detail();
+    const hours = body.series.period.length;
+    // The whole final period is unpublished, which is the real case: EIA lags, so the
+    // last period of a window routinely has nothing from any source.
+    for (const mode of Object.keys(body.series.mix)) {
+      body.series.mix[mode] = Array.from({ length: hours }, (_unused, index) =>
+        index === hours - 1 ? null : 500,
+      );
+    }
+    respondWith(body);
+
     render(<ZonePanel />, { wrapper });
-    expect(await screen.findByTestId('mix-readout-period')).toHaveTextContent('Latest period');
+    const items = await screen.findAllByTestId('mix-legend-item');
+    const gas = items.find((item) => item.textContent?.includes('Gas'));
+    expect(gas?.textContent).toContain('500');
   });
 
   it('says a source published nothing rather than showing it as zero', async () => {
     const body = detail();
-    body.series.mix.wind = body.series.mix.wind.map(() => null);
-    body.series.mix.gas = body.series.mix.gas.map(() => 100);
+    const hours = body.series.period.length;
+    body.series.mix.wind = Array.from({ length: hours }, () => null);
+    body.series.mix.gas = Array.from({ length: hours }, () => 100);
     respondWith(body);
 
     render(<ZonePanel />, { wrapper });

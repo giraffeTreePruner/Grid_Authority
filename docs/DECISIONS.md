@@ -832,3 +832,22 @@ failed deploy.
 The check now retries until the API answers at all, fails if it never does or if the
 database is unreachable, and otherwise reports a stale source as what it is: an
 operational note, printed with the command to investigate it.
+
+## 2026-09-14 — The mark is defined once, in code, and the favicon is its output
+
+"GA" carved into blocks, banded by row from the demand map's own sequential ramp. The
+letterforms are rectangles on a 32-unit grid rather than curves: the mark is about
+territory divided into blocks, and at 16px a curve is one grey pixel anyway.
+
+Three things draw it — the header component, `public/favicon.svg`, and the 180px
+apple-touch icon — and the browser reads the SVG before any component code runs, so the
+file has to exist on disk. That is two copies of one drawing, which will diverge the
+first time somebody nudges a rectangle. `mark.ts` is the source, `markSvg()` emits the
+file, and a test asserts the committed bytes match. Verified by moving one block a single
+unit and watching the test fail.
+
+The touch icon is square rather than rounded: iOS applies its own mask, and a corner
+radius underneath shows as a dark rim inside the rounded square.
+
+Variant B of three, chosen by the owner: banded, rather than one colour per block
+(seams close up at 16px) or letters knocked out of a carved tile (counters fill in).

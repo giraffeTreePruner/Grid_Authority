@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { ApiError, fetchWindow, fetchZones } from './api/client.ts';
 import { Legend } from './components/Legend.tsx';
 import { MapView } from './components/MapView.tsx';
+import { Mark } from './components/Mark.tsx';
 import { MetricSwitcher } from './components/MetricSwitcher.tsx';
 import { StatusBar } from './components/StatusBar.tsx';
 import { ZoneList } from './components/ZoneList.tsx';
@@ -62,7 +63,8 @@ export const App = (): JSX.Element => {
   return (
     <div className="flex h-full flex-col">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-2">
-        <div className="flex items-baseline gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Mark size={22} className="shrink-0" />
           <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
           <p className="hidden text-xs text-zinc-400 sm:block">
             United States balancing authorities, by the hour since 2019, from EIA Form 930

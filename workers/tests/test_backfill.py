@@ -19,6 +19,7 @@ from workers.eia.backfill import (
     day_is_complete,
     days_in_window,
     days_since,
+    record_day_fetched,
     run_backfill,
 )
 from workers.eia.client import ROUTE_REGION, EiaClient
@@ -78,10 +79,22 @@ def test_an_empty_day_is_not_complete(prepared: psycopg.Connection) -> None:
 
 
 @requires_database
-def test_a_day_needs_every_demand_reporting_zone(prepared: psycopg.Connection) -> None:
-    """One zone short is not a complete day."""
+def test_a_day_is_done_when_it_was_fetched_not_when_it_looks_full(
+    prepared: psycopg.Connection,
+) -> None:
+    """The rule that replaced inference, and why.
+
+    Completeness used to be inferred: a day was done when every in-map zone reporting
+    demand held 23 hours. Capabilities are observed from current EIA data, so a
+    balancing authority reporting now is expected in 2019, where four of them did not
+    yet exist. Every day before they began was therefore permanently incomplete and
+    re-fetched on every run — writing nothing, because the values were already there,
+    so no row count and no timestamp ever revealed it.
+    """
     day = datetime(2026, 9, 10, tzinfo=UTC)
-    zones = [z for z in CONFIG.zones.zones if z.capabilities.demand]
+    zones = [z for z in CONFIG.zones.in_map() if z.capabilities.demand]
+
+    # A full day for every zone but one: under the old rule this was never done.
     with prepared.cursor() as cursor:
         for zone in zones[:-1]:
             for hour in range(23):
@@ -90,57 +103,45 @@ def test_a_day_needs_every_demand_reporting_zone(prepared: psycopg.Connection) -
                     "VALUES (%s, %s, 'eia', 100)",
                     (zone.key, day + timedelta(hours=hour)),
                 )
-    assert not day_is_complete(prepared, day, CONFIG)
+    assert not day_is_complete(prepared, day, CONFIG), "nothing has recorded a fetch yet"
 
-    with prepared.cursor() as cursor:
-        for hour in range(23):
-            cursor.execute(
-                "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
-                "VALUES (%s, %s, 'eia', 100)",
-                (zones[-1].key, day + timedelta(hours=hour)),
-            )
-    assert day_is_complete(prepared, day, CONFIG)
+    record_day_fetched(prepared, day, CONFIG, rows_written=1000)
+    assert day_is_complete(prepared, day, CONFIG), (
+        "a zone that never reported this day must not keep it incomplete for ever"
+    )
 
 
 @requires_database
-def test_zones_that_never_report_demand_are_not_required(
+def test_a_fetch_that_wrote_rows_needs_those_rows_to_still_exist(
     prepared: psycopg.Connection,
 ) -> None:
-    """Several balancing authorities publish generation but no demand, ever.
-
-    They are off the map too, having no territory to draw, but they are still zones
-    and backfill still ingests them.
-    """
+    """The marker and the data commit together; a TRUNCATE can still part them."""
     day = datetime(2026, 9, 10, tzinfo=UTC)
-    generation_only = [z for z in CONFIG.zones.zones if not z.capabilities.demand]
-    assert generation_only, "the registry should contain generation-only zones"
+    zone = CONFIG.zones.in_map()[0].key
+    with prepared.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
+            "VALUES (%s, %s, 'eia', 100)",
+            (zone, day),
+        )
+    record_day_fetched(prepared, day, CONFIG, rows_written=1)
+    assert day_is_complete(prepared, day, CONFIG)
 
     with prepared.cursor() as cursor:
-        for zone in [z for z in CONFIG.zones.zones if z.capabilities.demand]:
-            for hour in range(23):
-                cursor.execute(
-                    "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
-                    "VALUES (%s, %s, 'eia', 100)",
-                    (zone.key, day + timedelta(hours=hour)),
-                )
-    assert day_is_complete(prepared, day, CONFIG)
+        cursor.execute("DELETE FROM obs_region_hourly")
+    assert not day_is_complete(prepared, day, CONFIG), (
+        "the data is gone, so the day is not done whatever the marker says"
+    )
 
 
 @requires_database
-def test_a_null_demand_does_not_count_towards_completeness(
+def test_a_day_eia_had_nothing_for_is_taken_at_its_word(
     prepared: psycopg.Connection,
 ) -> None:
-    """A row that exists but holds no measurement is not data."""
+    """Otherwise every empty day is re-fetched for ever, which is the original bug."""
     day = datetime(2026, 9, 10, tzinfo=UTC)
-    with prepared.cursor() as cursor:
-        for zone in [z for z in CONFIG.zones.zones if z.capabilities.demand]:
-            for hour in range(23):
-                cursor.execute(
-                    "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
-                    "VALUES (%s, %s, 'eia', NULL)",
-                    (zone.key, day + timedelta(hours=hour)),
-                )
-    assert not day_is_complete(prepared, day, CONFIG)
+    record_day_fetched(prepared, day, CONFIG, rows_written=0)
+    assert day_is_complete(prepared, day, CONFIG)
 
 
 # -- running ---------------------------------------------------------------------------
@@ -210,9 +211,13 @@ def test_interrupting_and_resuming_matches_an_uninterrupted_run(
     resumed = run_backfill(prepared, client(), CONFIG, days=3, now=NOW)
     after_resume = state()
 
-    # A clean run into a fresh database, for comparison.
+    # A clean run into a fresh database, for comparison. backfill_day goes too: it
+    # records which days were fetched, so leaving it behind would make the "clean" run
+    # skip every day and compare an empty database against a full one.
     with prepared.cursor() as cursor:
-        cursor.execute("TRUNCATE obs_region_hourly, obs_mix_hourly, obs_interchange_hourly")
+        cursor.execute(
+            "TRUNCATE obs_region_hourly, obs_mix_hourly, obs_interchange_hourly, backfill_day"
+        )
     prepared.commit()
     run_backfill(prepared, client(), CONFIG, days=3, now=NOW)
 

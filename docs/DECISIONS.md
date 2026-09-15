@@ -649,3 +649,32 @@ exist` — so the fragment goes through `sql.unsafe`.
 The names come from config rather than from a request, so this is not an injection path.
 It is still checked against `^[a-z_]+$` on the way in: the check costs nothing, and it
 turns a typo in config into a clear error here instead of a SQL syntax failure later.
+
+## 2026-09-14 — A fetched day is recorded, not inferred
+
+`day_is_complete` decided a day was done when every in-map zone reporting demand held 23
+of its 24 hours. The expected set comes from capabilities observed in _current_ EIA data,
+so a balancing authority reporting in 2026 was expected in 2019 — and four of them
+(`US-FLA-HST`, `US-FLA-JEA`, `US-MIDW-LGEE`, `US-NW-SWPW`) were not publishing then.
+
+Every day before those four began was therefore permanently incomplete: re-fetched on
+every run, for ever, and re-fetched about a thousand of them before reaching new ground.
+
+What made this expensive to find is that it left no trace. Re-ingesting identical rows
+writes nothing — `write_region` updates only where the values differ, which is how
+`revised_at` stays honest — so `ingested_at` never moved and no row count grew. Every
+data-shaped diagnostic said "idle". The bug was visible only in the process list, in the
+EIA request traffic, and by running the completeness predicate by hand.
+
+`backfill_day` records the fetch instead, in the same transaction as the day's rows, so
+the record cannot outlive the data it describes. That was the original objection to a
+marker file, and it does not apply to a row that commits atomically with what it marks.
+
+Two edges are handled explicitly. A marker that recorded rows requires those rows to
+still exist, so a TRUNCATE of the observation tables does not leave days skipped for
+ever. And a day marked with no rows is taken at its word, because demanding a row from a
+day EIA genuinely had nothing for would reproduce the original bug in miniature.
+
+The migration seeds the table from days already fetched, at a deliberately loose bar of
+half the expected zones: marking a partial day costs one `--force` to repair, while
+re-fetching every historical day is paid on every run for ever.

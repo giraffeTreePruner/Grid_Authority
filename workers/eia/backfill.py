@@ -101,16 +101,65 @@ def days_in_window(days: int, now: datetime) -> list[datetime]:
     return [today - timedelta(days=offset) for offset in range(days - 1, -1, -1)]
 
 
-def day_is_complete(connection: psycopg.Connection, day: datetime, config: AppConfig) -> bool:
-    """Whether this day already holds enough hours for every zone that reports demand.
+def day_is_complete(connection: psycopg.Connection, day: datetime, _config: AppConfig) -> bool:
+    """Whether this day has already been fetched.
 
-    A zone with no demand capability is not expected to contribute, so requiring it
-    would make every day look permanently incomplete.
+    Read from `backfill_day`, which records the fetch, rather than inferred from whether
+    the data matches what we expect today.
+
+    Inference was the original design and it cannot work over history. The expected set
+    is every in-map zone that reports demand, and capabilities are observed from current
+    EIA data — so a balancing authority reporting in 2026 is expected in 2019, where it
+    may not have existed. Four of them do exactly that (US-FLA-HST, US-FLA-JEA,
+    US-MIDW-LGEE, US-NW-SWPW), which made every day before they began reporting
+    permanently incomplete: re-fetched on every run, writing nothing, because the values
+    were already there and unchanged.
+
+    That failure was invisible from the data. Re-ingesting identical rows updates
+    nothing — `write_region` only touches a row whose values actually differ — so no
+    timestamp moved and no row count grew while the job spent hours re-fetching history.
+
+    A recorded fetch cannot drift out of step with the registry, because it is a fact
+    about what was done rather than a guess about what should be there. It is written in
+    the same transaction as the day's observations, so it cannot outlive them.
+    """
+    start, end = day_bounds(day)
+    with connection.cursor() as cursor:
+        # A marker that recorded rows must still have rows behind it. The two are
+        # written in one transaction, so they cannot come apart on their own — but a
+        # TRUNCATE of the observation tables would otherwise leave the marker asserting
+        # data that is gone, and every affected day would be skipped for ever.
+        #
+        # A day marked with no rows is taken at its word: EIA genuinely had nothing, and
+        # demanding a row would re-fetch that emptiness on every run.
+        cursor.execute(
+            """
+            SELECT 1
+              FROM backfill_day b
+             WHERE b.day = %(day)s
+               AND b.source = %(source)s
+               AND (b.rows_written = 0
+                    OR EXISTS (SELECT 1
+                                 FROM obs_region_hourly o
+                                WHERE o.period_utc BETWEEN %(start)s AND %(end)s))
+            """,
+            {"day": day.date(), "source": SOURCE, "start": start, "end": end},
+        )
+        return cursor.fetchone() is not None
+
+
+def record_day_fetched(
+    connection: psycopg.Connection,
+    day: datetime,
+    config: AppConfig,
+    rows_written: int,
+) -> None:
+    """Mark a day as fetched, recording what EIA actually had for it.
+
+    `zones_reporting` is stored for diagnosis, not for a decision: it answers "how much
+    did this day have" without any rule depending on the answer.
     """
     expected = [zone.key for zone in config.zones.in_map() if zone.capabilities.demand]
-    if not expected:
-        return False
-
     start, end = day_bounds(day)
     with connection.cursor() as cursor:
         cursor.execute(
@@ -124,12 +173,29 @@ def day_is_complete(connection: psycopg.Connection, day: datetime, config: AppCo
                        AND demand_mw IS NOT NULL
                      GROUP BY zone_key
                     HAVING count(*) >= %(hours)s
-                   ) AS complete
+                   ) AS reporting
             """,
             {"start": start, "end": end, "keys": expected, "hours": HOURS_FOR_A_COMPLETE_DAY},
         )
         row = cursor.fetchone()
-    return bool(row and row[0] >= len(expected))
+        reporting = int(row[0]) if row else 0
+
+        cursor.execute(
+            """
+            INSERT INTO backfill_day (day, source, zones_reporting, rows_written)
+            VALUES (%(day)s, %(source)s, %(zones)s, %(rows)s)
+            ON CONFLICT (day) DO UPDATE
+               SET fetched_at = now(),
+                   zones_reporting = EXCLUDED.zones_reporting,
+                   rows_written = EXCLUDED.rows_written
+            """,
+            {
+                "day": day.date(),
+                "source": SOURCE,
+                "zones": reporting,
+                "rows": rows_written,
+            },
+        )
 
 
 def run_backfill(
@@ -206,6 +272,10 @@ def run_backfill(
             built |= day_periods
             # Updated inside the loop, so a run that raises still reports what it built.
             summary.snapshots_built = len(built)
+
+            # In the same transaction as the day's rows, so the record of the fetch and
+            # the data it describes commit or roll back together.
+            record_day_fetched(connection, day, config, written.written)
             # Commit each day so an interruption keeps the days already done.
             connection.commit()
 

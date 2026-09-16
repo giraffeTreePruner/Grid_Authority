@@ -340,13 +340,27 @@ def rebuild_aggregates_command(
     # Exclusive, and one hour past the newest hour so the period containing it is built.
     end = datetime.now(UTC).replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
 
+    # A year at a time, for the same reason the share recompute batches: one pass over
+    # the whole history materialises both observation tables and full-outer-joins them,
+    # which on a small host spills to disk and stops making progress. A year is a few
+    # hundred thousand rows and joins in memory.
+    #
+    # Week and month buckets can straddle a year boundary, so each batch runs from the
+    # start of the bucket containing 1 January — `build_aggregates` truncates to the
+    # bucket anyway, and rebuilding one period twice writes the same document.
     built: dict[str, int] = {}
     with connect() as connection:
         for unit in wanted:
-            periods = build_aggregates(connection, unit, start, end, config)
-            built[unit] = store_aggregates(connection, unit, periods)
-            connection.commit()
-            typer.echo(f"{built[unit]} {unit} periods built", err=True)
+            total = 0
+            year = datetime(start.year, 1, 1, tzinfo=UTC)
+            while year < end:
+                following = datetime(year.year + 1, 1, 1, tzinfo=UTC)
+                periods = build_aggregates(connection, unit, year, min(following, end), config)
+                total += store_aggregates(connection, unit, periods)
+                connection.commit()
+                year = following
+            built[unit] = total
+            typer.echo(f"{total} {unit} periods built", err=True)
 
     typer.echo(json.dumps({"job": "rebuild-aggregates", **built}, separators=(",", ":")))
 

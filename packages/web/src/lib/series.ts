@@ -190,3 +190,29 @@ export const indexForPeriod = (
   }
   return null;
 };
+
+/**
+ * The modes that are storage rather than generation.
+ *
+ * Kept out of both shares — discharge is not generation — and reported on their own,
+ * because "what did the batteries do this hour" is a question the mix chart can answer
+ * and a percentage cannot.
+ */
+export const STORAGE_MODES = ['battery_storage', 'pumped_storage', 'other_storage'] as const;
+
+/**
+ * Net storage for one period: negative charging, positive discharging.
+ *
+ * Null when no storage mode reported at all, which is not the same as a fleet sitting
+ * idle at zero. Note that this counts only what EIA files under a storage code — for
+ * some operators, CAISO among them, the fleet arrives under `OTH`/`UNK` instead and
+ * lands in `unknown`. Reclassifying it here would be asserting a category EIA did not.
+ */
+export const netStorage = (series: ZoneSeries, index: number): number | null => {
+  let total: number | null = null;
+  for (const mode of STORAGE_MODES) {
+    const value = series.mix[mode]?.[index] ?? null;
+    if (value !== null) total = (total ?? 0) + value;
+  }
+  return total;
+};

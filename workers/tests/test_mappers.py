@@ -203,6 +203,39 @@ def test_a_negative_total_gives_null_shares() -> None:
     assert low_carbon is None
 
 
+def test_charging_storage_does_not_inflate_a_share() -> None:
+    """The CAISO case, with its real shape.
+
+    EIA does not file every operator's storage under a storage code: CAISO's fleet
+    arrives as OTH/UNK, which map to `unknown`, which is counted. Its charging load then
+    shrank the denominator and pushed the renewable share up — 90.1% published against
+    75.6% honest across 995 hours, and one hour wrong by 30 points.
+    """
+    charging = {"solar": "12000", "wind": "3000", "gas": "5000", "unknown": "-9861"}
+    total, renewable, _low = shares(charging)
+
+    # Reported total keeps the negative, because that is what was measured.
+    assert total == Decimal("10139")
+
+    # The share divides by generation only: 15000 renewable of 20000 generating.
+    assert renewable == Decimal("0.75")
+
+    # Subtracting the charging load instead would have read 15000/10139, over 100%.
+    assert renewable is not None and renewable <= Decimal("1")
+
+
+def test_negative_station_service_does_not_remove_a_category() -> None:
+    """Solar reports small negatives overnight in 15,571 hours of the real data.
+
+    Clamped to zero, not dropped: a zone whose gas reads -5 MW for an hour of auxiliary
+    load still has gas plant, and removing the category moves the share further than the
+    measurement warrants.
+    """
+    _total, renewable, _low = shares({"wind": "400", "gas": "600", "solar": "-4"})
+    # 400 of 1000, not 400 of 996 and not 400/1004.
+    assert renewable == Decimal("0.4")
+
+
 def test_a_share_never_exceeds_one() -> None:
     """Negative fossil generation can push the renewable part above the whole."""
     _total, renewable, _low = shares({"wind": "500", "gas": "-100"})

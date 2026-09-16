@@ -28,6 +28,7 @@ from workers.db import (
 )
 from workers.db.aggregates import RESOLUTIONS, build_aggregates, store_aggregates
 from workers.db.migrate import available_migrations, pending_migrations
+from workers.db.shares import recompute_shares
 from workers.db.snapshots import hours_needing_snapshots, rebuild_snapshots
 from workers.eia.backfill import (
     DEFAULT_DAYS,
@@ -252,6 +253,41 @@ def rebuild_snapshots_command(
     typer.echo(f"{built} snapshots rebuilt", err=True)
     typer.echo(
         json.dumps({"job": "rebuild-snapshots", "snapshots_built": built}, separators=(",", ":"))
+    )
+
+
+@app.command("recompute-shares")
+def recompute_shares_command(
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Rewrite the stored mix shares from the modes already ingested.
+
+    Makes no EIA requests. Run it after changing how a share is derived — the values
+    are computed on write, so existing rows keep saying whatever the old rule said.
+
+    Rebuild the snapshots and aggregates afterwards: both carry copies of these shares.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    with connect() as connection:
+        changed = recompute_shares(connection, config)
+        connection.commit()
+
+    typer.echo(f"{changed} rows changed", err=True)
+    if changed:
+        typer.echo(
+            "now run: eia rebuild-snapshots --all && eia rebuild-aggregates",
+            err=True,
+        )
+    typer.echo(
+        json.dumps({"job": "recompute-shares", "rows_changed": changed}, separators=(",", ":"))
     )
 
 

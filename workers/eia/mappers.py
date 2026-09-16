@@ -286,8 +286,26 @@ def compute_shares(
 ) -> tuple[Decimal | None, Decimal | None, Decimal | None]:
     """Total generation and the two shares, or None where the answer is unknown.
 
-    The denominator excludes storage and imports: discharge is not generation, and
-    counting it would inflate a renewable percentage.
+    Two rules decide what counts.
+
+    **The named storage modes and imports are excluded outright.** Discharge is not
+    generation, and counting it would inflate a renewable percentage.
+
+    **A negative value is consumption, not generation, whatever mode it arrives under.**
+    It is clamped to zero here rather than subtracted. This matters because EIA does not
+    file every operator's storage under a storage code: CAISO's fleet arrives as `OTH` or
+    `UNK`, which map to `unknown`, which is counted — so its charging load, up to
+    -9,861 MW, was shrinking the denominator and inflating the share. Over 995 charging
+    hours that published 90.1% where the honest figure is 75.6%, and one hour by 30
+    points.
+
+    The same rule catches the smaller cases already in the data: solar reporting negative
+    overnight station service in 15,571 hours, and negative gas, hydro, coal and wind in
+    about two thousand more.
+
+    Clamping rather than excluding the mode entirely is deliberate: a zone whose gas
+    reads -5 MW for an hour of auxiliary load still has gas plant, and dropping the
+    category would move the share further than the measurement warrants.
 
     A share is `None` whenever the denominator is missing, zero or negative. Zero is a
     real measurement — a grid genuinely running no renewables — and must never stand in
@@ -301,14 +319,21 @@ def compute_shares(
     if not counted:
         return None, None, None
 
+    # Reported as it arrived, because that is what `total_generation_mw` means. Only the
+    # share denominator clamps; a stored measurement should not be quietly rewritten.
     total = sum(counted.values(), Decimal(0))
     if total <= 0:
         return total, None, None
 
-    renewable = sum((counted.get(m, Decimal(0)) for m in config.renewable), Decimal(0))
-    low_carbon = sum((counted.get(m, Decimal(0)) for m in config.low_carbon), Decimal(0))
+    generating = {mode: max(value, Decimal(0)) for mode, value in counted.items()}
+    denominator = sum(generating.values(), Decimal(0))
+    if denominator <= 0:
+        return total, None, None
 
-    return total, _fraction(renewable, total), _fraction(low_carbon, total)
+    renewable = sum((generating.get(m, Decimal(0)) for m in config.renewable), Decimal(0))
+    low_carbon = sum((generating.get(m, Decimal(0)) for m in config.low_carbon), Decimal(0))
+
+    return total, _fraction(renewable, denominator), _fraction(low_carbon, denominator)
 
 
 def _fraction(part: Decimal, whole: Decimal) -> Decimal:

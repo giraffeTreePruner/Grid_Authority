@@ -416,3 +416,48 @@ describe('the shares on the generation mix', () => {
     expect(share).not.toHaveTextContent('0.0%');
   });
 });
+
+describe('storage, reported on its own', () => {
+  beforeEach(() => {
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO', detailWindow: '168h', window: null });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('shows charging as a negative and discharging as a positive', async () => {
+    const body = detail();
+    const hours = body.series.period.length;
+    body.series.mix.battery_storage = Array.from({ length: hours }, () => -1500);
+    body.series.mix.pumped_storage = Array.from({ length: hours }, () => 300);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    // -1500 charging plus 300 discharging is a net 1,200 into storage.
+    expect(await screen.findByTestId('net-storage')).toHaveTextContent('-1,200');
+  });
+
+  it('marks a discharging hour with a sign, so the direction is never guessed', async () => {
+    const body = detail();
+    const hours = body.series.period.length;
+    body.series.mix.battery_storage = Array.from({ length: hours }, () => 2000);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('net-storage')).toHaveTextContent('+2,000');
+  });
+
+  it('says nothing rather than zero where no storage mode reported', async () => {
+    // A fleet nobody reported is not a fleet sitting idle.
+    const body = detail();
+    const hours = body.series.period.length;
+    for (const mode of ['battery_storage', 'pumped_storage', 'other_storage']) {
+      body.series.mix[mode] = Array.from({ length: hours }, () => null);
+    }
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('net-storage')).toHaveTextContent('—');
+  });
+});

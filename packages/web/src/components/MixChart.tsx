@@ -19,7 +19,7 @@
 import { useMemo, useState } from 'react';
 import type { Options } from 'uplot';
 import type { ZoneDetailResponse } from '../api/types.ts';
-import { buildMixData, indexForPeriod } from '../lib/series.ts';
+import { buildMixData, indexForPeriod, netStorage } from '../lib/series.ts';
 import { useGridStore } from '../store/useGridStore.ts';
 import { formatPeriod, type Resolution } from '../lib/resolution.ts';
 import { Chart } from './Chart.tsx';
@@ -209,6 +209,18 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
           <dt className="text-zinc-400">Low-carbon</dt>
           <dd className="tabular-nums font-medium text-sky-300" data-testid="low-carbon-share">
             {formatShare(detail.series.low_carbon_share[shown] ?? null)}
+          </dd>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-400" title="Negative is charging, positive discharging">
+            Storage
+          </dt>
+          <dd className="tabular-nums font-medium text-violet-300" data-testid="net-storage">
+            {(() => {
+              const value = netStorage(detail.series, shown);
+              if (value === null) return '—';
+              return `${value > 0 ? '+' : ''}${NUMBER.format(value)}`;
+            })()}
           </dd>
         </div>
       </dl>

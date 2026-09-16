@@ -924,3 +924,49 @@ project tries hardest to avoid. A test pins the two apart by giving the fixture 
 that say one thing and a published share that says another.
 
 A period with no published share reads as a dash, not 0%.
+
+## 2026-09-16 — A negative value is consumption, and never shrinks a share denominator
+
+`excluded_from_mix_percent` drops the named storage modes and imports, which is right and
+was not enough. EIA does not file every operator's storage under a storage code: CAISO's
+fleet arrives as `OTH`/`UNK`, which map to `unknown`, which is counted. Its charging load
+— to -9,861 MW — was therefore shrinking the denominator and inflating the renewable
+share. Across 995 charging hours the site published **90.1%** where the honest figure is
+**75.6%**, and one hour was overstated by **30 points**.
+
+The rule is now general rather than a special case for `unknown`: a negative value is
+consumption, not generation, whatever mode it arrives under, and is clamped to zero in
+the share denominator. That also catches the smaller cases already in the data — solar
+reporting negative overnight station service in 15,571 hours, and negative gas, hydro,
+coal and wind in about two thousand more.
+
+Clamped, not excluded: a zone whose gas reads -5 MW for an hour of auxiliary load still
+has gas plant, and dropping the category would move the share further than the
+measurement warrants.
+
+`total_generation_mw` keeps the value as reported, negatives included. It is a stored
+measurement and should not be quietly rewritten; only the derived share clamps.
+
+Verified against seven years of production data: the recompute moved 19,546 rows and
+reproduced 90.1% → 75.6% on exactly the hours predicted before the change was written.
+
+## 2026-09-16 — Storage is reported on its own, not folded into a percentage
+
+The panel shows net storage in MW beside the two shares — negative charging, positive
+discharging — rather than letting it hide inside a generation mix where it is neither
+generation nor a share.
+
+It counts only what EIA files under a storage code. For CAISO that reads as no storage,
+because its fleet arrives as `unknown`, and reclassifying it here would be asserting a
+category EIA did not assign. Fixing that properly means a second source — gridstatus.io
+or the ISO directly — and belongs to a later MVP.
+
+## 2026-09-16 — Derived values need a recompute path
+
+Shares are computed on write, so changing the rule left every stored row saying the old
+thing. `eia recompute-shares` rewrites them in place from the modes already ingested,
+with no EIA requests, and its SQL is generated from `modes.yaml` — the same file
+`compute_shares` reads — so the two cannot drift into computing different numbers.
+
+Snapshots and aggregates carry copies of these shares, so both need rebuilding after it.
+The command says so rather than leaving it to be discovered.

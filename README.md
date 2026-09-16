@@ -49,6 +49,98 @@ pnpm lint && pnpm typecheck && pnpm test
 uv run ruff check . && uv run mypy . && uv run pytest
 ```
 
+## A development copy of the production data
+
+The fixtures are enough to run the tests. To work against real data — and it is the only
+way to exercise the day, week and month views, which need years of history — take a slice
+of the host's database rather than all of it. The full database is around 8 GB, most of
+it hourly observations the UI cannot reach anyway, since an hourly window is capped at
+seven days.
+
+On the host, dump everything except the large hourly tables, then export a recent slice
+of those:
+
+```sh
+sudo -u postgres pg_dump -Fc --no-owner --no-privileges \
+  --exclude-table-data='obs_*' \
+  --exclude-table-data='map_snapshot' \
+  --exclude-table-data='forecast_issues' \
+  grid_authority -f /tmp/grid-dev.dump
+
+cd /tmp
+for spec in obs_region_hourly:period_utc obs_mix_hourly:period_utc \
+            obs_interchange_hourly:period_utc map_snapshot:period_utc \
+            forecast_issues:target_time_utc; do
+    t=${spec%%:*}; c=${spec##*:}
+    sudo -u postgres psql -d grid_authority \
+        -c "\copy (SELECT * FROM $t WHERE $c > now() - interval '120 days') TO '/tmp/$t.csv' WITH (FORMAT csv, HEADER)"
+done
+
+# The dump and the CSVs are written as postgres; make them readable before copying.
+sudo chown "$USER" /tmp/grid-dev.dump /tmp/*.csv && gzip -f /tmp/*.csv
+```
+
+That dump carries the whole of `map_snapshot_agg`, so the coarse views span the full
+history locally even though the hourly tables hold four months.
+
+Locally, restore and load:
+
+```sh
+scp user@host:'/tmp/grid-dev.dump' user@host:'/tmp/*.csv.gz' ~/Downloads/
+
+docker compose up -d db
+docker exec -i grid_authority_db pg_restore -U grid -d grid_authority \
+    --clean --if-exists --no-owner --no-privileges < ~/Downloads/grid-dev.dump
+
+for t in obs_region_hourly obs_mix_hourly obs_interchange_hourly map_snapshot; do
+    gunzip -c ~/Downloads/$t.csv.gz | docker exec -i grid_authority_db \
+        psql -U grid -d grid_authority -c "\copy $t FROM STDIN WITH (FORMAT csv, HEADER)"
+done
+```
+
+`--no-owner --no-privileges` matters: the dump names `grid_owner` and `grid_api`, which
+do not exist locally, and without those flags nothing restores.
+
+**`forecast_issues` needs a staging table.** Its `horizon_h` is a stored generated
+column, which `COPY` leaves out of its default column list — so a CSV exported with
+`SELECT *` has one field more than `COPY` expects and fails with "extra data after last
+expected column". Load it through a table that treats the column as ordinary, then insert
+the rest and let the generation recompute it:
+
+```sh
+docker exec grid_authority_db psql -U grid -d grid_authority -c "
+CREATE TABLE staging_forecast_issues (
+  id bigint, source text, model text, zone_key text,
+  issue_time_utc timestamptz, target_time_utc timestamptz,
+  horizon_h integer, metric text, value numeric(12,2), ingested_at timestamptz);"
+
+gunzip -c ~/Downloads/forecast_issues.csv.gz | docker exec -i grid_authority_db \
+    psql -U grid -d grid_authority -c "\copy staging_forecast_issues FROM STDIN WITH (FORMAT csv, HEADER)"
+
+docker exec grid_authority_db psql -U grid -d grid_authority -c "
+INSERT INTO forecast_issues (id, source, model, zone_key, issue_time_utc,
+                             target_time_utc, metric, value, ingested_at)
+SELECT id, source, model, zone_key, issue_time_utc, target_time_utc, metric, value, ingested_at
+  FROM staging_forecast_issues ON CONFLICT DO NOTHING;
+DROP TABLE staging_forecast_issues;"
+```
+
+The recomputed horizons were checked against the host's for all 182,401 rows and match
+exactly, so nothing is invented by the round trip.
+
+Finally, confirm the schema is current and the slice arrived:
+
+```sh
+uv run --env-file .env eia migrate status
+docker exec grid_authority_db psql -U grid -d grid_authority -c "
+SELECT count(DISTINCT period_utc::date) AS hourly_days FROM obs_region_hourly;
+SELECT resolution, count(*) FROM map_snapshot_agg GROUP BY 1;"
+```
+
+Nothing here touches production: `.env` points at the Docker database throughout. The
+test suite creates throwaway `test_*` schemas in whatever `DATABASE_URL` names, so run it
+only against the local one; `docker compose down -v` resets everything.
+
 ## Data sources
 
 See `/about/data` on the running site, or `config/sources.yaml`, for the full list with

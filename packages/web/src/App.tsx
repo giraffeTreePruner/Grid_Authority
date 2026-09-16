@@ -7,6 +7,13 @@
  *
  * Changing resolution is the one control that does refetch: a month of summaries is a
  * different document from an hour of measurements.
+ *
+ * One layout rule runs through the header and the footer: **a control for the map is
+ * shown only when the map is.** On a phone the zone panel is a full sheet over the map,
+ * so the metric switcher, the resolution control and the time slider would all be
+ * driving something the reader cannot see — and the panel has its own window control,
+ * which made two different time ranges visible at once and only one of them relevant.
+ * They are hidden under `sm` while a zone is open, and unchanged beside a visible map.
  */
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
@@ -36,6 +43,10 @@ export const App = (): JSX.Element => {
   const setWindow = useGridStore((state) => state.setWindow);
   const windowPayload = useGridStore((state) => state.window);
   const selectedZone = useGridStore((state) => state.selectedZone);
+  const zoneOpen = selectedZone !== null;
+
+  // Hidden on a phone while the zone sheet covers the map; always shown beside it.
+  const mapControls = zoneOpen ? 'hidden sm:block' : 'block';
 
   const zones = useQuery({
     queryKey: ['zones'],
@@ -70,10 +81,18 @@ export const App = (): JSX.Element => {
             United States balancing authorities, by the hour since 2019, from EIA Form 930
           </p>
         </div>
-        <MetricSwitcher />
+        <div className={mapControls} data-testid="metric-controls">
+          <MetricSwitcher />
+        </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5">
+      <div
+        className={[
+          'flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5',
+          zoneOpen ? 'hidden sm:flex' : 'flex',
+        ].join(' ')}
+        data-testid="resolution-controls"
+      >
         <ResolutionSwitcher />
       </div>
 
@@ -112,7 +131,9 @@ export const App = (): JSX.Element => {
         <ZonePanel />
       </main>
 
-      <TimeSlider />
+      <div className={mapControls} data-testid="slider-controls">
+        <TimeSlider />
+      </div>
 
       <ZoneList zones={zones.data?.zones ?? []} />
 

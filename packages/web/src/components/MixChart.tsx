@@ -4,6 +4,12 @@
  * Only modes the zone actually reported are drawn: a zone with no coal gets no coal
  * band rather than a flat zero one that suggests a measurement of nothing.
  *
+ * The two shares are shown with it, taken from `renewable_share` and
+ * `low_carbon_share` as the API computed them — never re-derived from the bands on
+ * screen. The bands are generation by mode; the shares divide by counted generation,
+ * which excludes imports and storage discharge. Recomputing from what is plotted would
+ * quietly include them and read a few points high.
+ *
  * The legend below is live. A stacked area with eight bands and a swatch key tells a
  * reader which colours exist, not what any of them is worth at the moment they are
  * pointing at — so pointing at the chart names each source and gives its own value,
@@ -31,6 +37,10 @@ export interface MixChartProps {
 }
 
 const NUMBER = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
+
+/** A share as a percentage, keeping "not reported" distinct from zero. */
+const formatShare = (value: number | null): string =>
+  value === null ? '—' : `${(value * 100).toFixed(1)}%`;
 
 export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Element => {
   const { data, colours, labels, raw, seriesColours, seriesLabels } = useMemo(
@@ -126,6 +136,10 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
     [seriesColours, seriesLabels],
   );
 
+  // One resolved index for everything the panel prints, so the period label, the per
+  // source values and the shares can never describe different moments.
+  const shown = hovered ?? followed ?? newest;
+
   if (labels.length === 0) {
     return (
       <section data-testid="mix-chart">
@@ -150,11 +164,9 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
         onScrub={scrubTo}
       />
       <p className="mt-2 text-[10px] text-zinc-500" data-testid="mix-readout-period">
-        {(() => {
-          const at = hovered ?? followed ?? newest;
-          const period = detail.series.period[at];
-          return period === undefined ? 'No data' : formatPeriod(period, resolution);
-        })()}
+        {detail.series.period[shown] === undefined
+          ? 'No data'
+          : formatPeriod(detail.series.period[shown]!, resolution)}
       </p>
 
       <ul
@@ -163,8 +175,7 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
       >
         {labels.map((label, index) => {
           const values = raw[index] ?? [];
-          const at = hovered ?? followed ?? newest;
-          const value = values[at] ?? null;
+          const value = values[shown] ?? null;
           return (
             <li
               key={label}
@@ -184,8 +195,27 @@ export const MixChart = ({ detail, unit, resolution }: MixChartProps): JSX.Eleme
           );
         })}
       </ul>
+      <dl
+        className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-zinc-800 pt-2 text-[11px]"
+        data-testid="mix-shares"
+      >
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-400">Renewable</dt>
+          <dd className="tabular-nums font-medium text-emerald-300" data-testid="renewable-share">
+            {formatShare(detail.series.renewable_share[shown] ?? null)}
+          </dd>
+        </div>
+        <div className="flex items-baseline gap-1.5">
+          <dt className="text-zinc-400">Low-carbon</dt>
+          <dd className="tabular-nums font-medium text-sky-300" data-testid="low-carbon-share">
+            {formatShare(detail.series.low_carbon_share[shown] ?? null)}
+          </dd>
+        </div>
+      </dl>
+
       <p className="mt-1 text-[10px] text-zinc-600">
-        Values in {unit}. A dash means the source published nothing for that period.
+        Values in {unit}. A dash means the source published nothing for that period. Shares are of
+        counted generation, which excludes imports and storage.
       </p>
     </section>
   );

@@ -891,3 +891,36 @@ Reversed, so the largest is laid down first and each smaller band paints over it
 fills are opaque. `labels` and `colours` stay in reading order for the legend;
 `seriesLabels` and `seriesColours` carry the drawing order, and a test asserts the two
 are reverses of each other.
+
+## 2026-09-16 — A control for the map is shown only when the map is
+
+On a phone the zone panel is a full sheet over the map, and the metric switcher, the
+resolution control and the time slider all stayed on screen behind it — driving something
+the reader could not see. Worse, the panel has its own window control, so two unrelated
+time ranges were visible at once: a slider that always held the map's range, and a panel
+showing months or years, with no indication that the first did nothing for the second.
+
+All three are hidden below `sm` while a zone is open, and unchanged beside a visible map.
+
+The alternative — making the metric tabs drive the panel — was considered and not taken.
+The panel is not a map: it already plots demand, forecast and every generation mode at
+once, so "show me interchange" has no meaning there, and a metric control that means one
+thing beside the map and another over it would be worse than one that disappears.
+
+Note that `sm` is 640px, so a narrow desktop window gets the sheet and loses the controls
+too. That is the intended reading: the rule is about whether the map is on screen, not
+about what device it is.
+
+## 2026-09-16 — The mix pane carries the two shares, as published
+
+`renewable_share` and `low_carbon_share` are shown with the generation mix, at whatever
+period is being read.
+
+Taken from the API, never re-derived from the bands on screen. The bands are generation
+by mode; the shares divide by _counted_ generation, which excludes imports and storage
+discharge. Recomputing from what is plotted would silently include them and read a few
+points high — a wrong number that looks entirely reasonable, which is the kind this
+project tries hardest to avoid. A test pins the two apart by giving the fixture bands
+that say one thing and a published share that says another.
+
+A period with no published share reads as a dash, not 0%.

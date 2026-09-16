@@ -364,3 +364,55 @@ describe('the panel follows the map slider', () => {
     );
   });
 });
+
+describe('the shares on the generation mix', () => {
+  beforeEach(() => {
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO', detailWindow: '168h', window: null });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('shows renewable and low-carbon as percentages', async () => {
+    const body = detail();
+    const hours = body.series.period.length;
+    body.series.renewable_share = Array.from({ length: hours }, () => 0.412);
+    body.series.low_carbon_share = Array.from({ length: hours }, () => 0.518);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('renewable-share')).toHaveTextContent('41.2%');
+    expect(screen.getByTestId('low-carbon-share')).toHaveTextContent('51.8%');
+  });
+
+  it('uses the share the API computed, not one derived from the bands', async () => {
+    // The bands are generation by mode; the share divides by counted generation, which
+    // excludes imports and storage discharge. Recomputing from what is plotted would
+    // quietly include them and read high.
+    const body = detail();
+    const hours = body.series.period.length;
+    body.series.mix.wind = Array.from({ length: hours }, () => 500);
+    body.series.mix.gas = Array.from({ length: hours }, () => 500);
+    // Half the plotted generation is wind, but the API says a third, because it counts
+    // a denominator this chart never draws.
+    body.series.renewable_share = Array.from({ length: hours }, () => 0.333);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    expect(await screen.findByTestId('renewable-share')).toHaveTextContent('33.3%');
+  });
+
+  it('shows a dash where no share was published, never 0%', async () => {
+    // A grid with no mix reported is not a grid running zero renewables.
+    const body = detail();
+    const hours = body.series.period.length;
+    body.series.renewable_share = Array.from({ length: hours }, () => null);
+    respondWith(body);
+
+    render(<ZonePanel />, { wrapper });
+    const share = await screen.findByTestId('renewable-share');
+    expect(share).toHaveTextContent('—');
+    expect(share).not.toHaveTextContent('0.0%');
+  });
+});

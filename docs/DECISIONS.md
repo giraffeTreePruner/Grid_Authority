@@ -1061,3 +1061,38 @@ The calendar year is now counted as an integer alongside the snapped boundary.
 Both faults are held by tests: one asserts a straddling week reports both its days, the
 other that every batch edge is a bucket edge and the ranges are contiguous. The first was
 checked by reverting the fix and watching it fail.
+
+## 2026-09-16 — Visitor counting rotates identities daily, and says what that costs
+
+A visitor is `sha256(day salt || ip || user agent)`. The salt is random per UTC day and
+deleted after eight, so the raw address is never stored, the same person is one identity
+within a day and a different one tomorrow, and once a salt is gone nobody can re-derive
+that day's hashes — including whoever runs the server.
+
+The cost is a real one and the page states it: there is no true all-time unique visitor
+count. Counting one person across months needs a stable identifier, which is the thing
+being refused. Weekly and all-time visitor figures are sums of daily uniques, so someone
+returning on five days counts five times. The API carries that caveat as a field rather
+than leaving it to the page, so it cannot be dropped by whoever renders it next.
+
+The API is otherwise read-only by design. `grid_api` is granted SELECT and INSERT on the
+two analytics tables and nothing more — no UPDATE, no DELETE — so the process that
+records a hit cannot rewrite one.
+
+Cloudflare's numbers get their own column rather than being merged. The two count
+different things: the beacon sees what reached the app, the edge sees what reached the
+edge, including requests the app never saw and readers whose browser dropped the beacon.
+The gap is the interesting part. Until a token exists the column reads "not configured"
+rather than zero, because zero reads as "no traffic".
+
+## 2026-09-16 — A statement timeout is a 503 that says so
+
+`STATEMENT_TIMEOUT_MS` is 5 seconds. The zone panel's `all` window is the closest of any
+request to it — normally under a second, but it was the thing that broke while the
+aggregate rebuild had the database busy, and the panel reported "an unexpected error
+occurred", which reads as a broken site rather than one range being too much to ask for
+at that moment.
+
+Postgres raises 57014 when it cancels a statement. That now becomes a 503 naming the
+cause and suggesting a shorter window, because the condition is temporary and the same
+request usually succeeds a moment later.

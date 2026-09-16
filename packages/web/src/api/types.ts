@@ -114,3 +114,21 @@ export interface SourcesResponse {
 export interface ApiErrorBody {
   error: { code: string; message: string };
 }
+
+/** A span of counts, as `/stats` reports them. */
+export interface StatsSpan {
+  today: number;
+  week: number;
+  all: number;
+}
+
+export interface StatsResponse {
+  views: StatsSpan;
+  visitors: StatsSpan;
+  /** Why the wider visitor figures are not what they might look like. */
+  visitors_note: string;
+  daily: { day: string; views: number; visitors: number }[];
+  /** Null until a Cloudflare token is configured; never merged with the counts above. */
+  cloudflare: { views: StatsSpan; visitors: StatsSpan } | null;
+  meta: Meta;
+}

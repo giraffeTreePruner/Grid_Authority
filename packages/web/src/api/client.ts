@@ -7,6 +7,7 @@
 import type {
   ApiErrorBody,
   SourcesResponse,
+  StatsResponse,
   WindowResponse,
   ZoneDetailResponse,
   ZonesResponse,
@@ -81,3 +82,6 @@ export const fetchZoneDetail = (
   signal?: AbortSignal,
 ): Promise<ZoneDetailResponse> =>
   request<ZoneDetailResponse>(`/zones/${encodeURIComponent(key)}?window=${window}`, signal);
+
+export const fetchStats = (signal?: AbortSignal): Promise<StatsResponse> =>
+  request<StatsResponse>('/stats', signal);

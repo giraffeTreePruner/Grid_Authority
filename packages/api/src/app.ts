@@ -12,6 +12,7 @@ import { loadConfig } from './config/index.js';
 import type { Env } from './env.js';
 import { connect, type Sql } from './lib/db.js';
 import { ApiError, errorBody } from './lib/errors.js';
+import { analyticsRoutes } from './routes/analytics.js';
 import { healthRoutes } from './routes/health.js';
 import { mapRoutes } from './routes/map.js';
 import { sourceRoutes } from './routes/sources.js';
@@ -83,6 +84,25 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
         );
     }
 
+    // A statement that ran past STATEMENT_TIMEOUT_MS. Postgres cancels it and the
+    // driver raises 57014; without this it surfaced as a bare 500 and the panel said
+    // "an unexpected error occurred", which tells a reader nothing and suggests the
+    // site is broken rather than that one range was too much to ask for right now.
+    //
+    // It is a 503 because it is temporary and worth retrying — the same request
+    // usually succeeds a moment later, when whatever was loading the database is done.
+    if ((error as { code?: string }).code === '57014') {
+      request.log.warn({ url: request.url }, 'statement timeout');
+      return reply
+        .code(503)
+        .send(
+          errorBody(
+            'timed_out',
+            'That range took too long to read. Try a shorter window, or the same one again in a moment.',
+          ),
+        );
+    }
+
     if (fastifyError.validation) {
       return reply
         .code(400)
@@ -120,6 +140,7 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
         'onRequest',
         instance.rateLimit({ max: RATE_LIMIT_PER_MINUTE, timeWindow: '1 minute' }),
       );
+      analyticsRoutes(instance, sql);
       healthRoutes(instance, sql);
       zoneRoutes(instance, sql);
       mapRoutes(instance, sql);

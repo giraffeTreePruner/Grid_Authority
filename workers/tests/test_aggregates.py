@@ -7,6 +7,7 @@ different label, it is a summary, and a summary computed the obvious way is wron
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from itertools import pairwise
 
 import psycopg
 import pytest
@@ -343,5 +344,5 @@ def test_batches_start_where_a_bucket_starts(prepared: psycopg.Connection) -> No
                 assert one(cursor)[0] is True, f"{resolution} batch cuts a bucket"
 
         # Contiguous: each batch begins where the last ended, so nothing is skipped.
-        for (_, previous_end), (next_start, _) in zip(ranges, ranges[1:], strict=False):
+        for (_, previous_end), (next_start, _) in pairwise(ranges):
             assert previous_end == next_start, resolution

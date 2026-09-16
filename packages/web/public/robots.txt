@@ -5,6 +5,9 @@
 
 User-agent: *
 Disallow: /api/
+# Unlisted, and asked not to be indexed. Not a secret — the path is guessable and the
+# data behind it is page counts — but it is not part of the site anyone came to read.
+Disallow: /stats
 Crawl-delay: 10
 
 # A bulk data download is planned rather than scraped: it will be published as flat

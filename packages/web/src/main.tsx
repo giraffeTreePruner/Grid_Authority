@@ -3,7 +3,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.tsx';
 import { AboutData } from './pages/AboutData.tsx';
-import { routeFor } from './lib/route.ts';
+import { Stats } from './pages/Stats.tsx';
+import { PATH_FOR, routeFor } from './lib/route.ts';
+import { reportPageView } from './lib/beacon.ts';
 import './index.css';
 
 const client = new QueryClient({
@@ -21,10 +23,17 @@ const client = new QueryClient({
 const container = document.getElementById('root');
 if (container === null) throw new Error('#root is missing from index.html');
 
+const route = routeFor(window.location.pathname);
+
+// Reported as the canonical path for the route, not as the URL typed. A query string or
+// a trailing slash is not a different page, and echoing back whatever was in the address
+// bar would store whatever a visitor happened to be carrying in it.
+reportPageView(PATH_FOR[route]);
+
+const page = route === 'about-data' ? <AboutData /> : route === 'stats' ? <Stats /> : <App />;
+
 createRoot(container).render(
   <StrictMode>
-    <QueryClientProvider client={client}>
-      {routeFor(window.location.pathname) === 'about-data' ? <AboutData /> : <App />}
-    </QueryClientProvider>
+    <QueryClientProvider client={client}>{page}</QueryClientProvider>
   </StrictMode>,
 );

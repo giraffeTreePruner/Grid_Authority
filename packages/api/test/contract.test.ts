@@ -5,9 +5,10 @@
  * is allowed to depend on.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { API_PREFIX } from '../src/app.js';
+import { API_PREFIX, buildApp } from '../src/app.js';
 import { buildMeta, isoInstant, STALE_AFTER_HOURS } from '../src/lib/meta.js';
-import { createHarness, databaseUrl, type Harness } from './helpers.js';
+import type { Sql } from '../src/lib/db.js';
+import { createHarness, databaseUrl, testEnv, type Harness } from './helpers.js';
 
 const withDatabase = databaseUrl() === undefined ? describe.skip : describe;
 
@@ -180,5 +181,33 @@ withDatabase('endpoints', () => {
     it('asks robots not to index the API', async () => {
       expect((await get('/zones')).headers['x-robots-tag']).toBe('noindex');
     });
+  });
+});
+
+describe('a statement timeout', () => {
+  it('is reported as temporary, not as an unexplained failure', async () => {
+    // Postgres cancels a statement past STATEMENT_TIMEOUT_MS and the driver raises
+    // 57014. Left alone it becomes a bare 500, and the panel says "an unexpected error
+    // occurred" -- which reads as "this site is broken" rather than "that range was too
+    // much to ask for just now". The zone panel's `all` window is the closest of any
+    // request to the ceiling, so it is the one that hits this under load.
+    const cancelled = Object.assign(new Error('canceling statement due to statement timeout'), {
+      code: '57014',
+    });
+    // The routes only await a tagged template, so one that throws is a faithful stand-in
+    // for a query the database killed.
+    const sql = (() => {
+      throw cancelled;
+    }) as unknown as Sql;
+
+    const { app } = await buildApp({ env: testEnv(), sql });
+    await app.ready();
+
+    const response = await app.inject({ method: 'GET', url: `${API_PREFIX}/zones` });
+
+    expect(response.statusCode).toBe(503);
+    expect(response.json().error.code).toBe('timed_out');
+    expect(response.json().error.message).toMatch(/shorter window/);
+    await app.close();
   });
 });

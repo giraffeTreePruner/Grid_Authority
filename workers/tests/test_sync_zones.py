@@ -57,6 +57,7 @@ def test_an_unaccounted_respondent_fails_the_sync() -> None:
 def test_known_respondents_pass_validation() -> None:
     config = load_config()
     known = config.zones.respondents() | config.excluded_respondents.codes()
+    # Raises on an unknown respondent; returning is the assertion.
     validate_against_respondents(config, known)
 
 

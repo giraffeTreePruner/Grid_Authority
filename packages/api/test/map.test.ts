@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { API_PREFIX } from '../src/app.js';
 import {
   hoursBetween,
-  MAX_WINDOW_HOURS,
   parseHour,
   parseResolution,
   parseStatistic,
@@ -75,7 +74,9 @@ describe('period parsing', () => {
   it('enumerates every hour inclusively', () => {
     const hours = hoursBetween(new Date('2026-09-11T10:00:00Z'), new Date('2026-09-11T13:00:00Z'));
     expect(hours).toHaveLength(4);
-    expect(MAX_WINDOW_HOURS).toBe(168);
+    // Inclusive of both ends, and every step is exactly an hour.
+    expect(hours[0]?.toISOString()).toBe('2026-09-11T10:00:00.000Z');
+    expect(hours.at(-1)?.toISOString()).toBe('2026-09-11T13:00:00.000Z');
   });
 });
 

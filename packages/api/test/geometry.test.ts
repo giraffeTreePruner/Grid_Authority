@@ -5,7 +5,7 @@
  * mapped zone without geometry fails a test rather than quietly leaving a hole in the
  * map, which has no other symptom.
  */
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { readFileSync, statSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -67,11 +67,16 @@ describe('geometry', () => {
 
   it('passes the build gate', () => {
     // The gate is the thing that runs by hand; running it here keeps the two honest.
-    const output = execFileSync('node', [join(repoRoot, 'geo', 'build', 'validate.js')], {
+    //
+    // spawnSync, and asserting on stderr, because that is where the gate reports. The
+    // previous version read stdout — which is empty — and asserted only that the empty
+    // string was defined, so it passed whether the gate ran, failed, or printed nothing.
+    const result = spawnSync('node', [join(repoRoot, 'geo', 'build', 'validate.js')], {
       cwd: repoRoot,
       encoding: 'utf8',
-      stdio: ['pipe', 'pipe', 'pipe'],
     });
-    expect(output).toBeDefined();
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stderr).toMatch(/geometry validation passed/);
   });
 });

@@ -6,7 +6,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { API_PREFIX, RATE_LIMIT_PER_MINUTE } from '../src/app.js';
-import { STATEMENT_TIMEOUT_MS } from '../src/lib/db.js';
+import { connect, STATEMENT_TIMEOUT_MS } from '../src/lib/db.js';
 import { createHarness, databaseUrl, testEnv, type Harness } from './helpers.js';
 
 const withDatabase = databaseUrl() === undefined ? describe.skip : describe;
@@ -112,11 +112,22 @@ withDatabase('limits and headers', () => {
 
   describe('statement timeout', () => {
     it('is set on the connection the API uses', async () => {
-      const [row] = await harness.sql<{ statement_timeout: string }[]>`
-        SHOW statement_timeout
-      `;
-      expect(row?.statement_timeout).toBeDefined();
-      expect(STATEMENT_TIMEOUT_MS).toBe(5000);
+      // Asked of a connection built by `connect`, which is what the API runs on. The
+      // harness makes its own client without a timeout, so checking that one proved
+      // nothing about the product — and `SHOW` returns "0" when none is set, so the
+      // previous `toBeDefined()` passed whether the feature existed or not.
+      const sql = connect(databaseUrl() as string);
+      try {
+        const [row] = await sql<{ statement_timeout: string }[]>`SHOW statement_timeout`;
+        // Postgres reports it in its own units: "5s" for 5000ms, "500ms" below a second.
+        const reported = row?.statement_timeout ?? '';
+        const milliseconds = reported.endsWith('ms')
+          ? Number(reported.slice(0, -2))
+          : Number(reported.slice(0, -1)) * 1000;
+        expect(milliseconds).toBe(STATEMENT_TIMEOUT_MS);
+      } finally {
+        await sql.end();
+      }
     });
 
     it('cancels a query that runs too long', async () => {

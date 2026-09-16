@@ -339,6 +339,8 @@ def test_the_committed_config_accounts_for_everything_eia_publishes(
     client: EiaClient,
 ) -> None:
     mock_facets()
+    # No assertion by design: validate_facets raises on an unaccounted code, so
+    # returning at all is the result being checked.
     validate_facets(client.discover_facets(), load_config())
 
 
@@ -397,6 +399,7 @@ def test_an_excluded_respondent_satisfies_validation() -> None:
         fuel_types=set(config.modes.mapping_for("eia")),
         interchange_from=set(),
     )
+    # Raises if the retired code is not accounted for; returning is the assertion.
     validate_facets(facets, config)
 
 

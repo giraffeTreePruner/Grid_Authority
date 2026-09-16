@@ -1022,3 +1022,21 @@ Measured on a real copy: 210,569 rows rewritten in 3.1 seconds, against a versio
 had not finished the same work in fifteen minutes. This is the third time on this project
 that a query written the natural way has been unusable at production scale — the same
 lesson as pushing a predicate below a full outer join.
+
+## 2026-09-16 — The ETag test freezes the clock, because the body carries one
+
+`meta.generated_at` is in every response body at second precision, so two requests either
+side of a second tick are genuinely different representations and the ETag correctly
+differs. The revalidation test made two real requests and asserted a 304, which passes
+whenever both land in the same second and fails when they do not. It had been green for
+weeks and failed on an unrelated commit.
+
+The test now freezes `Date` — only `Date`, not every timer, since faking timers wholesale
+is what deadlocked the playback test — and asserts what it meant to: that an unchanged
+representation revalidates.
+
+Worth being clear about what this does not fix. Against the API directly, a client
+revalidating more than a second later always gets a fresh body, so the ETag buys nothing.
+It works in production because nginx's microcache serves one identical response for sixty
+seconds, and revalidation happens against that. The header is useful because of the cache
+in front of it, not on its own.

@@ -1,7 +1,7 @@
 /**
  * The map endpoints: shape, the seven-day cap, and ETag revalidation.
  */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { API_PREFIX } from '../src/app.js';
 import {
   hoursBetween,
@@ -295,9 +295,22 @@ withDatabase('map endpoints', () => {
     });
 
     it('revalidates with an ETag', async () => {
-      const path = '/map/window?from=2026-09-11T10:00:00Z&to=2026-09-11T12:00:00Z';
-      const tag = (await get(path)).headers.etag as string;
-      expect((await get(path, { 'if-none-match': tag })).statusCode).toBe(304);
+      // The clock is frozen for the pair, because `meta.generated_at` is in the body at
+      // second precision: two requests either side of a tick are genuinely different
+      // representations, so the ETag correctly differs and no 304 is possible. Left to
+      // the real clock this test passes on most runs and fails on the unlucky ones.
+      //
+      // Only Date is faked. Faking every timer stalls anything waiting on a real one,
+      // which is how the playback test deadlocked.
+      vi.useFakeTimers({ toFake: ['Date'] });
+      try {
+        vi.setSystemTime(new Date('2026-09-11T12:30:00Z'));
+        const path = '/map/window?from=2026-09-11T10:00:00Z&to=2026-09-11T12:00:00Z';
+        const tag = (await get(path)).headers.etag as string;
+        expect((await get(path, { 'if-none-match': tag })).statusCode).toBe(304);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('carries one week of hours in a payload the slider can hold', async () => {

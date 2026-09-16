@@ -970,3 +970,34 @@ with no EIA requests, and its SQL is generated from `modes.yaml` — the same fi
 
 Snapshots and aggregates carry copies of these shares, so both need rebuilding after it.
 The command says so rather than leaving it to be discovered.
+
+## 2026-09-16 — Rate limiting answers 429, and nginx is the coarse layer
+
+Production was rejecting with **503**, nginx's default for `limit_req`. That says the
+service is unavailable, which it is not — it is declining this client, right now. The
+difference matters to everything that reads a status code without a human attached: an
+uptime monitor records an outage, and a crawler backs off from the whole site instead of
+from its own request rate. `limit_req_status 429` and `limit_conn_status 429` fix it.
+
+Measuring it also showed the two layers were the wrong way round. A parallel burst of 40
+returned 10 200s and 30 503s, all from nginx, while a successful response carried
+`x-ratelimit-remaining: 54` — the API's limiter was working and almost never reached,
+because nginx at 2r/s rejected first.
+
+That is backwards. nginx cannot say anything useful about who is asking, since it rejects
+before the request is understood; the API counts per client and answers with
+`X-RateLimit-*` and `Retry-After`, which is what a caller needs in order to behave. So
+nginx is now set well above interactive use (5r/s, burst 20) as flood protection, and the
+API's 60/minute does the real limiting.
+
+The old 2r/s was tight enough to catch real readers: `limit_req` runs before the cache,
+so clicking through a few zones counted every time, cache hits included.
+
+## 2026-09-16 — A production check found what the contract test could not
+
+The API's rate-limit test passes and always has: the 61st request in a minute returns 429
+with `Retry-After`. It tests the API in isolation, which is the right scope for it, and it
+cannot see that in production nginx rejects first with a different code entirely.
+
+Both were needed. The unit test says the limiter is correct; only a request to the running
+site says which limiter a visitor actually meets.

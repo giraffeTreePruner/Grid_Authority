@@ -277,8 +277,11 @@ def recompute_shares_command(
         raise typer.Exit(code=1) from error
 
     with connect() as connection:
-        changed = recompute_shares(connection, config)
-        connection.commit()
+        changed = recompute_shares(
+            connection,
+            config,
+            on_progress=lambda year, rows: typer.echo(f"  {year}: {rows} rows", err=True),
+        )
 
     typer.echo(f"{changed} rows changed", err=True)
     if changed:

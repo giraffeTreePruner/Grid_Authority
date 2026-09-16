@@ -1001,3 +1001,24 @@ cannot see that in production nginx rejects first with a different code entirely
 
 Both were needed. The unit test says the limiter is correct; only a request to the running
 site says which limiter a visitor actually meets.
+
+## 2026-09-16 — The recompute is a plain UPDATE, batched by year
+
+The first version built a CTE of every row and joined it back to the table it came from.
+That reads well and is the wrong shape: a four-million-row hash join against a
+four-million-row table, on a host with 2 GB of memory and a 4 MB `work_mem`, spills to
+disk and makes no visible progress — `n_tup_upd` sat unchanged for fifteen minutes while
+the CPU stayed busy.
+
+There was never a need for the join. Every value the new share depends on is already in
+the row being updated, so it is one `UPDATE` with the expression inline: a sequential
+scan and an in-place write.
+
+Batched a year at a time, committing each. That keeps WAL small on a host with little
+memory, makes progress visible while it runs, and costs one year rather than seven if it
+is interrupted.
+
+Measured on a real copy: 210,569 rows rewritten in 3.1 seconds, against a version that
+had not finished the same work in fifteen minutes. This is the third time on this project
+that a query written the natural way has been unusable at production scale — the same
+lesson as pushing a predicate below a full outer join.

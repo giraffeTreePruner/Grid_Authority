@@ -21,9 +21,9 @@ definition the hourly mapper uses, applied to a longer interval.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
-from typing import TypedDict
+from typing import TypedDict, cast
 
 import psycopg
 from psycopg.types.json import Json
@@ -256,6 +256,50 @@ def store_aggregates(
 def aggregate_bytes(payload: AggregateSnapshot) -> bytes:
     """The serialised document, as stored and served."""
     return json.dumps(payload, separators=(",", ":")).encode("utf-8")
+
+
+def batch_ranges(
+    connection: psycopg.Connection,
+    resolution: str,
+    start: datetime,
+    end: datetime,
+) -> list[tuple[datetime, datetime]]:
+    """Year-sized ranges, snapped so every bucket lies wholly inside exactly one.
+
+    Batching matters because one pass over seven years materialises both observation
+    tables and full-outer-joins them, which on a small host spills to disk and stops
+    making progress.
+
+    Snapping matters because a week straddles the new year. Cut at 1 January, that week
+    is built twice — three days from December, four from January — and the second write
+    overwrites the first, leaving a week holding part of itself with nothing to say so.
+    Days and months align with the year and never had the problem; weeks always did.
+
+    The boundaries are asked of Postgres rather than computed here, so a batch edge and
+    a bucket label can never disagree about where a week begins.
+    """
+    with connection.cursor() as cursor:
+
+        def bucket_start(moment: datetime) -> datetime:
+            cursor.execute("SELECT date_trunc(%s, %s::timestamptz)", (resolution, moment))
+            row = cursor.fetchone()
+            assert row is not None
+            return cast(datetime, row[0])
+
+        # The calendar year is counted separately from the snapped boundary. Snapping a
+        # week backwards lands in the previous year — date_trunc('week', 2019-01-01) is
+        # 2018-12-31 — so deriving the next year from the boundary recomputes the same
+        # one for ever. That loop span thirty minutes of date_trunc queries before it
+        # was noticed, because an infinite loop with a query in it looks like slow work.
+        ranges: list[tuple[datetime, datetime]] = []
+        year = start.year
+        edge = bucket_start(datetime(year, 1, 1, tzinfo=UTC))
+        while edge < end:
+            following = bucket_start(datetime(year + 1, 1, 1, tzinfo=UTC))
+            ranges.append((edge, min(following, end)))
+            edge = following
+            year += 1
+    return ranges
 
 
 def refresh_buckets_for(

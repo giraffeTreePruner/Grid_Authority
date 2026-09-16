@@ -26,7 +26,12 @@ from workers.db import (
     sync_zones,
     zones_with_observations,
 )
-from workers.db.aggregates import RESOLUTIONS, build_aggregates, store_aggregates
+from workers.db.aggregates import (
+    RESOLUTIONS,
+    batch_ranges,
+    build_aggregates,
+    store_aggregates,
+)
 from workers.db.migrate import available_migrations, pending_migrations
 from workers.db.shares import recompute_shares
 from workers.db.snapshots import hours_needing_snapshots, rebuild_snapshots
@@ -345,20 +350,24 @@ def rebuild_aggregates_command(
     # which on a small host spills to disk and stops making progress. A year is a few
     # hundred thousand rows and joins in memory.
     #
-    # Week and month buckets can straddle a year boundary, so each batch runs from the
-    # start of the bucket containing 1 January — `build_aggregates` truncates to the
-    # bucket anyway, and rebuilding one period twice writes the same document.
+    # Batches are snapped to whole buckets, not to 1 January.
+    #
+    # A week straddles the new year, and a batch cut at the year boundary builds that
+    # week twice — three days from December, four from January — with the second write
+    # overwriting the first. The week then holds part of itself and nothing says so.
+    # Days and months align with the year and were never affected; weeks were, at every
+    # boundary.
+    #
+    # Snapping each batch to the start of the bucket containing 1 January puts every
+    # bucket wholly inside exactly one batch.
     built: dict[str, int] = {}
     with connect() as connection:
         for unit in wanted:
             total = 0
-            year = datetime(start.year, 1, 1, tzinfo=UTC)
-            while year < end:
-                following = datetime(year.year + 1, 1, 1, tzinfo=UTC)
-                periods = build_aggregates(connection, unit, year, min(following, end), config)
+            for batch_start, batch_end in batch_ranges(connection, unit, start, end):
+                periods = build_aggregates(connection, unit, batch_start, batch_end, config)
                 total += store_aggregates(connection, unit, periods)
                 connection.commit()
-                year = following
             built[unit] = total
             typer.echo(f"{total} {unit} periods built", err=True)
 

@@ -1040,3 +1040,24 @@ revalidating more than a second later always gets a fresh body, so the ETag buys
 It works in production because nginx's microcache serves one identical response for sixty
 seconds, and revalidation happens against that. The header is useful because of the cache
 in front of it, not on its own.
+
+## 2026-09-16 — Batches snap to buckets, and the year is counted separately
+
+Batching the aggregate rebuild by calendar year split the week that straddles New Year:
+three days built in one batch, four in the next, the second write overwriting the first.
+The week then reported four days as though they were seven, and nothing about the result
+looked wrong. The host's rebuild produced 409 weeks where 403 exist — the extra six were
+the halves.
+
+Batches are now snapped to bucket boundaries, so every bucket lies wholly inside exactly
+one. Days and months align with the year and never had the problem; weeks always did.
+
+The first attempt at that snapping hung for half an hour. `date_trunc('week',
+'2019-01-01')` is `2018-12-31`, so deriving the next boundary from `year.year + 1`
+recomputed the same one for ever. An infinite loop with a query inside it presents
+exactly as slow work: busy CPU, a backend cycling through short statements, no progress.
+The calendar year is now counted as an integer alongside the snapped boundary.
+
+Both faults are held by tests: one asserts a straddling week reports both its days, the
+other that every batch edge is a bucket edge and the ranges are contiguous. The first was
+checked by reverting the fix and watching it fail.

@@ -14,6 +14,7 @@ import pytest
 from workers.config import load_config
 from workers.db.aggregates import (
     RESOLUTIONS,
+    batch_ranges,
     build_aggregates,
     refresh_buckets_for,
     store_aggregates,
@@ -279,3 +280,68 @@ def test_a_refresh_rebuilds_the_whole_bucket_not_just_the_new_hour(
         )
         payload = one(cursor)[0]
     assert payload["zones"][zone]["mean"][0] == 200.0
+
+
+# -- batching ---------------------------------------------------------------------------
+
+
+@requires_database
+def test_a_week_across_the_new_year_is_built_whole(prepared: psycopg.Connection) -> None:
+    """The bug this batching was written with, and then fixed.
+
+    A week straddles 1 January. Batched on the calendar year it is built twice — the
+    December days in one batch, the January days in the next — and the second write
+    overwrites the first, leaving a week that reports four days as though they were
+    seven. Nothing about the result looks wrong.
+    """
+    zone = CONFIG.zones.in_map()[0].key
+    # Mon 29 Dec 2025 starts the week; the year splits it after three days.
+    december = datetime(2025, 12, 30, tzinfo=UTC)
+    january = datetime(2026, 1, 1, tzinfo=UTC)
+
+    with prepared.cursor() as cursor:
+        for day, value in ((december, "100"), (january, "300")):
+            cursor.execute(
+                "INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw) "
+                "VALUES (%s, %s, 'eia', %s)",
+                (zone, day, value),
+            )
+
+    start, end = datetime(2025, 1, 1, tzinfo=UTC), datetime(2026, 12, 31, tzinfo=UTC)
+    for batch_start, batch_end in batch_ranges(prepared, "week", start, end):
+        store_aggregates(
+            prepared, "week", build_aggregates(prepared, "week", batch_start, batch_end, CONFIG)
+        )
+
+    with prepared.cursor() as cursor:
+        cursor.execute(
+            "SELECT payload FROM map_snapshot_agg "
+            " WHERE resolution = 'week' AND period_utc = date_trunc('week', %s::timestamptz)",
+            (december,),
+        )
+        payload = one(cursor)[0]
+
+    # Both days, so a mean of 200. Split batches would report 300 — January alone.
+    assert payload["zones"][zone]["mean"][0] == 200.0
+
+
+@requires_database
+def test_batches_start_where_a_bucket_starts(prepared: psycopg.Connection) -> None:
+    """Every batch edge is a bucket edge, so no bucket spans two batches."""
+    start, end = datetime(2019, 1, 1, tzinfo=UTC), datetime(2026, 9, 16, tzinfo=UTC)
+
+    for resolution in RESOLUTIONS:
+        ranges = batch_ranges(prepared, resolution, start, end)
+        assert ranges, resolution
+
+        with prepared.cursor() as cursor:
+            for batch_start, _batch_end in ranges:
+                cursor.execute(
+                    "SELECT date_trunc(%s, %s::timestamptz) = %s",
+                    (resolution, batch_start, batch_start),
+                )
+                assert one(cursor)[0] is True, f"{resolution} batch cuts a bucket"
+
+        # Contiguous: each batch begins where the last ended, so nothing is skipped.
+        for (_, previous_end), (next_start, _) in zip(ranges, ranges[1:], strict=False):
+            assert previous_end == next_start, resolution

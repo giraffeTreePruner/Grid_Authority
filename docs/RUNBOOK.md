@@ -723,6 +723,26 @@ and fails on `.env`, which is mode 600 and owned by `grid`.
 
 Run tmux as yourself and put the `sudo -u grid -H` on the job inside it; see 2.11.
 
+### The CORS header names the wrong site
+
+`Access-Control-Allow-Origin` echoing `https://grid.example.org` means `PUBLIC_BASE_URL`
+in `.env.api` is still the example value. The site itself works — a browser only consults
+CORS for cross-origin requests, and the app is same-origin — so nothing looks wrong until
+the header is read:
+
+```sh
+: "${DOMAIN:?set DOMAIN first: DOMAIN=your.domain}"
+sudo -u grid -H sed -i "s|^PUBLIC_BASE_URL=.*|PUBLIC_BASE_URL=https://$DOMAIN|" /srv/grid-authority/.env.api
+sudo -u grid -H pm2 restart api --update-env
+curl -sS -o /dev/null -D- "https://$DOMAIN/api/v1/zones" | grep -i access-control-allow-origin
+```
+
+`pm2 restart`, not `reload`: the value is read at startup, and a reload keeps the old
+environment.
+
+`deploy.sh` now refuses to run while either env file holds an example value, so this
+cannot reach production again the same way.
+
 ### The day, week or month view is empty while the hourly one works
 
 The coarse views read `map_snapshot_agg`, which the hourly path never touches. If the

@@ -14,6 +14,20 @@ set -euo pipefail
 ROOT="${GRID_ROOT:-/srv/grid-authority}"
 cd "$ROOT"
 
+# Placeholders that have to be edited by hand are the ones that never are. The nginx
+# config is substituted during install for this reason; these env values cannot be, so
+# they are checked instead. PUBLIC_BASE_URL reaching production unedited is silent:
+# the site serves fine, because same-origin requests never consult CORS, and only the
+# Access-Control-Allow-Origin header gives it away.
+for file in .env .env.api; do
+    if [ -f "$ROOT/$file" ] && grep -q 'grid\.example\.org\|THE_PASSWORD_YOU_CHOSE' "$ROOT/$file"; then
+        echo "FAILED: $file still holds an example value:" >&2
+        grep -n 'grid\.example\.org\|THE_PASSWORD_YOU_CHOSE' "$ROOT/$file" | sed 's/^/  /' >&2
+        echo "Edit it before deploying. See docs/RUNBOOK.md 2.7." >&2
+        exit 1
+    fi
+done
+
 echo "==> installing dependencies"
 pnpm install --frozen-lockfile
 uv sync --all-groups --frozen

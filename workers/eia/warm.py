@@ -32,7 +32,18 @@ JOB = "warm-zone-detail"
 BUCKETED_WINDOWS = ("30d", "90d", "1y", "all")
 
 #: Long enough for a cold `all` on the largest zone, which is the case being fixed.
+#:
+#: The HTTP timeout was never the binding one. The API cancels a statement well before
+#: this, and for a reader that is correct -- so this job identifies itself with
+#: BUILD_HEADER and gets the longer ceiling meant for building a cache entry. Without
+#: that header this job died exactly where a reader did, and the entries it exists to
+#: create were the only ones it could never make.
 REQUEST_TIMEOUT_S = 30.0
+
+#: Marks these requests as cache builds rather than page views. Unforgeable from
+#: outside: nginx blanks it on everything it proxies, and this job talks to Fastify
+#: directly. Mirrors BUILD_HEADER in packages/api/src/routes/zone-detail.ts.
+BUILD_HEADER = "X-Grid-Cache-Build"
 
 #: Seconds between requests.
 #:
@@ -89,7 +100,7 @@ def warm_zone_detail(
     first = True
 
     owned = client is None
-    http = client or httpx.Client(timeout=REQUEST_TIMEOUT_S)
+    http = client or httpx.Client(timeout=REQUEST_TIMEOUT_S, headers={BUILD_HEADER: "1"})
 
     try:
         for zone in config.zones.in_map():
@@ -103,7 +114,7 @@ def warm_zone_detail(
                 summary.requested += 1
                 url = f"{base_url.rstrip('/')}/api/v1/zones/{zone.key}"
                 try:
-                    response = http.get(url, params={"window": window})
+                    response = http.get(url, params={"window": window}, headers={BUILD_HEADER: "1"})
                 except httpx.HTTPError as error:
                     summary.failed += 1
                     summary.warnings.append(f"{zone.key} {window}: {type(error).__name__}")

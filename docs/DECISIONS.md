@@ -1112,3 +1112,61 @@ and which one documents it.
 The general lesson, and why the API suite now binds one describe block to a role granted
 exactly what the migration grants: a test that runs as the owner cannot see a statement
 the API is not allowed to issue.
+
+## 2026-09-17 — A cache build gets its own connection, and its own ceiling
+
+The zone-detail cache existed and was empty for exactly the zones it was built for. The
+`all` window for an ISO still timed out on production weeks after the warming job
+shipped, and the reason is circular: the job fills the cache by asking the API, so its
+compute ran on the reader's connection under the reader's five-second statement timeout —
+the same five seconds that made a cold `all` fail in the first place. The cache could
+therefore only ever hold entries that were already fast enough not to need it.
+
+The mistake is visible in `warm.py`, where `REQUEST_TIMEOUT_S = 30` was commented "long
+enough for a cold `all` on the largest zone, which is the case being fixed". The HTTP
+timeout was never the binding one. Postgres cancels at five seconds, so those extra
+twenty-five were unreachable, and the failures were counted rather than fatal, so the job
+exited zero and nothing said the ISOs had never warmed.
+
+There are now two pools. A reader keeps five seconds, because a reader wants a slow query
+abandoned. A build gets twenty, because a build exists to pay the cost once so that no
+reader pays it, and it must be allowed to finish. Twenty rather than more so that a build
+that overruns is cut off by Postgres with a 57014 the API turns into an explanatory 503,
+rather than by nginx with a bare 504.
+
+The build path is opted into with `X-Grid-Cache-Build`, and it is unforgeable by position
+rather than by secret: the warming job talks straight to Fastify on 127.0.0.1:3000, while
+nginx blanks that header on everything it proxies. Deliberately not an IP allowlist —
+`trustProxy` is on, so the address the app sees comes from a forwarded header, and
+trusting 127.0.0.1 would let anyone willing to claim it opt into the expensive path. The
+route requires a non-empty value rather than mere presence, because nginx dropping a
+header set to `""` is its convention and not a guarantee this code gets to make.
+
+The builder pool is two connections wide, not ten. These queries read one zone's whole
+history and are the most expensive thing the host runs; the width is what stops a burst
+of them from becoming the reason the map is slow.
+
+This unblocks the symptom and does not remove the cause. The `all` window still reads
+about 67,000 hourly rows for one zone, scattered roughly one row in every seventy-five
+because the poll writes an hour for all zones together, so a single-zone scan across
+seven years touches a large share of the table's blocks. A daily per-zone rollup would
+serve every bucketed window from pre-aggregated rows and make the cache an optimisation
+again rather than load-bearing. Recorded as the follow-up, not done here.
+
+## 2026-09-17 — The panel clamps negative modes, as the write path already did
+
+`greatest(coalesce(x, 0), 0)` in `workers/db/shares.py`, and `coalesce(x, 0)` in the zone
+detail route. The route re-derives its shares from summed generation rather than averaging
+stored percentages — correct, because averaging hourly percentages weights a quiet hour
+the same as a working one — but it was doing so without the clamp.
+
+So the fix made to the stored column in September was never applied to the figure the
+panel actually draws. EIA files some operators' storage as `OTH`/`UNK`, which reach
+`unknown`, which is a counted mode; that charging load shrank the denominator and inflated
+the share. Measured against the development slice, the panel reported 77.8% where the map
+reported 69.6% for CAISO in May, and 4 to 8 points high in every month present.
+
+Both expressions are built from `modes.yaml` by the same rule now. Two tests cover the two
+ways it fails — a denominator driven to zero returns null, and a denominator merely made
+too small returns a share above one — and both were checked by reverting the clamp and
+watching them go red.

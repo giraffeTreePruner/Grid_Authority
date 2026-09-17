@@ -270,4 +270,68 @@ withDatabase('zone detail', () => {
       }
     });
   });
+
+  describe('the shares it re-derives', () => {
+    // The panel re-derives its shares from summed generation rather than averaging the
+    // stored percentages, so it needs the same clamp the write path applies. It did not
+    // have it: a negative value shrank the denominator and inflated the result, exactly
+    // the defect corrected in the stored column in September. EIA files some operators'
+    // storage as OTH/UNK, which reach `unknown`, so charging load landed in a counted
+    // mode and the map and the panel disagreed.
+    // Two shapes of the same fault, because they fail differently. Charging equal to
+    // generation zeroes the denominator and the share comes back null; charging at half
+    // of it leaves the denominator positive but too small, and the share comes back
+    // above 1 — which is the one a reader would actually have seen, since it stays
+    // plausible while being wrong.
+    const ZEROED_HOUR = '2026-08-01T00:00:00Z';
+    const INFLATED_HOUR = '2026-08-02T00:00:00Z';
+
+    beforeAll(async () => {
+      for (const [period, unknown] of [
+        [ZEROED_HOUR, -100],
+        [INFLATED_HOUR, -50],
+      ] as const) {
+        await harness.sql`
+          INSERT INTO obs_mix_hourly
+            (zone_key, period_utc, source, wind_mw, unknown_mw, total_generation_mw)
+          VALUES (${zoneKey}, ${period}, 'eia', 100, ${unknown}, 0)
+        `;
+        await harness.sql`
+          INSERT INTO obs_region_hourly (zone_key, period_utc, source, demand_mw)
+          VALUES (${zoneKey}, ${period}, 'eia', 500)
+        `;
+      }
+      await harness.sql`DELETE FROM zone_detail_cache WHERE zone_key = ${zoneKey}`;
+    });
+
+    it('clamps a negative mode out of the denominator', async () => {
+      // 100 wind against 100 wind + (-100) unknown. Unclamped the denominator is zero
+      // and the share is undefined or absurd; clamped it is 100 / 100 = 1.
+      const response = await get(`/zones/${zoneKey}?window=90d`);
+      expect(response.statusCode).toBe(200);
+
+      const body = response.json();
+      const index = body.series.period.findIndex((period: string) =>
+        period.startsWith('2026-08-01'),
+      );
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(body.series.renewable_share[index]).toBe(1);
+    });
+
+    it('never reports a share above one', async () => {
+      // Unclamped this hour reads 100 / (100 - 50) = 2.0. A share over 1 is the symptom
+      // a reader would have met, and the one worth asserting on directly.
+      const response = await get(`/zones/${zoneKey}?window=90d`);
+      const body = response.json();
+      const index = body.series.period.findIndex((period: string) =>
+        period.startsWith('2026-08-02'),
+      );
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(body.series.renewable_share[index]).toBe(1);
+
+      for (const share of body.series.renewable_share as (number | null)[]) {
+        if (share !== null) expect(share).toBeLessThanOrEqual(1);
+      }
+    });
+  });
 });

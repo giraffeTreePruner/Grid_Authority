@@ -12,7 +12,7 @@ import pytest
 import respx
 
 from workers.config import load_config
-from workers.eia.warm import BUCKETED_WINDOWS, PACE_SECONDS, warm_zone_detail
+from workers.eia.warm import BUCKETED_WINDOWS, BUILD_HEADER, PACE_SECONDS, warm_zone_detail
 
 CONFIG = load_config()
 BASE = "http://127.0.0.1:3000"
@@ -31,6 +31,41 @@ def test_every_in_map_zone_and_bucketed_window_is_requested() -> None:
     assert summary.warmed == expected
     assert summary.failed == 0
     assert route.call_count == expected
+
+
+@respx.mock
+def test_every_request_identifies_itself_as_a_cache_build() -> None:
+    """Without this header the job cannot do the one thing it exists for.
+
+    It fills the cache by asking the API, so its compute runs under the API's statement
+    timeout. On the reader's connection that is five seconds -- the same five seconds
+    that made a cold `all` fail in the first place -- so the job died exactly where a
+    reader did, and the entries it exists to create were the only ones it could never
+    make. The header is what moves the build onto a connection allowed to finish.
+    """
+    route = respx.get(url__startswith=f"{BASE}/api/v1/zones/").mock(
+        return_value=httpx.Response(200, json={})
+    )
+
+    warm_zone_detail(CONFIG, BASE, sleep=lambda _s: None)
+
+    assert route.calls, "nothing was requested"
+    for call in route.calls:
+        assert call.request.headers[BUILD_HEADER] == "1"
+
+
+@respx.mock
+def test_the_header_is_sent_even_with_a_caller_supplied_client() -> None:
+    """A client passed in must not silently lose the header the job depends on."""
+    route = respx.get(url__startswith=f"{BASE}/api/v1/zones/").mock(
+        return_value=httpx.Response(200, json={})
+    )
+
+    with httpx.Client() as client:
+        warm_zone_detail(CONFIG, BASE, client=client, sleep=lambda _s: None)
+
+    assert route.calls
+    assert all(call.request.headers[BUILD_HEADER] == "1" for call in route.calls)
 
 
 @respx.mock

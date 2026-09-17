@@ -198,10 +198,31 @@ SQL
 `ALTER DEFAULT PRIVILEGES` only covers tables created afterwards, so run migrations
 before granting on anything existing. After the first `migrate up`:
 
-```sh
+````sh
 sudo -u postgres psql -d grid_authority -c \
   'GRANT SELECT ON ALL TABLES IN SCHEMA public TO grid_api;'
+
+The zone-detail cache is filled by `warm-zone-detail`, which runs hourly at :25. After a
+deploy the cache is cold, so the panel's long windows recompute on demand until that job
+has run once. To not wait:
+
+```sh
+sudo -u grid -H uv run --env-file .env eia warm-zone-detail
+````
+
+It takes about four minutes — 208 requests paced under the API's own rate limit — and
+makes no EIA requests. Check what it managed with:
+
+```sh
+sudo -u postgres psql -d grid_authority -c \
+  "select window_key, count(*) from zone_detail_cache group by 1 order by 1;"
 ```
+
+Four rows, each counting the in-map zones. A window short of that is a zone whose build
+did not finish; `select zone_key from zone_detail_cache where window_key = 'all'` names
+which ones did.
+
+````
 
 ### 2.6 Checkout
 
@@ -223,7 +244,7 @@ cd /srv/grid-authority
 # owned by grid, and git refuses to read a repository owned by someone else without
 # this. It grants read convenience only: writes still require running as grid.
 git config --global --add safe.directory /srv/grid-authority
-```
+````
 
 **Never run git here with plain `sudo`.** As root it writes root-owned objects into
 `.git`, and every later pull as `grid` then fails on files it cannot touch. Git's

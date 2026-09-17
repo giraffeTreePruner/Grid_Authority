@@ -51,6 +51,22 @@ type WindowKey = keyof typeof WINDOWS;
  */
 export const CACHE_MAX_AGE_HOURS = 24;
 
+/**
+ * Marks a request as a cache build rather than a page view.
+ *
+ * A build gets the longer statement timeout, because it exists to pay a cost once so
+ * that no reader pays it. That has to be unforgeable from outside, and it is, by
+ * position rather than by secret: the warming job talks straight to Fastify on
+ * 127.0.0.1:3000, while nginx blanks this header on everything it proxies (see the
+ * `/api/` location in deploy/nginx.conf). A request that arrives through the front door
+ * therefore cannot be carrying it, whatever it claims.
+ *
+ * Deliberately not an IP allowlist. `trustProxy` is on, so the address the app sees
+ * comes from a forwarded header, and trusting 127.0.0.1 would let anyone willing to
+ * claim that address opt into the expensive path.
+ */
+export const BUILD_HEADER = 'x-grid-cache-build';
+
 const MODES = [
   'coal',
   'gas',
@@ -106,6 +122,14 @@ const EARLIEST_PERIOD = new Date(Date.UTC(2019, 0, 1));
  *
  * Adding a canonical mode must not leave these counting the old set, which is exactly
  * the kind of drift that produces a plausible wrong percentage rather than an error.
+ *
+ * Each column is clamped at zero before it is summed, matching `_sum_of` in
+ * `workers/db/shares.py`. A negative value is consumption, not generation, whatever
+ * mode it arrives under — EIA files some operators' storage as `OTH`/`UNK`, which reach
+ * `unknown`, and letting that charging load shrink the denominator inflates the share.
+ * The stored column was corrected for this in September; this expression re-derives the
+ * share for the panel's bucketed windows and was not, so the map and the panel
+ * disagreed by 4 to 8 points for CAISO in every month measured.
  */
 const columnsFor = (modes: string[]): string => {
   // These names reach the database as a raw fragment, because a column list cannot be
@@ -120,7 +144,7 @@ const columnsFor = (modes: string[]): string => {
     ? '0'
     : [...modes]
         .sort()
-        .map((mode) => `coalesce(${mode}_mw, 0)`)
+        .map((mode) => `greatest(coalesce(${mode}_mw, 0), 0)`)
         .join(' + ');
 };
 
@@ -136,7 +160,7 @@ const COUNTED_SUM = columnsFor(
 const toNumber = (value: string | null | undefined): number | null =>
   value === null || value === undefined ? null : Number(value);
 
-export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
+export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql, builder: Sql = sql): void => {
   app.get<{ Params: { key: string }; Querystring: { window?: string } }>(
     '/zones/:key',
     async (request, reply) => {
@@ -148,6 +172,18 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
       }
       const { hours, bucket } = WINDOWS[requested as WindowKey];
       const cacheable = bucket !== 'hour';
+
+      // A build of a cacheable window runs on the builder pool, which is allowed to
+      // take as long as the work actually needs. Everything else — every reader, and
+      // any hourly window — stays on the reader's pool and its five seconds.
+      // A non-empty value, not merely presence. `proxy_set_header X-Grid-Cache-Build ""`
+      // drops the field rather than forwarding an empty one, but that is nginx's
+      // convention rather than a guarantee this code gets to make — and an empty string
+      // is not undefined, so presence alone would hand the expensive path to anyone if
+      // any proxy in front ever forwarded a blank instead of removing it.
+      const marker = request.headers[BUILD_HEADER];
+      const isBuild = cacheable && typeof marker === 'string' && marker.length > 0;
+      const db = isBuild ? builder : sql;
 
       // Served from the cache when there is a recent one. `all` for a large zone reads
       // seven years of rows and runs past the statement timeout every time, so for most
@@ -177,7 +213,7 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         }
       }
 
-      const zones = await sql<ZoneRow[]>`
+      const zones = await db<ZoneRow[]>`
         SELECT key, name, short_name, interconnection, timezone, type, in_map, capabilities
           FROM zones WHERE key = ${request.params.key}
       `;
@@ -186,13 +222,13 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         throw ApiError.notFound(`No zone with key "${request.params.key}"`);
       }
 
-      const [bounds] = await sql<{ latest: Date | null }[]>`
+      const [bounds] = await db<{ latest: Date | null }[]>`
         SELECT max(period_utc) AS latest FROM obs_region_hourly WHERE zone_key = ${zone.key}
       `;
       const latestPeriod = bounds?.latest ?? null;
 
       if (latestPeriod === null) {
-        const latest = await latestDataPeriod(sql);
+        const latest = await latestDataPeriod(db);
         reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
         return reply.send({
           zone,
@@ -217,14 +253,14 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         // stepped by the calendar rather than by an assumed number of milliseconds.
         // Generated rather than taken from the rows that exist: a period nobody
         // reported has to appear as a gap, not close up silently.
-        sql<{ period: Date }[]>`
+        db<{ period: Date }[]>`
           SELECT generate_series(
                    date_trunc(${bucket}, ${from}::timestamptz),
                    date_trunc(${bucket}, ${latestPeriod}::timestamptz),
                    ('1 ' || ${bucket})::interval
                  ) AS period
         `,
-        sql<RegionRow[]>`
+        db<RegionRow[]>`
           SELECT date_trunc(${bucket}, period_utc) AS period_utc,
                  avg(demand_mw) AS demand_mw,
                  avg(net_generation_mw) AS net_generation_mw,
@@ -237,11 +273,11 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         // Modes are averaged so the stacked chart stays in MW and remains comparable
         // with demand. The two shares are re-derived from summed generation instead:
         // averaging hourly percentages weights a quiet hour the same as a working one.
-        sql<MixRow[]>`
+        db<MixRow[]>`
           SELECT date_trunc(${bucket}, period_utc) AS period_utc,
-                 sum(${sql.unsafe(RENEWABLE_SUM)}) / nullif(sum(${sql.unsafe(COUNTED_SUM)}), 0)
+                 sum(${db.unsafe(RENEWABLE_SUM)}) / nullif(sum(${db.unsafe(COUNTED_SUM)}), 0)
                    AS renewable_share,
-                 sum(${sql.unsafe(LOW_CARBON_SUM)}) / nullif(sum(${sql.unsafe(COUNTED_SUM)}), 0)
+                 sum(${db.unsafe(LOW_CARBON_SUM)}) / nullif(sum(${db.unsafe(COUNTED_SUM)}), 0)
                    AS low_carbon_share,
                  avg(coal_mw) AS coal_mw, avg(gas_mw) AS gas_mw, avg(oil_mw) AS oil_mw,
                  avg(nuclear_mw) AS nuclear_mw, avg(hydro_mw) AS hydro_mw,
@@ -259,7 +295,7 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         // as day-ahead — and only then averaged into the bucket. Averaging every
         // vintage instead would blend a day-ahead prediction with a same-hour revision
         // and quietly flatter the forecast.
-        sql<ForecastRow[]>`
+        db<ForecastRow[]>`
           WITH chosen AS (
             SELECT DISTINCT ON (target_time_utc)
                    target_time_utc, value, horizon_h
@@ -278,7 +314,7 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
            GROUP BY 1
            ORDER BY 1
         `,
-        latestDataPeriod(sql),
+        latestDataPeriod(db),
       ]);
 
       const periods = axisRows.map((row) => row.period);

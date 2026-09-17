@@ -10,7 +10,7 @@ import rateLimit from '@fastify/rate-limit';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { loadConfig } from './config/index.js';
 import type { Env } from './env.js';
-import { connect, type Sql } from './lib/db.js';
+import { connect, connectBuilder, type Sql } from './lib/db.js';
 import { ApiError, errorBody } from './lib/errors.js';
 import { analyticsRoutes } from './routes/analytics.js';
 import { healthRoutes } from './routes/health.js';
@@ -25,6 +25,12 @@ export const RATE_LIMIT_PER_MINUTE = 60;
 export interface BuildOptions {
   env: Env;
   sql?: Sql;
+  /**
+   * The pool cache builds run on. Defaults to one made from the same URL; a test that
+   * passes `sql` and not this gets the same connection for both, which keeps a suite
+   * that does not care about the distinction to a single pool.
+   */
+  builder?: Sql;
 }
 
 export interface BuiltApp {
@@ -32,12 +38,18 @@ export interface BuiltApp {
   sql: Sql;
 }
 
-export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<BuiltApp> => {
+export const buildApp = async ({
+  env,
+  sql: provided,
+  builder: providedBuilder,
+}: BuildOptions): Promise<BuiltApp> => {
   // Configuration is validated before the server accepts anything. An API that cannot
   // trust its registry must not serve it.
   loadConfig();
 
   const sql = provided ?? connect(env.DATABASE_URL);
+  const builder =
+    providedBuilder ?? (provided !== undefined ? provided : connectBuilder(env.DATABASE_URL));
 
   const app = Fastify({
     logger: {
@@ -144,7 +156,7 @@ export const buildApp = async ({ env, sql: provided }: BuildOptions): Promise<Bu
       healthRoutes(instance, sql);
       zoneRoutes(instance, sql);
       mapRoutes(instance, sql);
-      zoneDetailRoutes(instance, sql);
+      zoneDetailRoutes(instance, sql, builder);
       sourceRoutes(instance, sql);
     },
     { prefix: API_PREFIX },

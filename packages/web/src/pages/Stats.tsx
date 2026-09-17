@@ -6,10 +6,9 @@
  * here, and nothing here is: these are counts of page views, and identities that expire
  * daily.
  *
- * Two sources side by side, deliberately. The beacon counts what reached this app;
- * Cloudflare, once configured, counts what reached the edge — including requests the app
- * never saw and readers whose browsers dropped the beacon. They will not agree, and the
- * gap between them is the interesting part rather than an error to be reconciled away.
+ * One source: the beacon, which counts what reached this app. A reader whose browser
+ * dropped the beacon is not counted, so these are a floor rather than a total, and the
+ * page does not pretend otherwise.
  */
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, fetchStats } from '../api/client.ts';
@@ -39,7 +38,8 @@ export const Stats = (): JSX.Element => {
       <header className="mb-6">
         <h1 className="text-lg font-semibold text-zinc-100">Usage</h1>
         <p className="mt-1 text-xs text-zinc-400">
-          Unlisted, not secret. Counted by this site, and by Cloudflare once it is set up.
+          Unlisted, not secret. Counted by this site, from a beacon the browser may drop, so these
+          are a floor rather than a total.
         </p>
       </header>
 
@@ -58,9 +58,7 @@ export const Stats = (): JSX.Element => {
       {stats.data !== undefined && (
         <>
           <section className="mb-6 rounded border border-zinc-800 p-4" data-testid="own-counts">
-            <h2 className="mb-3 text-sm font-medium text-zinc-200">
-              This site <span className="font-normal text-zinc-500">· measured here</span>
-            </h2>
+            <h2 className="mb-3 text-sm font-medium text-zinc-200">Totals</h2>
 
             <dl className="grid grid-cols-3 gap-4">
               <Figure label="Views today" value={stats.data.views.today} testId="views-today" />
@@ -86,41 +84,6 @@ export const Stats = (): JSX.Element => {
             <p className="mt-3 text-[11px] text-zinc-500" data-testid="visitors-note">
               {stats.data.visitors_note}
             </p>
-          </section>
-
-          <section
-            className="mb-6 rounded border border-zinc-800 p-4"
-            data-testid="cloudflare-counts"
-          >
-            <h2 className="mb-3 text-sm font-medium text-zinc-200">
-              Cloudflare <span className="font-normal text-zinc-500">· measured at the edge</span>
-            </h2>
-
-            {stats.data.cloudflare === null ? (
-              <p className="text-xs text-zinc-500" data-testid="cloudflare-absent">
-                Not configured. These will fill in once the domain is proxied through Cloudflare and
-                an API token is set — shown separately rather than merged, because the two count
-                different things and will not agree.
-              </p>
-            ) : (
-              <dl className="grid grid-cols-3 gap-4">
-                <Figure
-                  label="Views today"
-                  value={stats.data.cloudflare.views.today}
-                  testId="cf-views-today"
-                />
-                <Figure
-                  label="Views, 7 days"
-                  value={stats.data.cloudflare.views.week}
-                  testId="cf-views-week"
-                />
-                <Figure
-                  label="Visitors today"
-                  value={stats.data.cloudflare.visitors.today}
-                  testId="cf-visitors-today"
-                />
-              </dl>
-            )}
           </section>
 
           <section data-testid="daily-table">

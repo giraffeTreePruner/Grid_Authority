@@ -1079,12 +1079,6 @@ The API is otherwise read-only by design. `grid_api` is granted SELECT and INSER
 two analytics tables and nothing more — no UPDATE, no DELETE — so the process that
 records a hit cannot rewrite one.
 
-Cloudflare's numbers get their own column rather than being merged. The two count
-different things: the beacon sees what reached the app, the edge sees what reached the
-edge, including requests the app never saw and readers whose browser dropped the beacon.
-The gap is the interesting part. Until a token exists the column reads "not configured"
-rather than zero, because zero reads as "no traffic".
-
 ## 2026-09-16 — A statement timeout is a 503 that says so
 
 `STATEMENT_TIMEOUT_MS` is 5 seconds. The zone panel's `all` window is the closest of any
@@ -1096,3 +1090,25 @@ at that moment.
 Postgres raises 57014 when it cancels a statement. That now becomes a 503 naming the
 cause and suggesting a shorter window, because the condition is temporary and the same
 request usually succeeds a moment later.
+
+## 2026-09-17 — The visitor-salt prune runs in the poll job, not the API
+
+The stats page promises a reader that a day's salt is deleted after eight days, and that
+once it is gone nobody can re-derive that day's visitor hashes. Something has to actually
+delete them, and the obvious place — next to the code that creates a salt — is the one
+place that cannot.
+
+`0007_analytics.up.sql` grants the API role `SELECT, INSERT` on the analytics tables and
+nothing else, deliberately, so a bug in the API cannot rewrite or destroy a record it has
+written. A `DELETE` issued from there fails on permissions in production however sensible
+it looks in the source, and one was: the first hit of every UTC day died on it, and no
+salt was ever pruned, so the retention promise was quietly not being kept.
+
+It now runs from the poll job under the owner role, which is what that migration's own
+comment said from the start. The retention constant is duplicated in
+`workers/db/analytics.py` and the API route, with each saying which one keeps the promise
+and which one documents it.
+
+The general lesson, and why the API suite now binds one describe block to a role granted
+exactly what the migration grants: a test that runs as the owner cannot see a statement
+the API is not allowed to issue.

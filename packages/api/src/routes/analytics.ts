@@ -159,9 +159,6 @@ export const analyticsRoutes = (app: FastifyInstance, sql: Sql): void => {
       daily: rows
         .slice(0, 30)
         .map((row) => ({ day: row.day, views: Number(row.views), visitors: Number(row.visitors) })),
-      // Filled in when a Cloudflare token is configured; null until then, and the page
-      // says "not configured" rather than showing a zero that looks like no traffic.
-      cloudflare: null,
       meta: buildMeta(latest),
     });
   });

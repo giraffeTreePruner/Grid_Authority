@@ -2,9 +2,8 @@
  * The unlisted usage page, and the beacon that feeds it.
  *
  * The property worth holding is honesty about what the numbers mean: an all-time
- * "visitors" figure that is really a sum of daily uniques must say so, and the two
- * sources must stay separate rather than being added together into one confident wrong
- * total.
+ * "visitors" figure that is really a sum of daily uniques must say so, and a real zero
+ * must not render as "no data".
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
@@ -25,7 +24,6 @@ const payload = (over: Record<string, unknown> = {}) => ({
   visitors: { today: 7, week: 41, all: 980 },
   visitors_note: 'Unique per day. Weekly and all-time are sums of daily uniques.',
   daily: [{ day: '2026-09-16', views: 12, visitors: 7 }],
-  cloudflare: null,
   meta: {
     generated_at: '2026-09-16T12:00:00Z',
     sources: ['eia'],
@@ -124,27 +122,12 @@ describe('the usage page', () => {
     expect(await screen.findByTestId('visitors-note')).toHaveTextContent('sums of daily uniques');
   });
 
-  it('says Cloudflare is not configured rather than showing zero', async () => {
-    // Zero reads as "no traffic". Absent reads as absent.
-    respondWith(payload());
+  it('renders a zero count as zero rather than as no data', async () => {
+    // A real zero and a missing figure look different: 0 against the em dash the
+    // Figure cell shows for null. Conflating them is how "no traffic" and "not
+    // measured" become indistinguishable.
+    respondWith(payload({ views: { today: 0, week: 0, all: 0 } }));
     render(<Stats />, { wrapper });
-    expect(await screen.findByTestId('cloudflare-absent')).toBeInTheDocument();
-    expect(screen.queryByTestId('cf-views-today')).not.toBeInTheDocument();
-  });
-
-  it('keeps the two sources apart when both are present', async () => {
-    respondWith(
-      payload({
-        cloudflare: {
-          views: { today: 99, week: 400, all: 0 },
-          visitors: { today: 55, week: 0, all: 0 },
-        },
-      }),
-    );
-    render(<Stats />, { wrapper });
-
-    // Each source keeps its own figure; nothing sums them into one total.
-    expect(await screen.findByTestId('cf-views-today')).toHaveTextContent('99');
-    expect(screen.getByTestId('views-today')).toHaveTextContent('12');
+    expect(await screen.findByTestId('views-today')).toHaveTextContent('0');
   });
 });

@@ -611,7 +611,13 @@ sudo -u grid -H uv run --env-file .env eia probe
 sudo -u grid -H uv run --env-file .env eia revise
 sudo -u grid -H uv run --env-file .env eia rebuild-snapshots    # no EIA requests
 sudo -u grid -H uv run --env-file .env eia rebuild-aggregates   # no EIA requests
+sudo -u grid -H uv run --env-file .env eia warm-zone-detail      # no EIA requests
 ```
+
+`warm-zone-detail` asks the local API for every bucketed zone window so it computes and
+stores each one. It takes about four minutes: it is paced under the API's own rate limit,
+which applies to it like any other client. The API must be up, since the job's whole
+method is to make the API do the work.
 
 Safe at any time: every job is idempotent, and the scheduler skips a tick if the same job
 is still running.
@@ -634,6 +640,27 @@ Check in this order:
 3. `sudo -u grid -H pm2 logs scheduler` — has `poll` run, and did it succeed?
 4. If `poll` succeeds but writes nothing, EIA may be lagging. `eia probe` then check
    `probe_log`: interchange has been observed 42 hours behind.
+
+### A zone's longer windows time out
+
+Symptom: the `90d`, `1y` or `all` window on a large zone returns 503 `timed_out`, and
+often loads if you close the panel and open it again. The second attempt is reading the
+cache the first one wrote on its way past the timeout.
+
+These four windows are served from `zone_detail_cache`, refreshed hourly by
+`warm-zone-detail`. If they are timing out, the cache is empty or stale:
+
+```sh
+sudo -u grid -H psql -c "SELECT window_key, count(*), min(built_at) FROM zone_detail_cache GROUP BY 1 ORDER BY 1"
+```
+
+Expect four rows, one per window, each with as many entries as there are in-map zones,
+built within the hour. If they are older than that, check whether the job is running
+(`sudo -u grid -H pm2 logs scheduler | grep warm`) and run it by hand. An entry older
+than 24 hours is ignored and recomputed, so a stopped warmer shows up as slowness first
+and errors after.
+
+Responses carry `X-Cache: stored` or `computed`, which says which path answered.
 
 ### Permission denied on the checkout
 

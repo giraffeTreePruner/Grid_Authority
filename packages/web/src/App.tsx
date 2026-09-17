@@ -146,7 +146,7 @@ export const App = (): JSX.Element => {
           className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
           href="/about/data"
         >
-          About the data
+          About the data — Why is some missing?
         </a>
       </footer>
     </div>

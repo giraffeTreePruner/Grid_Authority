@@ -9,8 +9,9 @@
   url: https://www.eia.gov/electricity/gridmonitor/
   license: Public domain (U.S. Government work)
   independent: true
-  notes: Publicly available data from the US Government. It updates hourly and is the backbone of this project.
-         It's provisional and revised for several days after publication.
+  notes:
+    Publicly available data from the US Government. It updates hourly and is the backbone of this project.
+    It's provisional and revised for several days after publication.
   active: true
 
 # Reserved, inactive in MVP 1. Any series computed with this methodology must display

@@ -34,10 +34,11 @@ export const AboutData = (): JSX.Element => {
       <h1 className="text-lg font-semibold text-zinc-100">About the data</h1>
 
       <p className="mt-3 text-sm leading-relaxed text-zinc-400">
-        Every figure on this site comes from the sources below following the license terms they published.
-        You may have noticed gaps in the data, that's intentional. Nothing is interpolated,
-        forward-filled, or substituted with zero. EIA data, which is the backbone of most grid viewers including this one, often contains holes.
-        An hour a source did not publish is shown as missing, and is not an issue with Grid Authority.
+        Every figure on this site comes from the sources below following the license terms they
+        published. You may have noticed gaps in the data, that's intentional. Nothing is
+        interpolated, forward-filled, or substituted with zero. EIA data, which is the backbone of
+        most grid viewers including this one, often contains holes. An hour a source did not publish
+        is shown as missing, and is not an issue with Grid Authority.
       </p>
 
       <p className="mt-3 text-sm leading-relaxed text-zinc-400">
@@ -79,7 +80,7 @@ export const AboutData = (): JSX.Element => {
                         : 'bg-zinc-800 text-zinc-400',
                     ].join(' ')}
                   >
-                    {source.active ? 'in use' : 'registered, not in use'}
+                    {source.active ? 'in use' : 'not in this version... yet'}
                   </span>
                 </header>
 

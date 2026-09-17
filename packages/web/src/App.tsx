@@ -77,9 +77,7 @@ export const App = (): JSX.Element => {
         <div className="flex items-center gap-2 sm:gap-3">
           <Mark size={22} className="shrink-0" />
           <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
-          <p className="hidden text-xs text-zinc-400 sm:block">
-            Live US Grid View
-          </p>
+          <p className="hidden text-xs text-zinc-400 sm:block">Live US Grid View</p>
         </div>
         <div className={mapControls} data-testid="metric-controls">
           <MetricSwitcher />

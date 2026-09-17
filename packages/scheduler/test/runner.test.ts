@@ -90,11 +90,24 @@ describe('running a job', () => {
 });
 
 describe('the schedule', () => {
-  it('covers the three jobs the spec requires, at the stated times', () => {
-    expect(JOBS.map((job) => job.name).sort()).toEqual(['poll', 'probe', 'revise']);
+  it('covers the jobs the spec requires, at the stated times', () => {
+    expect(JOBS.map((job) => job.name).sort()).toEqual([
+      'poll',
+      'probe',
+      'revise',
+      'warm-zone-detail',
+    ]);
     expect(JOBS.find((job) => job.name === 'poll')?.cron).toBe('10,40 * * * *');
     expect(JOBS.find((job) => job.name === 'probe')?.cron).toBe('50 * * * *');
     expect(JOBS.find((job) => job.name === 'revise')?.cron).toBe('15 4 * * *');
+  });
+
+  it('keeps the jobs off each other minutes', () => {
+    // One fork process on two vCPUs. Two jobs on the same minute means the second waits
+    // behind the first, and warming walks every zone, so it is the one that would hold
+    // a poll up.
+    const minutes = JOBS.map((job) => job.cron.split(' ')[0]);
+    expect(new Set(minutes).size).toBe(minutes.length);
   });
 
   it('explains why each job runs when it does', () => {

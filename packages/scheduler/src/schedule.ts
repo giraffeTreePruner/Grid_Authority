@@ -27,6 +27,12 @@ export const JOBS: ScheduledJob[] = [
     why: 'Hourly. Measures publication lag so /sources reports observed latency.',
   },
   {
+    name: 'warm-zone-detail',
+    cron: '25 * * * *',
+    args: ['warm-zone-detail'],
+    why: 'Hourly, off the poll minutes. Computes the bucketed zone windows so a reader never does: a cold `all` on a large zone runs past the statement timeout.',
+  },
+  {
     name: 'revise',
     cron: '15 4 * * *',
     args: ['revise'],

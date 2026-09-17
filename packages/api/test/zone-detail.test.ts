@@ -7,7 +7,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { API_PREFIX } from '../src/app.js';
-import { FORECAST_HORIZON_HOURS } from '../src/routes/zone-detail.js';
+import { CACHE_MAX_AGE_HOURS, FORECAST_HORIZON_HOURS } from '../src/routes/zone-detail.js';
 import { createHarness, databaseUrl, type Harness } from './helpers.js';
 
 const withDatabase = databaseUrl() === undefined ? describe.skip : describe;
@@ -217,5 +217,57 @@ withDatabase('zone detail', () => {
       headers: { 'if-none-match': tag },
     });
     expect(second.statusCode).toBe(304);
+  });
+
+  describe('the cache behind the bucketed windows', () => {
+    it('stores what it computed, and serves the same thing back', async () => {
+      // A cache that answers differently from a computation is worse than no cache:
+      // the bug only appears for readers whose request happened to miss.
+      await harness.sql`DELETE FROM zone_detail_cache WHERE zone_key = ${zoneKey}`;
+
+      const miss = await get(`/zones/${zoneKey}?window=1y`);
+      expect(miss.headers['x-cache']).toBe('computed');
+
+      const hit = await get(`/zones/${zoneKey}?window=1y`);
+      expect(hit.headers['x-cache']).toBe('stored');
+      expect(hit.json()).toEqual(miss.json());
+    });
+
+    it('does not cache the hourly windows', async () => {
+      // They are cheap, and they change on every poll. Caching them would trade a
+      // performance problem nobody has for a staleness one everybody would.
+      await get(`/zones/${zoneKey}?window=24h`);
+      const [row] = await harness.sql<{ n: string }[]>`
+        SELECT count(*)::text AS n FROM zone_detail_cache
+         WHERE zone_key = ${zoneKey} AND window_key = '24h'
+      `;
+      expect(row?.n).toBe('0');
+    });
+
+    it('recomputes rather than serving a document older than the limit', async () => {
+      // If warming stops, a reader waits once. They do not silently read last week.
+      await get(`/zones/${zoneKey}?window=90d`);
+      await harness.sql`
+        UPDATE zone_detail_cache
+           SET built_at = now() - make_interval(hours => ${CACHE_MAX_AGE_HOURS + 1})
+         WHERE zone_key = ${zoneKey} AND window_key = '90d'
+      `;
+
+      const response = await get(`/zones/${zoneKey}?window=90d`);
+      expect(response.headers['x-cache']).toBe('computed');
+    });
+
+    it('still answers when the cache cannot be written', async () => {
+      // A cache that cannot be written is a slow site, not a broken one.
+      await harness.sql`DROP TABLE IF EXISTS zone_detail_cache_backup`;
+      await harness.sql`ALTER TABLE zone_detail_cache RENAME TO zone_detail_cache_backup`;
+      try {
+        const response = await get(`/zones/${zoneKey}?window=30d`);
+        expect(response.statusCode).toBe(200);
+        expect(response.json().series.period.length).toBeGreaterThan(0);
+      } finally {
+        await harness.sql`ALTER TABLE zone_detail_cache_backup RENAME TO zone_detail_cache`;
+      }
+    });
   });
 });

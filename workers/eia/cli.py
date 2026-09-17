@@ -48,6 +48,7 @@ from workers.eia.ratelimit import BACKFILL_PER_HOUR, RateLimiter, sustainable_ra
 from workers.eia.revise import DEFAULT_DAYS as REVISE_DAYS
 from workers.eia.revise import run_revise
 from workers.eia.seed import SeedError, seed_from_fixtures
+from workers.eia.warm import PACE_SECONDS, warm_zone_detail
 
 app = typer.Typer(
     add_completion=False,
@@ -372,6 +373,53 @@ def rebuild_aggregates_command(
             typer.echo(f"{total} {unit} periods built", err=True)
 
     typer.echo(json.dumps({"job": "rebuild-aggregates", **built}, separators=(",", ":")))
+
+
+@app.command("warm-zone-detail")
+def warm_zone_detail_command(
+    base_url: Annotated[
+        str,
+        typer.Option("--base-url", help="Where the API is listening."),
+    ] = "http://127.0.0.1:3000",
+    pace_seconds: Annotated[
+        float,
+        typer.Option(
+            "--pace-seconds",
+            help="Seconds between requests. The default keeps a run under the API's own "
+            "rate limit, which this job is subject to like any other client.",
+        ),
+    ] = PACE_SECONDS,
+    config_dir: Annotated[
+        Path | None,
+        typer.Option("--config-dir", help="Directory holding the YAML config files."),
+    ] = None,
+) -> None:
+    """Ask the API for every bucketed zone window, so it computes and stores each one.
+
+    Makes no EIA requests. It exists so that a reader is not the one who pays for a
+    cold `all` window, which for a large zone runs past the statement timeout.
+
+    Exits non-zero only if nothing could be warmed at all; individual failures are
+    reported and the next run retries them.
+    """
+    try:
+        config = load_config(config_dir)
+    except ConfigError as error:
+        typer.echo(str(error), err=True)
+        raise typer.Exit(code=1) from error
+
+    summary = warm_zone_detail(config, base_url, pace_seconds=pace_seconds)
+
+    for warning in summary.warnings:
+        typer.echo(f"warning: {warning}", err=True)
+    typer.echo(
+        f"{summary.warmed} of {summary.requested} warmed in {summary.duration_s:.0f}s",
+        err=True,
+    )
+    typer.echo(summary.as_json())
+
+    if summary.warmed == 0 and summary.requested > 0:
+        raise typer.Exit(code=1)
 
 
 @app.command("revise")

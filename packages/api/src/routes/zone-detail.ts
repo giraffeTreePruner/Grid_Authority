@@ -42,6 +42,15 @@ const WINDOWS = {
 } as const;
 type WindowKey = keyof typeof WINDOWS;
 
+/**
+ * How old a cached document may be before it is rebuilt on request.
+ *
+ * The warming job runs hourly, so an entry should never approach this. It exists for
+ * when warming has stopped: better to make one reader wait than to serve a document
+ * from last week with nothing saying so.
+ */
+export const CACHE_MAX_AGE_HOURS = 24;
+
 const MODES = [
   'coal',
   'gas',
@@ -138,6 +147,35 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         );
       }
       const { hours, bucket } = WINDOWS[requested as WindowKey];
+      const cacheable = bucket !== 'hour';
+
+      // Served from the cache when there is a recent one. `all` for a large zone reads
+      // seven years of rows and runs past the statement timeout every time, so for most
+      // of the map this is the difference between a panel and an error.
+      if (cacheable) {
+        try {
+          const [cached] = await sql<{ payload: unknown }[]>`
+            SELECT payload
+              FROM zone_detail_cache
+             WHERE zone_key = ${request.params.key}
+               AND window_key = ${requested}
+               AND built_at > now() - make_interval(hours => ${CACHE_MAX_AGE_HOURS})
+          `;
+          if (cached !== undefined) {
+            reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
+            reply.header('X-Cache', 'stored');
+            return reply.send(cached.payload);
+          }
+        } catch (error) {
+          // Reading the cache is an optimisation, and an optimisation must not be able
+          // to fail the request. Without this, a cache table that is missing or being
+          // migrated takes the whole endpoint down rather than making it slow.
+          request.log.warn(
+            { err: error, zone: request.params.key },
+            'could not read zone detail cache',
+          );
+        }
+      }
 
       const zones = await sql<ZoneRow[]>`
         SELECT key, name, short_name, interconnection, timezone, type, in_map, capabilities
@@ -269,15 +307,37 @@ export const zoneDetailRoutes = (app: FastifyInstance, sql: Sql): void => {
         }
       }
 
-      reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
-      return reply.send({
+      const document = {
         zone,
         series,
         sources: ['eia'],
         latest_period: isoInstant(latestPeriod),
         forecast_horizon_h: FORECAST_HORIZON_HOURS,
         meta: buildMeta(latest),
-      });
+      };
+
+      // Write-through, so the expensive windows are computed once by whoever asks
+      // first — usually the warming job — and read from storage after that. Stored
+      // exactly as sent, so a cache hit and a miss cannot answer differently.
+      //
+      // A failure here is logged and swallowed: the reader already has their answer,
+      // and a cache that cannot be written is a slow site, not a broken one.
+      if (cacheable) {
+        try {
+          await sql`
+            INSERT INTO zone_detail_cache (zone_key, window_key, payload, built_at)
+            VALUES (${request.params.key}, ${requested}, ${sql.json(document as unknown as Record<string, never>)}, now())
+            ON CONFLICT (zone_key, window_key)
+            DO UPDATE SET payload = EXCLUDED.payload, built_at = now()
+          `;
+        } catch (error) {
+          request.log.warn({ err: error, zone: request.params.key }, 'could not store zone detail');
+        }
+      }
+
+      reply.header('Cache-Control', 'public, max-age=60, s-maxage=300');
+      reply.header('X-Cache', 'computed');
+      return reply.send(document);
     },
   );
 };

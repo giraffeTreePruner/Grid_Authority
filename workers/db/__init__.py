@@ -1,5 +1,6 @@
 """Database connection and migrations."""
 
+from workers.db.analytics import SALT_RETENTION_DAYS, prune_visitor_salts
 from workers.db.connection import connect, database_url
 from workers.db.migrate import (
     MigrationError,
@@ -18,6 +19,7 @@ from workers.db.zones import (
 )
 
 __all__ = [
+    "SALT_RETENTION_DAYS",
     "MigrationError",
     "SyncResult",
     "ZoneSyncError",
@@ -28,6 +30,7 @@ __all__ = [
     "migrate_down",
     "migrate_up",
     "pending_migrations",
+    "prune_visitor_salts",
     "sync_zones",
     "validate_against_respondents",
     "zones_with_observations",

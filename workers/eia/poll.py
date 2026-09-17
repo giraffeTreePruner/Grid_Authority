@@ -21,6 +21,7 @@ import psycopg
 
 from workers.config import AppConfig
 from workers.db.aggregates import refresh_buckets_for
+from workers.db.analytics import prune_visitor_salts
 from workers.db.observations import (
     WriteResult,
     record_status,
@@ -67,6 +68,7 @@ class PollSummary:
     forecast_issues: int = 0
     snapshots_built: int = 0
     aggregates_built: int = 0
+    salts_pruned: int = 0
     periods_touched: set[datetime] = field(default_factory=set)
     data_latest_period: datetime | None = None
 
@@ -161,6 +163,11 @@ def run_poll(
         # The day, week and month those hours fall in, so the coarse views stay current
         # without a separate job. Bulk history is built by `eia rebuild-aggregates`.
         summary.aggregates_built = refresh_buckets_for(connection, touched, config)
+
+        # The API may only SELECT and INSERT on the analytics tables, so the salt
+        # retention promise is kept from here, under the owner role. Cheap and
+        # idempotent: on all but one cycle a day it deletes nothing.
+        summary.salts_pruned = prune_visitor_salts(connection)
 
         summary.rows_written = (
             summary.region.written

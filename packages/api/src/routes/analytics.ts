@@ -6,9 +6,10 @@
  * else.
  *
  * A visitor is identified as `sha256(day salt || ip || user agent)`. The salt is random
- * per UTC day and deleted after eight, so the raw address is never stored, the same
- * person is one identity within a day and a different one tomorrow, and once a salt is
- * gone nobody can re-derive that day's hashes — including whoever runs the server.
+ * per UTC day and deleted after eight by the poll job, so the raw address is never
+ * stored, the same person is one identity within a day and a different one tomorrow,
+ * and once a salt is gone nobody can re-derive that day's hashes — including whoever
+ * runs the server.
  *
  * What that costs, stated because the numbers have to be read correctly: there is no
  * true all-time unique visitor count. Counting one person across months needs a stable
@@ -22,7 +23,15 @@ import type { Sql } from '../lib/db.js';
 import { ApiError } from '../lib/errors.js';
 import { buildMeta, latestDataPeriod } from '../lib/meta.js';
 
-/** Days a salt is kept. Long enough to fix a bug, short enough to mean something. */
+/**
+ * Days a salt is kept. Long enough to fix a bug, short enough to mean something.
+ *
+ * Enforced by the poll job, not here. This role is granted `SELECT, INSERT` on the
+ * analytics tables and nothing else, so that a bug in the API cannot rewrite or destroy
+ * a record — which means a `DELETE` from here fails on permissions in production no
+ * matter how sensible it looks in the source. It used to be issued here, and the first
+ * hit of every UTC day died on it. `workers/db/analytics.py` holds the matching number.
+ */
 export const SALT_RETENTION_DAYS = 8;
 
 /** Paths the app actually has. An unknown path is a typo or someone poking at it. */
@@ -48,16 +57,40 @@ const saltFor = async (sql: Sql, day: string): Promise<string> => {
   await sql`
     INSERT INTO visitor_salt (day, salt) VALUES (${day}, ${fresh}) ON CONFLICT (day) DO NOTHING
   `;
-  // Pruned here rather than on a schedule: a new salt is made once a day, which is
-  // exactly how often this needs doing, and it keeps the retention promise next to the
-  // thing it is a promise about.
-  await sql`
-    DELETE FROM visitor_salt WHERE day < (${day}::date - ${SALT_RETENTION_DAYS}::integer)
-  `;
 
   const settled = await sql<{ salt: string }[]>`SELECT salt FROM visitor_salt WHERE day = ${day}`;
   if (settled[0] === undefined) throw ApiError.unavailable('could not establish a salt for today');
   return settled[0].salt;
+};
+
+/**
+ * The reported path, from a body that may have arrived under either content type.
+ *
+ * `navigator.sendBeacon` cannot set a content type freely, so the beacon sends its JSON
+ * typed as `text/plain` to avoid a CORS preflight. Fastify's built-in plain-text parser
+ * hands that back as a *string*, not an object, so a handler reading `body.path` sees
+ * undefined and rejects the request.
+ *
+ * That is not a hypothetical: every browser has `sendBeacon`, so every real visitor took
+ * that path and got a 400, the beacon swallowed it by design, and the counter sat at zero
+ * while the `fetch` fallback — which almost nothing reaches — worked perfectly. Both
+ * shapes are accepted here, and `test/analytics.test.ts` sends the plain-text one because
+ * that is the one that matters.
+ */
+export const pathFromBody = (body: unknown): string | null => {
+  let parsed: unknown = body;
+
+  if (typeof parsed === 'string') {
+    try {
+      parsed = JSON.parse(parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof parsed !== 'object' || parsed === null) return null;
+  const path = (parsed as { path?: unknown }).path;
+  return typeof path === 'string' ? path : null;
 };
 
 export const visitorHash = (salt: string, ip: string, userAgent: string): string =>
@@ -67,9 +100,9 @@ export const visitorHash = (salt: string, ip: string, userAgent: string): string
 export const utcDay = (now: Date = new Date()): string => now.toISOString().slice(0, 10);
 
 export const analyticsRoutes = (app: FastifyInstance, sql: Sql): void => {
-  app.post<{ Body: { path?: string } }>('/hit', async (request, reply) => {
-    const path = request.body?.path;
-    if (typeof path !== 'string' || !(KNOWN_PATHS as readonly string[]).includes(path)) {
+  app.post('/hit', async (request, reply) => {
+    const path = pathFromBody(request.body);
+    if (path === null || !(KNOWN_PATHS as readonly string[]).includes(path)) {
       throw ApiError.badRequest(`path must be one of ${KNOWN_PATHS.join(', ')}`);
     }
 

@@ -9,22 +9,23 @@
   url: https://www.eia.gov/electricity/gridmonitor/
   license: Public domain (U.S. Government work)
   independent: true
-  notes: Hourly. Provisional and revised for several days after publication.
+  notes: Publicly available data from the US Government. It updates hourly and is the backbone of this project.
+         It's provisional and revised for several days after publication.
   active: true
 
 # Reserved, inactive in MVP 1. Any series computed with this methodology must display
 # the label below verbatim wherever it appears: chart legends, tooltips, comparison
 # tables and API meta.sources.
 - id: emaps_method
-  label: Electricity Maps methodology (our implementation)
+  label: Electricity Maps methodology (My implementation)
   attribution: Methodology and emission factors from electricitymaps-contrib (AGPL-3.0)
   url: https://github.com/electricitymaps/electricitymaps-contrib
   license: AGPL-3.0 (methodology and configuration reused; data computed by this project)
   independent: false
   notes: >
-    Not Electricity Maps data. This project applies their published methodology and
-    emission factors to EIA data. Figures are ours, not theirs, and this project is
-    not affiliated with or endorsed by Electricity Maps.
+    Not Electricity Maps data in compliance with their licensing terms. This project applies their published methodology and
+    emission factors to EIA data. The computed figures is mine, not theirs, and this project is
+    not affiliated with or endorsed by Electricity Maps, though, much kudos and appreciation!
   active: false
 
 # Zone geometry. Registered because §11 requires recording which source the committed
@@ -37,8 +38,8 @@
   independent: false
   notes: >
     Balancing authority boundaries used to draw the map, taken from
-    electricitymaps-contrib and reused under the AGPL, which this project also uses.
+    electricitymaps-contrib and reused under AGPL 3, which this project also uses.
     Geometry only: no measurements come from this source. The SPP West boundary is
     derived here as the union of the two Western Area Power Administration areas it
-    absorbed, and is not present in the original.
+    absorbed, but it wasn't present originally.
   active: true

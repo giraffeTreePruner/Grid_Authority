@@ -78,7 +78,7 @@ export const App = (): JSX.Element => {
           <Mark size={22} className="shrink-0" />
           <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
           <p className="hidden text-xs text-zinc-400 sm:block">
-            United States balancing authorities, by the hour since 2019, from EIA Form 930
+            Live US Grid View
           </p>
         </div>
         <div className={mapControls} data-testid="metric-controls">

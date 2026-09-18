@@ -46,12 +46,16 @@ export const Legend = ({ compact = false }: LegendProps = {}): JSX.Element | nul
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3" data-testid="legend-compact">
-        <span className="shrink-0 text-[11px] font-medium text-zinc-300">
-          {definition.label}
-          <span className="ml-1 font-normal text-zinc-500">({definition.unit})</span>
-        </span>
+      <div className="flex items-center gap-2" data-testid="legend-compact">
+        {/*
+          No metric name here, unlike the full legend.
 
+          It would be the third place the same word is on screen: the switcher in the
+          header already shows which metric is selected, and every stop below carries
+          its own unit. Repeating it cost about 107px, which is the difference between
+          the footer links sitting on one line and wrapping onto two — and a wrapped
+          footer takes its extra height straight out of the map.
+        */}
         {/*
           `items-start`, not `items-end` as the full legend uses.
 

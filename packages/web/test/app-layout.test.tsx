@@ -19,6 +19,7 @@ vi.mock('maplibre-gl', () => {
     setFeatureState = vi.fn();
     setPaintProperty = vi.fn();
     getCanvas = vi.fn(() => ({ style: {} }));
+    getContainer = vi.fn(() => document.createElement('div'));
     queryRenderedFeatures = vi.fn(() => []);
     resize = vi.fn();
     remove = vi.fn();

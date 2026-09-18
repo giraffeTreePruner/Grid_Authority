@@ -165,7 +165,7 @@ export const App = (): JSX.Element => {
             the same rule the floating one follows. */}
         <div
           className={[
-            'hidden shrink-0 items-center border-l border-t border-zinc-800 px-3 short:flex',
+            'hidden shrink-0 items-center border-l border-t border-zinc-800 px-2 short:flex',
             selectedZone === null ? '' : 'short:hidden',
           ].join(' ')}
           data-testid="footer-legend"

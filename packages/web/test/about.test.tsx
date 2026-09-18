@@ -6,7 +6,7 @@
  * where the wording is published.
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SourcesResponse } from '../src/api/types.ts';
@@ -117,7 +117,7 @@ describe('AboutData', () => {
     const entry = screen.getByTestId('source-emaps_method');
     // Verbatim: the wording is the requirement, not an approximation of it.
     expect(entry).toHaveTextContent(EMAPS_LABEL);
-    expect(entry).toHaveTextContent('registered, not in use');
+    expect(entry).toHaveTextContent('not in this version... yet');
     expect(entry).toHaveTextContent('AGPL-3.0');
   });
 
@@ -127,7 +127,7 @@ describe('AboutData', () => {
 
     await waitFor(() => expect(screen.getByTestId('source-emaps_method')).toBeInTheDocument());
     expect(screen.getByTestId('source-emaps_method')).toHaveTextContent(
-      'derived from another source',
+      'this is derived from other sources',
     );
   });
 
@@ -173,6 +173,31 @@ describe('StatusBar', () => {
   it('says so when there is no data at all rather than showing a number', () => {
     render(<StatusBar meta={meta(true, null)} error={null} />);
     expect(screen.getByTestId('status-stale')).toHaveTextContent('unavailable');
+  });
+
+  it('can be dismissed, because EIA is behind most of the time', () => {
+    // A permanent 32px band across a landscape phone, for a condition that is the norm
+    // rather than the exception.
+    const hoursAgo = new Date(Date.now() - 5 * 3600_000).toISOString();
+    render(<StatusBar meta={meta(true, hoursAgo)} error={null} />);
+
+    fireEvent.click(screen.getByTestId('dismiss-stale'));
+    expect(screen.queryByTestId('status-stale')).not.toBeInTheDocument();
+  });
+
+  it('has nothing to dismiss when the data is current', () => {
+    // The dismissal is for the warning, not for the age, which is never in the way.
+    const recent = new Date(Date.now() - 30 * 60_000).toISOString();
+    render(<StatusBar meta={meta(false, recent)} error={null} />);
+    expect(screen.queryByTestId('dismiss-stale')).not.toBeInTheDocument();
+  });
+
+  it('keeps the unreachable-API banner, which is not noise', () => {
+    // An error is a thing to act on, and it carries its own retry. Only the staleness
+    // notice is routine enough to be worth getting out of the way.
+    render(<StatusBar meta={meta(false, null)} error={'boom'} onRetry={() => {}} />);
+    expect(screen.getByTestId('status-error')).toBeInTheDocument();
+    expect(screen.queryByTestId('dismiss-stale')).not.toBeInTheDocument();
   });
 
   it('shows the age when the data is current', () => {

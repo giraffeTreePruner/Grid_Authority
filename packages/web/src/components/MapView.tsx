@@ -160,6 +160,18 @@ export const MapView = ({ geometryVersion, onReady }: MapViewProps): JSX.Element
       'bottom-right',
     );
 
+    // Start it folded into its ⓘ. Compact attribution opens on load, and expanded it is
+    // a band across the bottom of the map — on a landscape phone, across a map only
+    // about 150px tall.
+    //
+    // Folded, not removed, and the button is never hidden: the boundaries are AGPL
+    // geometry and the data is EIA's, so both credits have to stay reachable. This is
+    // MapLibre's own collapsed state, one tap from being open.
+    instance
+      .getContainer()
+      .querySelector('.maplibregl-ctrl-attrib')
+      ?.classList.remove('maplibregl-compact-show');
+
     const zoneKeyOf = (feature: MapGeoJSONFeature): string | null => {
       const key = feature.properties?.zone_key;
       return typeof key === 'string' ? key : null;

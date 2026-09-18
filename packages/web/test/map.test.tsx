@@ -14,11 +14,20 @@ const featureStates: { id: string; state: Record<string, unknown> }[] = [];
 const paintProperties: { layer: string; property: string; value: unknown }[] = [];
 const handlers = new Map<string, (event: unknown) => void>();
 let constructedWith: Record<string, unknown> | null = null;
+let lastContainer: HTMLElement | null = null;
 
 vi.mock('maplibre-gl', () => {
   class Map {
+    container: HTMLElement;
     constructor(options: Record<string, unknown>) {
       constructedWith = options;
+      // A real element carrying MapLibre's own classes, so the collapse the component
+      // performs on the attribution control is observable rather than merely tolerated.
+      this.container = document.createElement('div');
+      const attrib = document.createElement('div');
+      attrib.className = 'maplibregl-ctrl-attrib maplibregl-compact maplibregl-compact-show';
+      this.container.appendChild(attrib);
+      lastContainer = this.container;
     }
     addControl = vi.fn();
     on = vi.fn((event: string, layerOrHandler: unknown, maybeHandler?: unknown) => {
@@ -32,6 +41,7 @@ vi.mock('maplibre-gl', () => {
       paintProperties.push({ layer, property, value });
     });
     getCanvas = vi.fn(() => ({ style: {} }));
+    getContainer = vi.fn(() => this.container);
     queryRenderedFeatures = vi.fn(() => []);
     remove = vi.fn();
     // The real effect is guarded on ResizeObserver, which jsdom does not provide,
@@ -262,6 +272,21 @@ describe('MapView', () => {
     render(<MapView geometryVersion="1" />);
     expect(constructedWith?.minZoom).toBe(2);
     expect(constructedWith?.maxZoom).toBe(8);
+  });
+
+  it('folds the attribution into its button rather than leaving a band on the map', () => {
+    // MapLibre opens a compact attribution on load, and expanded it runs across the
+    // bottom of the map — on a landscape phone, across a map about 150px tall.
+    //
+    // Folded, never removed: the boundaries are AGPL geometry and the data is EIA's,
+    // so the credit has to stay one tap away rather than go anywhere.
+    render(<MapView geometryVersion="1" />);
+
+    const attribution = lastContainer?.querySelector('.maplibregl-ctrl-attrib');
+    expect(attribution).not.toBeNull();
+    expect(attribution?.classList.contains('maplibregl-compact-show')).toBe(false);
+    // Still present, and still the control MapLibre renders the ⓘ for.
+    expect(attribution?.classList.contains('maplibregl-compact')).toBe(true);
   });
 
   it('marks the selected zone through feature state', async () => {

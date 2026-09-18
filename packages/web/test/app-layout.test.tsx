@@ -82,3 +82,46 @@ describe('map controls follow the map', () => {
     }
   });
 });
+
+/**
+ * jsdom has no layout engine, so these assert the rule rather than the pixels. The
+ * measurement that motivated them was taken in a real browser at 812x375: the floating
+ * legend is 360x117 over about 175px of map, a quarter of the thing it explains.
+ */
+describe('the legend on a short screen', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Promise.resolve(new Response('{}', { headers: { 'content-type': 'application/json' } })),
+      ),
+    );
+    useGridStore.setState({ selectedZone: null });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('moves out of the map and into the footer', () => {
+    render(<App />, { wrapper });
+
+    // The floating one steps aside where height is scarce...
+    const floating = document.querySelector('.absolute.bottom-4.left-4');
+    expect(floating?.className).toContain('short:hidden');
+
+    // ...and the one beside the footer appears only there, so nothing is lost and
+    // nothing is on screen twice.
+    const footerLegend = screen.getByTestId('footer-legend');
+    expect(footerLegend.className).toContain('hidden');
+    expect(footerLegend.className).toContain('short:flex');
+  });
+
+  it('follows the same rule as the floating one when a zone sheet is open', () => {
+    // A legend for a map the reader cannot see is the rule this file is named for, and
+    // moving it to the footer must not create an exception to it.
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO' });
+    render(<App />, { wrapper });
+    expect(screen.getByTestId('footer-legend').className).toContain('short:hidden');
+  });
+});

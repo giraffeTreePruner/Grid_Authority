@@ -172,7 +172,7 @@ export const TimeSlider = (): JSX.Element | null => {
       // Wraps on a narrow screen: the readout is a fixed 14rem, which on a 375px phone
       // left the slider about 130px for a week of hours. A scrub target narrower than
       // a thumbnail is unusable however well it handles the gesture.
-      className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-zinc-800 bg-zinc-950/80 px-4 py-2"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-zinc-800 bg-zinc-950/80 px-4 py-2 short:py-1"
       data-testid="time-slider"
     >
       <button

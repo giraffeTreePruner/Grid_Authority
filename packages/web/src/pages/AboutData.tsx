@@ -30,7 +30,7 @@ export const AboutData = (): JSX.Element => {
   });
 
   return (
-    <article className="mx-auto max-w-3xl px-6 py-10" data-testid="about-data">
+    <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6" data-testid="about-data">
       <h1 className="text-lg font-semibold text-zinc-100">About the data</h1>
 
       <p className="mt-3 text-sm leading-relaxed text-zinc-400">
@@ -84,22 +84,36 @@ export const AboutData = (): JSX.Element => {
                   </span>
                 </header>
 
-                <dl className="mt-3 grid grid-cols-[8rem_1fr] gap-x-4 gap-y-1.5 text-xs">
-                  <dt className="text-zinc-500">Attribution</dt>
-                  <dd className="text-zinc-300">{source.attribution}</dd>
+                {/*
+                  Two columns from `sm` up, plain flow below it.
 
-                  <dt className="text-zinc-500">Licence</dt>
-                  <dd className="text-zinc-300">{source.license}</dd>
+                  It was a grid at every width, and `1fr` is `minmax(auto, 1fr)` — the
+                  `auto` floor is the track's min-content width, so a value with nothing
+                  to break on held the column open. A source URL is one long token, so on
+                  a 375px screen the page laid out 100px wider than the viewport and the
+                  whole article scrolled sideways. `minmax(0, 1fr)` lets the track shrink;
+                  `break-words` gives the URL somewhere to break once it has to.
 
-                  <dt className="text-zinc-500">Independent</dt>
-                  <dd className="text-zinc-300">
+                  On a phone a fixed 8rem label column also spent 43% of the width on the
+                  labels, so below `sm` the pair simply stacks and the value gets all of
+                  it.
+                */}
+                <dl className="mt-3 text-xs sm:grid sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-x-4 sm:gap-y-1.5">
+                  <dt className="mt-2 text-zinc-500 sm:mt-0">Attribution</dt>
+                  <dd className="break-words text-zinc-300">{source.attribution}</dd>
+
+                  <dt className="mt-2 text-zinc-500 sm:mt-0">Licence</dt>
+                  <dd className="break-words text-zinc-300">{source.license}</dd>
+
+                  <dt className="mt-2 text-zinc-500 sm:mt-0">Independent</dt>
+                  <dd className="break-words text-zinc-300">
                     {source.independent ? 'Yes' : 'No, this is derived from other sources'}
                   </dd>
 
-                  <dt className="text-zinc-500">Link</dt>
+                  <dt className="mt-2 text-zinc-500 sm:mt-0">Link</dt>
                   <dd>
                     <a
-                      className="text-zinc-300 underline decoration-zinc-700 underline-offset-2 hover:text-zinc-100"
+                      className="break-all text-zinc-300 underline decoration-zinc-700 underline-offset-2 hover:text-zinc-100"
                       href={source.url}
                     >
                       {source.url}
@@ -108,8 +122,11 @@ export const AboutData = (): JSX.Element => {
 
                   {latency !== null && (
                     <>
-                      <dt className="text-zinc-500">Measured lag</dt>
-                      <dd className="text-zinc-300" data-testid={`latency-${source.id}`}>
+                      <dt className="mt-2 text-zinc-500 sm:mt-0">Measured lag</dt>
+                      <dd
+                        className="break-words text-zinc-300"
+                        data-testid={`latency-${source.id}`}
+                      >
                         {latency}
                       </dd>
                     </>
@@ -117,8 +134,8 @@ export const AboutData = (): JSX.Element => {
 
                   {source.jobs.length > 0 && (
                     <>
-                      <dt className="text-zinc-500">Last collected</dt>
-                      <dd className="text-zinc-300">
+                      <dt className="mt-2 text-zinc-500 sm:mt-0">Last collected</dt>
+                      <dd className="break-words text-zinc-300">
                         {source.jobs.map((job) => (
                           <span key={job.job} className="mr-3 inline-block">
                             {job.job}: {formatAge(job.last_success_at)}

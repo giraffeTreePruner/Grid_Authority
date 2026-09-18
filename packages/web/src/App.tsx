@@ -73,7 +73,7 @@ export const App = (): JSX.Element => {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-2">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 px-4 py-2 short:gap-2 short:py-1">
         <div className="flex items-center gap-2 sm:gap-3">
           <Mark size={22} className="shrink-0" />
           <h1 className="text-sm font-semibold tracking-wide">Grid Authority</h1>
@@ -86,7 +86,7 @@ export const App = (): JSX.Element => {
 
       <div
         className={[
-          'flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5',
+          'flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5 short:py-0.5',
           zoneOpen ? 'hidden sm:flex' : 'flex',
         ].join(' ')}
         data-testid="resolution-controls"
@@ -105,10 +105,14 @@ export const App = (): JSX.Element => {
           <MapView geometryVersion={GEOMETRY_VERSION} />
 
           {/* Hidden under the zone sheet on a phone: there is no room for both, and
-              the legend describes a map the reader cannot currently see. */}
+              the legend describes a map the reader cannot currently see.
+
+              Hidden on a short screen too, where it moves into the footer. Floating, it
+              is 360x117 over about 175px of map on a landscape phone — a quarter of the
+              thing it exists to explain. */}
           <div
             className={[
-              'pointer-events-none absolute bottom-4 left-4',
+              'pointer-events-none absolute bottom-4 left-4 short:hidden',
               selectedZone === null ? '' : 'hidden sm:block',
             ].join(' ')}
           >
@@ -133,22 +137,42 @@ export const App = (): JSX.Element => {
         <TimeSlider />
       </div>
 
-      <ZoneList zones={zones.data?.zones ?? []} />
+      {/* On a short screen the zone-list row and the footer become one band: the two
+          link rows keep the left, and the ramp takes the blank space beside both of
+          them rather than forcing the footer taller on its own. Below `short` this
+          wrapper is a plain block and the two rows stack exactly as they did. */}
+      <div className="short:flex short:items-stretch">
+        <div className="min-w-0 flex-1">
+          <ZoneList zones={zones.data?.zones ?? []} />
 
-      <footer className="flex flex-wrap items-center gap-3 border-t border-zinc-800 px-4 py-2 text-[11px] text-zinc-500">
-        <a
-          className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
-          href="https://github.com/giraffeTreePruner/Grid_Authority"
+          <footer className="flex flex-wrap items-center gap-3 border-t border-zinc-800 px-4 py-2 text-[11px] text-zinc-500 short:py-1">
+            <a
+              className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
+              href="https://github.com/giraffeTreePruner/Grid_Authority"
+            >
+              Source code (AGPL-3.0)
+            </a>
+            <a
+              className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
+              href="/about/data"
+            >
+              About the data — Why is some missing?
+            </a>
+          </footer>
+        </div>
+
+        {/* Only on a short screen, and only beside a map the reader can actually see —
+            the same rule the floating one follows. */}
+        <div
+          className={[
+            'hidden shrink-0 items-center border-l border-t border-zinc-800 px-3 short:flex',
+            selectedZone === null ? '' : 'short:hidden',
+          ].join(' ')}
+          data-testid="footer-legend"
         >
-          Source code (AGPL-3.0)
-        </a>
-        <a
-          className="underline decoration-zinc-700 underline-offset-2 hover:text-zinc-300"
-          href="/about/data"
-        >
-          About the data — Why is some missing?
-        </a>
-      </footer>
+          <Legend compact />
+        </div>
+      </div>
     </div>
   );
 };

@@ -42,13 +42,13 @@ export const ZoneList = ({ zones }: ZoneListProps): JSX.Element => {
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
-        className="w-full px-4 py-1.5 text-left text-[11px] text-zinc-400 hover:text-zinc-200"
+        className="w-full px-4 py-1.5 text-left text-[11px] text-zinc-400 hover:text-zinc-200 short:py-1"
       >
         {open ? 'Hide' : 'Show'} zone list ({mapped.length}) — keyboard accessible
       </button>
 
       {open && (
-        <ul className="max-h-48 overflow-y-auto px-2 pb-2" aria-label="Zones">
+        <ul className="max-h-48 overflow-y-auto px-2 pb-2 short:max-h-28" aria-label="Zones">
           {mapped.map((zone) => {
             const value = values.get(zone.key) ?? null;
             return (

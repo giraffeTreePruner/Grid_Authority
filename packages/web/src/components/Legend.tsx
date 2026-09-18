@@ -3,13 +3,24 @@
  *
  * Every stop carries its value: colour alone is never the signal. The no-data swatch is
  * hatched as well as grey, so it is distinguishable without relying on hue.
+ *
+ * `compact` is the same ramp as one row, for the footer on a short screen. A phone in
+ * landscape has about 175px of map, and the floating card covers a quarter of it, so
+ * there it moves into the blank space beside the footer links instead of sitting on the
+ * thing it describes. It stays a reduction in density and never in information: every
+ * stop keeps its value, and the no-data swatch keeps its hatching.
  */
 import { computeDomain, METRICS, rampStops } from '../lib/metrics.ts';
 import { useGridStore, valuesAcrossWindow, valuesAtCursor } from '../store/useGridStore.ts';
 import { RESOLUTIONS_BY_ID } from '../lib/resolution.ts';
 import { metricIndex } from '../lib/metrics.ts';
 
-export const Legend = (): JSX.Element | null => {
+export interface LegendProps {
+  /** One row, no card, for the footer on a short screen. */
+  compact?: boolean;
+}
+
+export const Legend = ({ compact = false }: LegendProps = {}): JSX.Element | null => {
   const metric = useGridStore((state) => state.metric);
   const cursor = useGridStore((state) => state.cursor);
   const windowPayload = useGridStore((state) => state.window);
@@ -32,6 +43,61 @@ export const Legend = (): JSX.Element | null => {
   const anyData = [...valuesAtCursor(windowPayload, cursor, position).values()].some(
     (value) => value !== null,
   );
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3" data-testid="legend-compact">
+        <span className="shrink-0 text-[11px] font-medium text-zinc-300">
+          {definition.label}
+          <span className="ml-1 font-normal text-zinc-500">({definition.unit})</span>
+        </span>
+
+        {/*
+          `items-start`, not `items-end` as the full legend uses.
+
+          Aligned at the bottom, a stop whose label fits on one line sits lower than its
+          neighbours, and the ramp reads as a broken bar rather than a scale — which is
+          what happened: `0 MWh` fits in the box and `124.4 GWh` does not, so the first
+          swatch hung 9px below the other five. Aligning at the top puts every swatch on
+          the same line whatever its label does underneath, and `whitespace-nowrap` with
+          a wider box stops the wrapping that caused it in the first place.
+        */}
+        <div className={anyData ? 'flex items-start gap-0' : 'flex items-start gap-0 opacity-40'}>
+          {stops.map((stop, index) => (
+            <div key={stop.colour} className="flex w-12 flex-col items-start">
+              {/* A hairline around the bar. The floating legend sits on its own panel,
+                  so its darkest stop reads against that; here there is no card, and the
+                  low end is within a few percent of the footer's own background. The
+                  ring is what makes the scale's start visible rather than looking like
+                  it begins at the second stop. */}
+              <span
+                className={[
+                  'h-2 w-full ring-1 ring-inset ring-zinc-700/70',
+                  index === 0 ? 'rounded-l-sm' : '',
+                  index === stops.length - 1 ? 'rounded-r-sm' : '',
+                ].join(' ')}
+                style={{ backgroundColor: stop.colour }}
+              />
+              <span className="mt-0.5 whitespace-nowrap text-[9px] leading-none tabular-nums text-zinc-400">
+                {definition.format(stop.value)}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <span className="flex shrink-0 items-center gap-1.5">
+          <span className="nodata-swatch h-2 w-4 rounded-sm" aria-hidden="true" />
+          <span className="text-[10px] text-zinc-500">no data</span>
+        </span>
+
+        {!anyData && (
+          <span className="text-[10px] text-amber-300/80" data-testid="legend-no-data">
+            Nothing published this {step}.
+          </span>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

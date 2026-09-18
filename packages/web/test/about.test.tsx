@@ -266,3 +266,41 @@ describe('ZoneList', () => {
     expect(screen.getByRole('button', { name: /ERCOT/ })).toHaveTextContent('58.0 GWh');
   });
 });
+
+/**
+ * The page laid out 100px wider than a 375px viewport and scrolled sideways.
+ *
+ * `grid-cols-[8rem_1fr]` was the cause: `1fr` is `minmax(auto, 1fr)`, and that `auto`
+ * floor is the track's min-content width, so a value with nothing to break on held the
+ * column open. A source URL is one long token.
+ *
+ * jsdom has no layout engine, so the overflow itself cannot be measured here — it was
+ * measured in a real browser, before and after. These pin the two things that fixed it,
+ * so a revert to `1fr` or a dropped break utility fails rather than quietly returning
+ * the sideways scroll.
+ */
+describe('the source list on a narrow screen', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('lets the value column shrink below its content', async () => {
+    respondWith(sources());
+    render(<AboutData />, { wrapper });
+    await screen.findByTestId('source-eia');
+
+    const list = document.querySelector('[data-testid="source-eia"] dl');
+    expect(list?.className).toContain('minmax(0,1fr)');
+    // Two columns are a choice for wider screens, not the base case.
+    expect(list?.className).toContain('sm:grid');
+  });
+
+  it('gives a long URL somewhere to break', async () => {
+    respondWith(sources());
+    render(<AboutData />, { wrapper });
+    await screen.findByTestId('source-eia');
+
+    const link = screen.getByRole('link', { name: 'https://www.eia.gov/electricity/gridmonitor/' });
+    expect(link.className).toContain('break-all');
+  });
+});

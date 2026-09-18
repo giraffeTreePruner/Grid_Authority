@@ -86,21 +86,21 @@ export const App = (): JSX.Element => {
 
       {/* The resolution buttons and the freshness line, as one band.
 
-          Both are full width by default, so they wrap and stack exactly as they did.
-          On a short screen both become auto width and share a single row, which is the
-          buttons' own leftover space put to use — worth about 28px of map on a landscape
-          phone, where the whole viewport is 375.
+          Both size to their content, so they share a row wherever there is width for it
+          and wrap to two where there is not — a narrow phone in portrait still stacks
+          them. The buttons take about 276px of a row and the rest was empty, so the line
+          saying how current the data is costs nothing at most widths. On a landscape
+          phone that is 28px of a 375px screen, which is the map going from 48% to 55%.
 
           One container, not two copies behind media queries: the staleness notice can be
           dismissed, and a second instance would carry its own idea of whether that had
           happened. The status is also a sibling of the buttons rather than inside them,
           because the buttons hide under a zone sheet on a phone and how current the data
           is should not hide with them. */}
-      <div className="flex flex-wrap items-center short:border-b short:border-zinc-800">
+      <div className="flex flex-wrap items-center border-b border-zinc-800">
         <div
           className={[
-            'w-full flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5',
-            'short:w-auto short:border-b-0 short:py-0.5',
+            'flex-wrap items-center gap-3 px-4 py-1.5 short:py-0.5',
             zoneOpen ? 'hidden sm:flex' : 'flex',
           ].join(' ')}
           data-testid="resolution-controls"
@@ -108,7 +108,12 @@ export const App = (): JSX.Element => {
           <ResolutionSwitcher />
         </div>
 
-        <div className="w-full min-w-0 short:ml-auto short:w-auto">
+        {/* Shares the row from `sm` up, and on any short screen whatever its width —
+            a phone in landscape can be 568px, below `sm`, and is exactly where the row
+            is worth sharing. Full width below that, because when it does wrap to its
+            own line a right-aligned chip under left-aligned buttons reads as detached
+            rather than as the band it belongs to. */}
+        <div className="ml-0 w-full min-w-0 sm:ml-auto sm:w-auto short:ml-auto short:w-auto">
           <StatusBar
             meta={windowPayload?.meta ?? null}
             error={failure === null ? null : messageFor(failure)}

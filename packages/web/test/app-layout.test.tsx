@@ -142,18 +142,19 @@ describe('the resolution buttons and the freshness line', () => {
     vi.unstubAllGlobals();
   });
 
-  it('share one band, and can sit on one row where height is scarce', () => {
-    // Full width by default so they stack as two rows; auto width on a short screen so
-    // they share one, which is the buttons' own leftover space put to use. jsdom has no
-    // layout, so this is the rule; the 57px-to-29px measurement is from a browser.
+  it('share one band, wrapping only when there is no width for both', () => {
+    // Neither is pinned to a full row, so they sit together wherever they fit and wrap
+    // where they do not. jsdom has no layout, so this is the rule; the 57px-to-29px
+    // measurement is from a browser at 812x375.
     render(<App />, { wrapper });
 
     const resolution = screen.getByTestId('resolution-controls');
-    expect(resolution.className).toContain('w-full');
-    expect(resolution.className).toContain('short:w-auto');
+    expect(resolution.className).not.toContain('w-full');
 
     const band = resolution.parentElement;
     expect(band?.className).toContain('flex-wrap');
+    // One border on the band, not one per row: it is a band now, not two of them.
+    expect(band?.className).toContain('border-b');
     // Siblings in one wrapper is what lets them share a line at all.
     expect(band?.contains(screen.getByTestId('status-loading'))).toBe(true);
   });

@@ -6,6 +6,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { API_PREFIX, buildApp } from '../src/app.js';
+import { loadSources } from '../src/config/index.js';
 import { buildMeta, isoInstant, STALE_AFTER_HOURS } from '../src/lib/meta.js';
 import type { Sql } from '../src/lib/db.js';
 import { createHarness, databaseUrl, testEnv, type Harness } from './helpers.js';
@@ -96,9 +97,18 @@ withDatabase('endpoints', () => {
     });
 
     it('carries the Electricity Maps label verbatim', async () => {
+      // Read from the registry rather than written out here. The requirement is that
+      // the API serves this label unchanged, not that it says any particular sentence —
+      // so rewording it in config is allowed and silently altering it in transit is
+      // not. Pinning the prose instead made an edit to the wording look like a
+      // regression in the API.
+      const registered = loadSources().find((source) => source.id === 'emaps_method');
+      expect(registered, 'emaps_method must stay registered').toBeDefined();
+
       const { sources } = (await get('/sources')).json();
       const emaps = sources.find((source: { id: string }) => source.id === 'emaps_method');
-      expect(emaps.label).toBe('Electricity Maps methodology (our implementation)');
+      expect(emaps.label).toBe(registered?.label);
+      expect(emaps.label).toContain('Electricity Maps');
       expect(emaps.active).toBe(false);
       expect(emaps.attribution).toContain('electricitymaps-contrib');
     });

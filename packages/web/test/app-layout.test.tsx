@@ -126,3 +126,46 @@ describe('the legend on a short screen', () => {
     expect(screen.getByTestId('footer-legend').className).toContain('short:hidden');
   });
 });
+
+describe('the resolution buttons and the freshness line', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Promise.resolve(new Response('{}', { headers: { 'content-type': 'application/json' } })),
+      ),
+    );
+    useGridStore.setState({ selectedZone: null });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('share one band, and can sit on one row where height is scarce', () => {
+    // Full width by default so they stack as two rows; auto width on a short screen so
+    // they share one, which is the buttons' own leftover space put to use. jsdom has no
+    // layout, so this is the rule; the 57px-to-29px measurement is from a browser.
+    render(<App />, { wrapper });
+
+    const resolution = screen.getByTestId('resolution-controls');
+    expect(resolution.className).toContain('w-full');
+    expect(resolution.className).toContain('short:w-auto');
+
+    const band = resolution.parentElement;
+    expect(band?.className).toContain('flex-wrap');
+    // Siblings in one wrapper is what lets them share a line at all.
+    expect(band?.contains(screen.getByTestId('status-loading'))).toBe(true);
+  });
+
+  it('keeps the freshness line visible when a zone sheet hides the buttons', () => {
+    // The status is a sibling of the buttons rather than inside them. The buttons hide
+    // under a zone sheet on a phone, and how current the data is must not hide with
+    // them — that is the whole reason this is not one element.
+    useGridStore.setState({ selectedZone: 'US-TEX-ERCO' });
+    render(<App />, { wrapper });
+
+    expect(screen.getByTestId('resolution-controls').className).toContain('hidden');
+    expect(screen.getByTestId('status-loading')).toBeInTheDocument();
+  });
+});

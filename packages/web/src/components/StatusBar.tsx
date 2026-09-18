@@ -52,7 +52,7 @@ export const StatusBar = ({ meta, error, onRetry }: StatusBarProps): JSX.Element
 
   if (meta === null) {
     return (
-      <div className="px-4 py-2 text-xs text-zinc-500" data-testid="status-loading">
+      <div className="px-4 py-2 text-xs text-zinc-500 short:py-0.5" data-testid="status-loading">
         Loading…
       </div>
     );
@@ -75,7 +75,12 @@ export const StatusBar = ({ meta, error, onRetry }: StatusBarProps): JSX.Element
         <span className="font-medium">
           EIA data is {hoursBehind === null ? 'unavailable' : `${hoursBehind} hours behind`}
         </span>
-        <span className="hidden text-amber-200/80 sm:inline">
+        {/* Dropped where height is scarce, not just where width is. The headline says
+            the data is behind, which is the part that changes what a reader believes;
+            the sentence explaining it is what stops the notice sharing a row with the
+            resolution buttons, and a second row costs more than the sentence is worth
+            on a 375px-tall screen. */}
+        <span className="hidden text-amber-200/80 sm:inline short:!hidden">
           The map shows the newest hour published, not the current hour.
         </span>
         <button
@@ -93,7 +98,7 @@ export const StatusBar = ({ meta, error, onRetry }: StatusBarProps): JSX.Element
 
   return (
     <div
-      className="flex items-center gap-2 px-4 py-2 text-xs text-zinc-500"
+      className="flex items-center gap-2 px-4 py-2 text-xs text-zinc-500 short:py-0.5"
       data-testid="status-ok"
     >
       <span>Newest hour {age}</span>

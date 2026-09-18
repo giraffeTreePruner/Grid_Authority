@@ -84,21 +84,38 @@ export const App = (): JSX.Element => {
         </div>
       </header>
 
-      <div
-        className={[
-          'flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5 short:py-0.5',
-          zoneOpen ? 'hidden sm:flex' : 'flex',
-        ].join(' ')}
-        data-testid="resolution-controls"
-      >
-        <ResolutionSwitcher />
-      </div>
+      {/* The resolution buttons and the freshness line, as one band.
 
-      <StatusBar
-        meta={windowPayload?.meta ?? null}
-        error={failure === null ? null : messageFor(failure)}
-        onRetry={() => void windowQuery.refetch()}
-      />
+          Both are full width by default, so they wrap and stack exactly as they did.
+          On a short screen both become auto width and share a single row, which is the
+          buttons' own leftover space put to use — worth about 28px of map on a landscape
+          phone, where the whole viewport is 375.
+
+          One container, not two copies behind media queries: the staleness notice can be
+          dismissed, and a second instance would carry its own idea of whether that had
+          happened. The status is also a sibling of the buttons rather than inside them,
+          because the buttons hide under a zone sheet on a phone and how current the data
+          is should not hide with them. */}
+      <div className="flex flex-wrap items-center short:border-b short:border-zinc-800">
+        <div
+          className={[
+            'w-full flex-wrap items-center gap-3 border-b border-zinc-800 px-4 py-1.5',
+            'short:w-auto short:border-b-0 short:py-0.5',
+            zoneOpen ? 'hidden sm:flex' : 'flex',
+          ].join(' ')}
+          data-testid="resolution-controls"
+        >
+          <ResolutionSwitcher />
+        </div>
+
+        <div className="w-full min-w-0 short:ml-auto short:w-auto">
+          <StatusBar
+            meta={windowPayload?.meta ?? null}
+            error={failure === null ? null : messageFor(failure)}
+            onRetry={() => void windowQuery.refetch()}
+          />
+        </div>
+      </div>
 
       <main className="relative flex flex-1 overflow-hidden">
         <div className="relative flex-1">

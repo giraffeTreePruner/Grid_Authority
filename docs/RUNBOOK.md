@@ -594,10 +594,16 @@ and checks health. `pm2 reload` is zero-downtime because the API is clustered.
 curl -s https://YOUR.DOMAIN/api/v1/health | jq
 ```
 
-- `status: "ok"` — every source has succeeded within six hours.
-- `status: "starting"` — no job has run yet. Normal for the first half hour only.
-- `status: "degraded"` with 503 — the database is down, or a source has not succeeded in
-  six hours. Check `pm2 logs scheduler`.
+- `status: "ok"` — every scheduled job has succeeded inside the budget for its cadence:
+  three hours for `poll`, six for `probe`, thirty for `revise`.
+- `status: "starting"` — no scheduled job has reported yet. Normal for the first half
+  hour after a deploy, and for a host restored from a dump before its first poll.
+- `status: "degraded"` with 503 — the database is down, or a scheduled job has missed
+  its budget. Check `pm2 logs scheduler`.
+
+Each entry carries `expected_within_minutes`. It is `null` for a job that is not on a
+schedule — `backfill` and `seed` run once and are reported without being judged, so an
+old backfill no longer holds the host at 503 forever.
 
 ### What the jobs have done
 

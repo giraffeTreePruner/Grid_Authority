@@ -56,9 +56,9 @@ echo "==> checking health"
 
 # What this check is for: did the new code come up and can it reach the database.
 #
-# Not whether the data is fresh. /health answers 503 when any source has not succeeded
-# in six hours, which is a true statement about the data and says nothing about the
-# deploy — during a long backfill the poll job routinely falls that far behind. With
+# Not whether the data is fresh. /health answers 503 when a scheduled job has missed the
+# budget for its cadence, which is a true statement about the data and says nothing about
+# the deploy — during a long backfill the poll job routinely falls that far behind. With
 # `curl -f` that 503 aborted a deploy that had in fact worked.
 #
 # So: retry until the API answers at all, then judge the body.

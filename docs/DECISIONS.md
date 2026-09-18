@@ -1170,3 +1170,31 @@ Both expressions are built from `modes.yaml` by the same rule now. Two tests cov
 ways it fails — a denominator driven to zero returns null, and a denominator merely made
 too small returns a share above one — and both were checked by reverting the clamp and
 watching them go red.
+
+## 2026-09-18 — /health judges a job against its own cadence, or not at all
+
+`/health` held every row in `source_status` to one six-hour rule, and reported 503
+permanently on a host where nothing was wrong. Two independent causes, both visible in
+what production returned:
+
+`backfill` is a one-shot historical load. It is not in the scheduler's job list and is
+never going to run again, so its row ages forever — three days at the point this was
+found — and took the host down with it. And `revise` runs once a day at 04:15, so it sat
+outside a six-hour budget for eighteen hours out of every twenty-four.
+
+An always-red check costs more than no check: §13.4 points an external uptime monitor at
+this endpoint, and `deploy.sh` had already been taught to ignore the status and read the
+body instead. Both of those are workarounds for a bug rather than the bug.
+
+Each scheduled job now has a budget of several missed runs — three hours for `poll`, six
+for `probe`, thirty for `revise` — and a job with no cadence is reported with
+`expected_within_minutes: null` rather than judged. The timing those budgets come from
+lives in the scheduler, so the test reads `schedule.ts` and fails if a budget names a job
+that does not run; a budget that can only expire is the whole bug in miniature.
+
+"Starting" is now "no scheduled job has reported" rather than "no rows at all". A host
+restored from a dump arrives with a backfill row and nothing else, and judging only
+scheduled jobs would otherwise have called that healthy while no ingest had ever run.
+
+`warm-zone-detail` is scheduled but records no status, so it has no row to judge and no
+budget. Worth giving it one if it ever starts reporting.
